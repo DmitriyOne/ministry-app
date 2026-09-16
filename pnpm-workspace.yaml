@@ -1,0 +1,30 @@
+packages:
+  - "web"
+  - "backend"
+
+# pnpm ≥ 11 no longer reads settings from package.json#pnpm — they all live
+# here now (see docs/decisions/0002-package-manager-pnpm.md).
+
+# Packages allowed to run install/postinstall lifecycle scripts (pnpm ≥ 11
+# refuses to run any script not listed here when strictDepBuilds is on).
+# Keep this in sync with `pnpm --filter web why <pkg> --recursive` — only
+# list packages that genuinely need to compile/download a native binary at
+# install time, not every package with an ignored build script.
+allowBuilds:
+  # @serwist/turbopack's esbuild-based service worker bundler — also our
+  # own direct devDependency (web/app/serwist/[path]/route.ts).
+  esbuild: true
+  # Transitive dependency of @serwist/turbopack.
+  "@swc/core": true
+  # Transitive dep of eslint-import-resolver-typescript (via
+  # eslint-config-next). Ships prebuilt native binaries through
+  # optionalDependencies; its postinstall script is only a fallback when no
+  # prebuilt binary matches, which hasn't been the case here (lint works
+  # fine without running it) — deliberately left disabled rather than
+  # granted script execution it doesn't need.
+  unrs-resolver: false
+
+# Explicit even though it's pnpm's own default since v11 — documents the
+# intent (fail the install on any unlisted build script) rather than
+# relying on an implicit default that could change again.
+strictDepBuilds: true

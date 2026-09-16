@@ -1,0 +1,29 @@
+{
+  "name": "ministry-app",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@12.4.1+sha512.2e81e399d73fe8390dab25e06aa788ab7a5908248d2f5a370f82b481147a6a7a367bf8048f9a6fdb6460f21a66f0542dedb8b94ca2c8723596741920b1656d4c",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm run db:start && pnpm run wait:supabase && pnpm run dev:web",
+    "dev:web": "dotenv -e envs/web.local.env -- pnpm --filter web run dev",
+    "wait:supabase": "dotenv -e envs/backend.local.env -- sh -c 'wait-on -t 60000 \"$SUPABASE_HEALTH_URL\"'",
+    "db:start": "pnpm --filter backend run db:start",
+    "db:stop": "pnpm --filter backend run db:stop",
+    "db:reset": "pnpm --filter backend run db:reset",
+    "db:types": "pnpm --filter backend run db:types",
+    "db:login": "pnpm --filter backend run db:login",
+    "db:link": "pnpm --filter backend run db:link",
+    "db:push": "pnpm --filter backend run db:push",
+    "functions:deploy": "pnpm --filter backend run functions:deploy",
+    "lint": "pnpm --filter web run lint",
+    "typecheck": "pnpm --filter web run typecheck",
+    "build": "dotenv -e envs/web.local.env -- pnpm --filter web run build"
+  },
+  "devDependencies": {
+    "dotenv-cli": "11.0.0",
+    "wait-on": "9.1.0"
+  }
+}
