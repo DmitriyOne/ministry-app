@@ -39,5 +39,8 @@ backend/supabase/.temp
 !.vscode/extensions.json
 .idea/
 
+# ai agents (local settings, worktrees)
+.claude/
+
 # vercel
 .vercel
