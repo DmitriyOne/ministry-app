@@ -1,11 +1,12 @@
 {
-  "name": "Ministry App",
-  "short_name": "Ministry App",
-  "description": "Ministry App",
+  "name": "Учёт служения",
+  "short_name": "Служение",
+  "description": "Учёт часов служения для пионеров и возвещателей",
+  "lang": "ru",
   "start_url": "/day",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#171717",
+  "background_color": "#F6F5F3",
+  "theme_color": "#1E4A40",
   "icons": [
     {
       "src": "/icons/icon-192.png",
