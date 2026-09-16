@@ -84,6 +84,36 @@ ministry-app/
   щит от Next.js Pages Router. Реальный слой `pages` — `web/src/pages/`.
   Подробности — `docs/decisions/0004-fsd-pages-layer-named-pages.md`.
 
+## Дизайн-система
+
+Токены — в `web/src/app/styles/globals.css` (`:root` + `@theme inline`):
+палитра (`--palette-*` → семантические `--background`/`--hero`/`--primary`/
+`--negative`/`--positive-hero`/`--ink*`), типографическая шкала
+(`text-display`/`text-totals`/`text-screen-title`/`text-day-title`/
+`text-list-row`/`text-caption`/`text-eyebrow` + `font-540…640` +
+`tracking-*`), радиусы (`rounded-xs…4xl` = 12/13/18/20/22/26/28/32px) и
+тень (`shadow-card`). Токены shadcn/ui (`--primary`, `--destructive` и
+т.д.) переписаны на эту же палитру — компоненты shadcn сразу в стиле
+проекта. Тёмной темы нет (сознательно, `.dark` — пустая заглушка на
+будущее). Шрифт — системный стек (`--font-sans`), без `next/font`.
+
+**Правило: цвета, размеры шрифтов, радиусы и тени — только из токенов**
+(utility-классами вроде `bg-hero`, `text-negative`, `text-display`,
+`font-620`, `rounded-2xl`, `shadow-card`), никогда не хардкодить HEX/rgba
+или магические px в разметке экранов. Исключения — сам `globals.css`,
+иконки в `web/src/shared/ui/icons/` (используют `currentColor` +
+сохраняют геометрию прототипа) и служебная страница `web/src/pages/
+styleguide/` (эталон сверки с прототипом).
+
+Иконки — собственные SVG-компоненты в `web/src/shared/ui/icons/`
+(один файл на иконку, API `size`/`className`/`...props`, цвет через
+`currentColor`), не эмодзи и не иконный шрифт. `lucide-react` остаётся в
+зависимостях только для служебных нужд shadcn/ui.
+
+Подробности решений, таблица палитры/типографики и обоснования — ADR
+`docs/decisions/0011-design-tokens.md`. Живой пример всех токенов —
+`/styleguide` (не экран приложения, только для визуальной сверки).
+
 ## Команды
 
 Все — из корня репозитория.

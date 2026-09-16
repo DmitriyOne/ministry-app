@@ -1,8 +1,6 @@
 import { env } from "@/shared/config";
 
-// Minimal infra check: confirms the Next.js server can reach the local (or
-// deployed) Supabase Functions runtime. Not business logic — just a
-// scaffold-stage signal that the two projects are wired together.
+// Scaffold-stage signal that the two projects are wired together, not business logic.
 async function getSupabaseStatus(): Promise<"ok" | "unreachable"> {
   try {
     const response = await fetch(

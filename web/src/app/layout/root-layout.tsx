@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { SerwistProvider } from "@serwist/turbopack/react";
 
 import { BottomNav } from "@/widgets/bottom-nav";
@@ -8,28 +7,17 @@ import { Providers } from "./providers";
 
 import "../styles/globals.css";
 
-const geistSans = Geist({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// Без next/font/google — шрифт задан в styles/globals.css, см. ADR 0011.
 
 export const metadata: Metadata = {
-  title: "Ministry App",
-  description: "Ministry App",
+  title: "Учёт служения",
+  description: "Учёт часов служения для пионеров и возвещателей",
   manifest: "/manifest.webmanifest",
 };
 
 export function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="ru" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
         <SerwistProvider
           swUrl="/serwist/sw.js"
