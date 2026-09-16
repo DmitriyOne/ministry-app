@@ -39,8 +39,9 @@ backend/supabase/.temp
 !.vscode/extensions.json
 .idea/
 
-# ai agents (local settings, worktrees)
+# ai agents (local settings, worktrees, browser automation output)
 .claude/
+.playwright-mcp/
 
 # vercel
 .vercel
