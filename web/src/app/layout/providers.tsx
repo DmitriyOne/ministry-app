@@ -1,4 +1,8 @@
+import type { ReactNode } from "react";
+
+type ProvidersProps = {
+  children: ReactNode;
+};
+
 // Pass-through on purpose — add real providers here when one is actually needed.
-export function Providers({ children }: { children: React.ReactNode }) {
-  return children;
-}
+export const Providers = ({ children }: ProvidersProps) => children;

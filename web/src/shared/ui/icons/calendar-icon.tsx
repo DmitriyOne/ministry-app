@@ -1,6 +1,6 @@
 import type { IconProps } from "./icon-props";
 
-export function CalendarIcon({ size = 18, className, ...props }: IconProps) {
+export const CalendarIcon = ({ size = 18, className, ...props }: IconProps) => {
   return (
     <svg
       width={size}
@@ -34,4 +34,4 @@ export function CalendarIcon({ size = 18, className, ...props }: IconProps) {
       <circle cx="10" cy="15.2" r="0.95" fill="currentColor" />
     </svg>
   );
-}
+};

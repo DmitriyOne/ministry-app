@@ -1,5 +1,5 @@
 import type { ComponentPropsWithoutRef } from "react";
 
-export interface IconProps extends ComponentPropsWithoutRef<"svg"> {
+export type IconProps = ComponentPropsWithoutRef<"svg"> & {
   size?: number;
-}
+};

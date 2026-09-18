@@ -1,7 +1,7 @@
 import { env } from "@/shared/config";
 
 // Scaffold-stage signal that the two projects are wired together, not business logic.
-async function getSupabaseStatus(): Promise<"ok" | "unreachable"> {
+const getSupabaseStatus = async (): Promise<"ok" | "unreachable"> => {
   try {
     const response = await fetch(
       `${env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/health`,
@@ -28,9 +28,9 @@ async function getSupabaseStatus(): Promise<"ok" | "unreachable"> {
   } catch {
     return "unreachable";
   }
-}
+};
 
-export async function DayPage() {
+export const DayPage = async () => {
   const supabaseStatus = await getSupabaseStatus();
 
   return (
@@ -49,4 +49,4 @@ export async function DayPage() {
       </p>
     </main>
   );
-}
+};
