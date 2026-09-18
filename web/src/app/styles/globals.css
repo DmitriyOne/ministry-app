@@ -68,6 +68,7 @@
   --color-negative: var(--negative);
   --color-negative-foreground: var(--negative-foreground);
   --color-positive-hero: var(--positive-hero);
+  --color-negative-hero: var(--negative-hero);
   --color-accent-hover: var(--accent-hover);
   --color-ink: var(--ink);
   --color-ink-a60: var(--ink-a60);
@@ -94,6 +95,40 @@
   --radius-2xl: var(--radius-26);
   --radius-3xl: var(--radius-28);
   --radius-4xl: var(--radius-32);
+
+  /* Радиусы из каталога компонентов (ADR 0012), именованы по назначению —
+     они не встают в шкалу xs…4xl выше (та шкала — упорядочивание по
+     возрастанию, а не по смыслу, и уже занята). */
+  --radius-mark-sm: var(--radius-14); /* AppMark 44 */
+  --radius-mark-md: var(--radius-16); /* AppMark 52 / плашка знака в HeroCard */
+  --radius-mark-lg: var(--radius-24); /* AppMark 88 */
+  --radius-button: var(--radius-17); /* Button */
+  --radius-field-card: var(--radius-24); /* FieldCard — то же число, что и mark-lg, но другая роль */
+
+  /* Насыщенность начертания и размеры заголовка/текста из каталога
+     компонентов. Трекинг для них не заводится отдельно: значения каталога
+     совпадают со шкалой выше — tracking-screen-title (-0.03em) у Title и
+     StatusGlyph, tracking-day-title (-0.025em) у HeroCard, tracking-list-row
+     (-0.015em) у ListRow, tracking-eyebrow (0.12em) у FieldRow-лейбла. */
+  /* 500 численно равен стандартному font-medium Tailwind, но заведён явным
+     токеном по решению из ревью ADR 0012/0013 — в shared/ui все веса идут
+     через один и тот же механизм (font-500…font-640), без смешения с
+     именованными утилитами Tailwind (font-medium/font-semibold и т.д.). */
+  --font-weight-500: 500;
+  --font-weight-520: 520;
+  --text-title: 32px;
+  --text-title--line-height: 1.1;
+  --text-body: 15px;
+  --text-body--line-height: 1.45;
+  --text-status: 34px;
+  --text-status--line-height: 1;
+  --text-hero-title: 24px;
+  --text-list-title: 16px;
+  --text-field-label: 10px;
+  --text-field-label--line-height: 1.4;
+
+  /* Тень приподнятого AppMark (88 px, Coming soon / О приложении). */
+  --shadow-mark-elevated: var(--shadow-mark-elevated);
 
   /* Типографическая шкала прототипа: имя → (размер, начертание см. ниже
      через --font-weight-*, трекинг через --tracking-*). Использование:
@@ -144,6 +179,10 @@
   --palette-ink: #22302c;
   --palette-terracotta: #9a5238;
   --palette-mint: #8fd4b4;
+  /* Терракота на глубоком зелёном (InlineError на TopAndBottomState) —
+     самостоятельный тон каталога компонентов, не производится из
+     --palette-terracotta через прозрачность: там светлее и теплее. */
+  --palette-terracotta-tint: #e9b49c;
   --palette-white: #ffffff;
 
   /* Радиусы прототипа как сырые значения (использовать через --radius-xs…4xl выше). */
@@ -156,8 +195,15 @@
   --radius-28: 28px;
   --radius-32: 32px;
 
+  /* Радиусы каталога компонентов (ADR 0012) — знаки приложения и Button. */
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --radius-17: 17px;
+  --radius-24: 24px;
+
   /* Тень прототипа. */
   --shadow-card: 0 1px 2px rgba(34, 48, 44, 0.05);
+  --shadow-mark-elevated: 0 12px 24px rgba(30, 74, 64, 0.18);
 
   /* ---- 2) Семантические токены поверх палитры ---- */
   /* --background/--foreground заданы один раз, ниже, в блоке токенов
@@ -169,6 +215,8 @@
   --negative-foreground: var(--palette-white);
   /* Мята — ТОЛЬКО поверх --hero (глубокого зелёного), нигде больше. */
   --positive-hero: var(--palette-mint);
+  /* Терракота-тинт — ТОЛЬКО поверх --hero, для InlineError на тёмном фоне. */
+  --negative-hero: var(--palette-terracotta-tint);
   --accent-hover: var(--palette-muted-green-hover);
   --ink: var(--palette-ink);
   --ink-a60: rgba(34, 48, 44, 0.6);
@@ -248,5 +296,28 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  /*
+   * Единый механизм нажатия (scale 0.93–0.98 в каталоге компонентов —
+   * Button, ScreenHeader, ListRow). Величина задаётся через --press-scale
+   * у элемента (`className="pressable [--press-scale:0.98]"`), а не
+   * копированием transition/active в каждом компоненте.
+   */
+  .pressable {
+    transition: transform 0.15s ease;
+  }
+  .pressable:active {
+    transform: scale(var(--press-scale, 0.96));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pressable {
+      transition: none;
+    }
+    .pressable:active {
+      transform: none;
+    }
   }
 }

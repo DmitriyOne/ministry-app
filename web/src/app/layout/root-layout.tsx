@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { SerwistProvider } from "@serwist/turbopack/react";
 
@@ -15,8 +16,11 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
 };
 
-export function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
+type RootLayoutProps = {
+  children: ReactNode;
+};
+
+export const RootLayout = ({ children }: RootLayoutProps) => (
     <html lang="ru" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
         <SerwistProvider
@@ -31,4 +35,3 @@ export function RootLayout({ children }: { children: React.ReactNode }) {
       </body>
     </html>
   );
-}

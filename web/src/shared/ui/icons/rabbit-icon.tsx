@@ -1,6 +1,6 @@
 import type { IconProps } from "./icon-props";
 
-export function RabbitIcon({ size = 20, className, ...props }: IconProps) {
+export const RabbitIcon = ({ size = 20, className, ...props }: IconProps) => {
   return (
     <svg
       width={size}
@@ -16,4 +16,4 @@ export function RabbitIcon({ size = 20, className, ...props }: IconProps) {
       />
     </svg>
   );
-}
+};

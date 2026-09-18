@@ -1,6 +1,6 @@
 import type { IconProps } from "./icon-props";
 
-export function LockOpenIcon({ size = 16, className, ...props }: IconProps) {
+export const LockOpenIcon = ({ size = 16, className, ...props }: IconProps) => {
   return (
     <svg
       width={size}
@@ -27,4 +27,4 @@ export function LockOpenIcon({ size = 16, className, ...props }: IconProps) {
       />
     </svg>
   );
-}
+};

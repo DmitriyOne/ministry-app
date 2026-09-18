@@ -2,7 +2,7 @@ import type { IconProps } from "./icon-props";
 
 // Боковые фигуры — currentColor с fillOpacity 0.5 (в прототипе это тот же
 // белый на 50%, не отдельный цвет), чтобы оттенок наследовался целиком.
-export function AppMarkIcon({ size = 24, className, ...props }: IconProps) {
+export const AppMarkIcon = ({ size = 24, className, ...props }: IconProps) => {
   const height = (size / 32) * 26;
 
   return (
@@ -31,4 +31,4 @@ export function AppMarkIcon({ size = 24, className, ...props }: IconProps) {
       />
     </svg>
   );
-}
+};

@@ -1,6 +1,6 @@
 import type { IconProps } from "./icon-props";
 
-export function EyeIcon({ size = 26, className, ...props }: IconProps) {
+export const EyeIcon = ({ size = 26, className, ...props }: IconProps) => {
   return (
     <svg
       width={size}
@@ -19,4 +19,4 @@ export function EyeIcon({ size = 26, className, ...props }: IconProps) {
       <circle cx="12" cy="12" r="3.1" />
     </svg>
   );
-}
+};

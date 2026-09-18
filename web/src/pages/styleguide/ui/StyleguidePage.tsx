@@ -172,13 +172,12 @@ const ICONS: IconEntry[] = [
   },
 ];
 
-function SectionCard({
-  eyebrow,
-  children,
-}: {
+type SectionCardProps = {
   eyebrow: string;
   children: ReactNode;
-}) {
+};
+
+const SectionCard = ({ eyebrow, children }: SectionCardProps) => {
   return (
     <section className="flex flex-col gap-5 rounded-3xl bg-card p-7 shadow-card">
       <h2 className="text-eyebrow font-600 tracking-eyebrow uppercase text-ink-a40">
@@ -187,9 +186,9 @@ function SectionCard({
       {children}
     </section>
   );
-}
+};
 
-export function StyleguidePage() {
+export const StyleguidePage = () => {
   return (
     <main className="flex flex-1 justify-center bg-background px-6 py-10">
       <div className="flex w-full max-w-[1080px] flex-col gap-7">
@@ -326,4 +325,4 @@ export function StyleguidePage() {
       </div>
     </main>
   );
-}
+};

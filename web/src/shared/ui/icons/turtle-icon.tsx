@@ -4,7 +4,7 @@ const VIEWBOX_WIDTH = 122.88;
 const VIEWBOX_HEIGHT = 64.53;
 
 // Обводка тем же currentColor поверх заливки (как в прототипе) — без неё контур на малых размерах бледнеет.
-export function TurtleIcon({ size = 22, className, ...props }: IconProps) {
+export const TurtleIcon = ({ size = 22, className, ...props }: IconProps) => {
   // viewBox не квадратный — высота считается из ширины по его соотношению сторон.
   const height = (size / VIEWBOX_WIDTH) * VIEWBOX_HEIGHT;
 
@@ -27,4 +27,4 @@ export function TurtleIcon({ size = 22, className, ...props }: IconProps) {
       />
     </svg>
   );
-}
+};

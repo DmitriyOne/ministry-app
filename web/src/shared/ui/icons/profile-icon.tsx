@@ -1,6 +1,6 @@
 import type { IconProps } from "./icon-props";
 
-export function ProfileIcon({ size = 18, className, ...props }: IconProps) {
+export const ProfileIcon = ({ size = 18, className, ...props }: IconProps) => {
   return (
     <svg
       width={size}
@@ -21,4 +21,4 @@ export function ProfileIcon({ size = 18, className, ...props }: IconProps) {
       />
     </svg>
   );
-}
+};

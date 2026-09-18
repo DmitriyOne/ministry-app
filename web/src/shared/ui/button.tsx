@@ -1,6 +1,14 @@
-import { Button as ButtonPrimitive } from "@base-ui/react/button"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "cn"
+"use client";
+
+import type { RefAttributes } from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "cn";
+import {
+  Button as ButtonPrimitive,
+  Link as LinkPrimitive,
+  type ButtonProps as ButtonPrimitiveProps,
+  type LinkProps as LinkPrimitiveProps,
+} from "react-aria-components";
 
 const buttonVariants = cva(
   "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -17,6 +25,21 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        // Роли из каталога компонентов (ADR 0012) — экраны-состояния.
+        // Радиус/высота задаются через size="role"/"role-lg", не через
+        // size-варианты выше.
+        deep: "rounded-button bg-hero text-hero-foreground pressable [--press-scale:0.98]",
+        action:
+          "rounded-button bg-primary text-primary-foreground pressable [--press-scale:0.98]",
+        alert:
+          "rounded-button bg-negative text-negative-foreground pressable [--press-scale:0.98]",
+        plain:
+          "rounded-button bg-card text-card-foreground shadow-card pressable [--press-scale:0.98]",
+        // Роль "ghost" каталога — heroGhost, чтобы не конфликтовать с
+        // generic-вариантом shadcn "ghost" (hover-only, уже используется
+        // на /styleguide). Только поверх --hero.
+        heroGhost:
+          "rounded-button bg-white/10 text-hero-foreground pressable [--press-scale:0.98]",
       },
       size: {
         default:
@@ -30,28 +53,59 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
+        // Высота/типографика кнопки-состояния (48–54 в каталоге, сведены к
+        // двум шагам: role — стандартная (50), role-lg — крупная (54,
+        // экран входа).
+        role: "h-[50px] gap-2 px-6 text-base font-580",
+        "role-lg": "h-[54px] gap-2 px-6 text-list-row font-580",
       },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
     },
-  }
-)
+  },
+);
 
-function Button({
+type ButtonProps = Omit<ButtonPrimitiveProps, "className"> &
+  RefAttributes<HTMLButtonElement> &
+  VariantProps<typeof buttonVariants> & {
+    className?: string;
+  };
+
+export const Button = ({
   className,
   variant = "default",
   size = "default",
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
-  return (
-    <ButtonPrimitive
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  )
-}
+}: ButtonProps) => (
+  <ButtonPrimitive
+    data-slot="button"
+    data-variant={variant}
+    data-size={size}
+    className={cn(buttonVariants({ variant, size, className }))}
+    {...props}
+  />
+);
 
-export { Button, buttonVariants }
+type LinkButtonProps = Omit<LinkPrimitiveProps, "className"> &
+  VariantProps<typeof buttonVariants> & {
+    className?: string;
+  };
+
+export const LinkButton = ({
+  className,
+  variant = "default",
+  size = "default",
+  ...props
+}: LinkButtonProps) => (
+  <LinkPrimitive
+    data-slot="button"
+    data-variant={variant}
+    data-size={size}
+    className={cn(buttonVariants({ variant, size, className }))}
+    {...props}
+  />
+);
+
+export { buttonVariants };

@@ -1,6 +1,6 @@
 import type { IconProps } from "./icon-props";
 
-export function YearIcon({ size = 18, className, ...props }: IconProps) {
+export const YearIcon = ({ size = 18, className, ...props }: IconProps) => {
   return (
     <svg
       width={size}
@@ -22,4 +22,4 @@ export function YearIcon({ size = 18, className, ...props }: IconProps) {
       />
     </svg>
   );
-}
+};
