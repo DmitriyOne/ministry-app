@@ -2,6 +2,7 @@
 
 import type { ComponentPropsWithoutRef } from "react";
 import { useId, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { EyeIcon, EyeOffIcon } from "@/shared/ui/icons";
 import { FieldError, type FieldErrorItem } from "@/shared/ui/field";
@@ -27,16 +28,19 @@ export const PasswordField = ({
   label,
   visible: visibleProp,
   onVisibleChange,
-  showLabel = "Показать пароль",
-  hideLabel = "Скрыть пароль",
+  showLabel,
+  hideLabel,
   errors,
   ...inputProps
 }: PasswordFieldProps) => {
+  const t = useTranslations("a11y.passwordField");
   const [uncontrolledVisible, setUncontrolledVisible] = useState(false);
   const visible = visibleProp ?? uncontrolledVisible;
   const id = useId();
   const errorId = useId();
   const invalid = Boolean(errors?.length);
+  const resolvedShowLabel = showLabel ?? t("show");
+  const resolvedHideLabel = hideLabel ?? t("hide");
 
   const toggleVisible = () => {
     const next = !visible;
@@ -67,7 +71,7 @@ export const PasswordField = ({
         <button
           type="button"
           onClick={toggleVisible}
-          aria-label={visible ? hideLabel : showLabel}
+          aria-label={visible ? resolvedHideLabel : resolvedShowLabel}
           aria-pressed={visible}
           className="-my-1.5 -mr-1.5 flex size-8 shrink-0 items-center justify-center rounded-mark-md text-ink-a45 pressable [--press-scale:0.9]"
         >

@@ -201,6 +201,30 @@ styleguide/` (эталон сверки с прототипом).
   повторить вручную; вендорный файл проверяется как обычный код
   (`pnpm lint`/`pnpm typecheck`), не построчным diff'ом с апстримом.
 
+## Словарь текстов (i18n)
+
+`next-intl`, один язык (`ru`, без сегмента в URL/переключателя — см. ADR
+0014), один файл словаря — `web/src/shared/config/i18n/messages/ru.json`.
+Конфиг — `web/src/shared/config/i18n/` (`locale.ts`/`request.ts`/`types.ts`),
+подключён плагином в `next.config.ts`.
+
+**Правило: ни одной строки в разметке.** Видимый JSX-текст и атрибуты
+`aria-label`/`aria-labelledby`/`title`/`alt`/`placeholder` — только через
+`t("...")` (`useTranslations` в клиентских компонентах, `getTranslations` в
+серверных), не строковые литералы. Соблюдение проверяет
+`eslint-plugin-i18next` (`i18next/no-literal-string`, `pnpm lint`).
+
+**Как добавить ключ**: дописать в `ru.json` (вложенно, по месту
+использования — `screens.<slug>.*` для экранов, `showcase.*` для витрин,
+`common`/`a11y` — только для дефолтных доступных подписей самих
+компонентов `shared/ui`, см. ADR 0013), вызвать `t("новый.ключ")`.
+Несуществующий ключ ломает `pnpm typecheck` (типизация — через `declare
+module "next-intl"` в `types.ts`, по структуре `ru.json`). Числа с
+разными формами (часы, минуты и т.п.) — через ICU-плюрализацию
+(`{count, plural, one {...} few {...} many {...} other {...}}`), не
+склейкой строк. Подробности и обоснование — ADR `docs/decisions/
+0014-i18n-dictionary.md`.
+
 ## Команды
 
 Все — из корня репозитория.

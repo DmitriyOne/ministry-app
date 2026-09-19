@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -18,102 +19,37 @@ import {
 // Служебная страница для сверки токенов с прототипом, не экран приложения — см. ADR 0011.
 
 type PaletteSwatch = {
-  name: string;
+  key: "warmGray" | "deepGreen" | "mutedGreen" | "darkGreen" | "terracotta" | "mint" | "white";
   hex: string;
-  description: string;
   swatchClassName: string;
   borderClassName?: string;
 };
 
 const PALETTE: PaletteSwatch[] = [
-  {
-    name: "Тёплый серый",
-    hex: "#F6F5F3",
-    description: "Фон всех экранов, вдавленные поля",
-    swatchClassName: "bg-background",
-    borderClassName: "border border-ink-a09",
-  },
-  {
-    name: "Глубокий зелёный",
-    hex: "#1E4A40",
-    description: "Карточки-герои, вход, экран перевыполнения",
-    swatchClassName: "bg-hero",
-  },
-  {
-    name: "Приглушённый зелёный",
-    hex: "#2E6F5E",
-    description: "Действия, «+», прогресс, состояние «в графике»",
-    swatchClassName: "bg-primary",
-  },
-  {
-    name: "Тёмный зелёный",
-    hex: "#22302C",
-    description: "Весь текст; прозрачности .5 / .4 — подписи",
-    swatchClassName: "bg-ink",
-  },
-  {
-    name: "Терракота",
-    hex: "#9A5238",
-    description: "Отставание, ошибка 500, отрицательная дельта",
-    swatchClassName: "bg-negative",
-  },
-  {
-    name: "Светлая мята",
-    hex: "#8FD4B4",
-    description: "Только на тёмно-зелёном: часы сверх плана",
-    swatchClassName: "bg-positive-hero",
-  },
-  {
-    name: "Белый",
-    hex: "#FFFFFF",
-    description: "Карточки",
-    swatchClassName: "bg-card",
-    borderClassName: "border border-ink-a09",
-  },
+  { key: "warmGray", hex: "#F6F5F3", swatchClassName: "bg-background", borderClassName: "border border-ink-a09" },
+  { key: "deepGreen", hex: "#1E4A40", swatchClassName: "bg-hero" },
+  { key: "mutedGreen", hex: "#2E6F5E", swatchClassName: "bg-primary" },
+  { key: "darkGreen", hex: "#22302C", swatchClassName: "bg-ink" },
+  { key: "terracotta", hex: "#9A5238", swatchClassName: "bg-negative" },
+  { key: "mint", hex: "#8FD4B4", swatchClassName: "bg-positive-hero" },
+  { key: "white", hex: "#FFFFFF", swatchClassName: "bg-card", borderClassName: "border border-ink-a09" },
 ];
 
 type TypeRow = {
-  label: string;
+  key: "display" | "totals" | "screenTitle" | "dayTitle" | "listRow" | "caption" | "eyebrow";
   className: string;
-  sample: string;
 };
 
 const TYPE_SCALE: TypeRow[] = [
+  { key: "display", className: "text-display font-620 tracking-display tabular-nums" },
+  { key: "totals", className: "text-totals font-620 tracking-totals tabular-nums" },
+  { key: "screenTitle", className: "text-screen-title font-640 tracking-screen-title" },
+  { key: "dayTitle", className: "text-day-title font-640 tracking-day-title" },
+  { key: "listRow", className: "text-list-row font-580 tracking-list-row" },
+  { key: "caption", className: "text-caption font-540 text-ink-a50" },
   {
-    label: "56 / 620 · tabular",
-    className: "text-display font-620 tracking-display tabular-nums",
-    sample: "2:15",
-  },
-  {
-    label: "44 / 620 · итоги",
-    className: "text-totals font-620 tracking-totals tabular-nums",
-    sample: "279:15",
-  },
-  {
-    label: "34 / 640 · заголовок",
-    className: "text-screen-title font-640 tracking-screen-title",
-    sample: "2 июня",
-  },
-  {
-    label: "30 / 640 · заголовок дня",
-    className: "text-day-title font-640 tracking-day-title",
-    sample: "2 июня",
-  },
-  {
-    label: "17 / 580 · строка списка",
-    className: "text-list-row font-580 tracking-list-row",
-    sample: "Подсобный пионер",
-  },
-  {
-    label: "13 / 540 · пояснение",
-    className: "text-caption font-540 text-ink-a50",
-    sample: "До конца месяца 28 дней · осталось 27 ч 45 мин",
-  },
-  {
-    label: "11 / 600 · 0.12em CAPS",
-    className:
-      "text-eyebrow font-600 tracking-eyebrow uppercase text-ink-a40",
-    sample: "Служебный год 2025–2026",
+    key: "eyebrow",
+    className: "text-eyebrow font-600 tracking-eyebrow uppercase text-ink-a40",
   },
 ];
 
@@ -129,48 +65,40 @@ const RADIUS_SCALE = [
 ];
 
 type IconEntry = {
-  label: string;
+  key: "calendar" | "month" | "year" | "profile" | "check" | "rabbit" | "turtle" | "lockClosed" | "lockOpen" | "appMark" | "eye";
   render: () => ReactNode;
 };
 
 const ICONS: IconEntry[] = [
-  { label: "Календарь", render: () => <CalendarIcon size={28} /> },
-  { label: "Месяц · список дней", render: () => <MonthIcon size={28} /> },
-  { label: "Год · график", render: () => <YearIcon size={28} /> },
-  { label: "Профиль · человек", render: () => <ProfileIcon size={28} /> },
+  { key: "calendar", render: () => <CalendarIcon size={28} /> },
+  { key: "month", render: () => <MonthIcon size={28} /> },
+  { key: "year", render: () => <YearIcon size={28} /> },
+  { key: "profile", render: () => <ProfileIcon size={28} /> },
+  { key: "check", render: () => <CheckIcon size={22} className="text-primary" /> },
+  { key: "rabbit", render: () => <RabbitIcon size={24} className="text-hero" /> },
+  { key: "turtle", render: () => <TurtleIcon size={26} className="text-negative" /> },
+  { key: "lockClosed", render: () => <LockClosedIcon size={22} className="text-ink-a55" /> },
+  { key: "lockOpen", render: () => <LockOpenIcon size={22} className="text-ink-a55" /> },
   {
-    label: "Галочка — в графике",
-    render: () => <CheckIcon size={22} className="text-primary" />,
-  },
-  {
-    label: "Заяц — опережение",
-    render: () => <RabbitIcon size={24} className="text-hero" />,
-  },
-  {
-    label: "Черепаха — отставание",
-    render: () => <TurtleIcon size={26} className="text-negative" />,
-  },
-  {
-    label: "Замок закрыт",
-    render: () => <LockClosedIcon size={22} className="text-ink-a55" />,
-  },
-  {
-    label: "Замок открыт",
-    render: () => <LockOpenIcon size={22} className="text-ink-a55" />,
-  },
-  {
-    label: "Знак для входа",
+    key: "appMark",
     render: () => (
       <div className="flex h-10 w-10 items-center justify-center rounded-xs bg-hero">
         <AppMarkIcon size={24} className="text-white" />
       </div>
     ),
   },
-  {
-    label: "Глаз — показать пароль",
-    render: () => <EyeIcon size={26} className="text-ink-a45" />,
-  },
+  { key: "eye", render: () => <EyeIcon size={26} className="text-ink-a45" /> },
 ];
+
+// Демонстрация ICU-плюрализации next-intl (ADR 0014) — понадобится на
+// экранах «День» и «Месяц»: часы, минуты, изучения, «осталось N дней».
+const PLURAL_SAMPLES = [4, 5, 21] as const;
+const PLURAL_ROWS = [
+  { labelKey: "hoursLabel", valueKey: "hours" },
+  { labelKey: "minutesLabel", valueKey: "minutes" },
+  { labelKey: "studiesLabel", valueKey: "studies" },
+  { labelKey: "daysLeftLabel", valueKey: "daysLeft" },
+] as const;
 
 type SectionCardProps = {
   eyebrow: string;
@@ -188,20 +116,20 @@ const SectionCard = ({ eyebrow, children }: SectionCardProps) => {
   );
 };
 
-export const StyleguidePage = () => {
+export const StyleguidePage = async () => {
+  const t = await getTranslations("showcase");
+
   return (
     <main className="flex flex-1 justify-center bg-background px-6 py-10">
       <div className="flex w-full max-w-[1080px] flex-col gap-7">
         <header className="flex flex-col gap-1.5">
           <p className="text-eyebrow font-600 tracking-eyebrow uppercase text-ink-a40">
-            Учёт служения
+            {t("styleguide.eyebrow")}
           </p>
-          <h1 className="text-screen-title font-640 tracking-screen-title">
-            Цвета, шрифт, иконки
-          </h1>
+          <h1 className="text-screen-title font-640 tracking-screen-title">{t("styleguide.title")}</h1>
         </header>
 
-        <SectionCard eyebrow="Палитра">
+        <SectionCard eyebrow={t("styleguide.sections.palette")}>
           <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
             {PALETTE.map((swatch) => (
               <div key={swatch.hex} className="flex flex-col gap-2.5">
@@ -210,10 +138,10 @@ export const StyleguidePage = () => {
                 />
                 <div className="flex flex-col gap-0.5">
                   <p className="text-[15px] font-580">
-                    {swatch.name} · {swatch.hex}
+                    {t(`styleguide.palette.${swatch.key}.name`)} · {swatch.hex}
                   </p>
                   <p className="text-caption font-540 text-ink-a50">
-                    {swatch.description}
+                    {t(`styleguide.palette.${swatch.key}.description`)}
                   </p>
                 </div>
               </div>
@@ -221,105 +149,113 @@ export const StyleguidePage = () => {
           </div>
 
           <p className="text-caption font-540 leading-relaxed text-ink-a50">
-            Также в прототипе встречается #245549 — hover/pressed-состояние
-            приглушённого зелёного (цвет ссылок при наведении), заведено как
-            производный токен <code>--color-accent-hover</code>, а не
-            самостоятельный цвет палитры. #B00020 в прототипе — служебный
-            цвет инструмента предпросмотра (баннер ошибки редактора), к
-            дизайн-системе приложения отношения не имеет и токеном не стал.
-            Подробности — в ADR 0011.
+            {t.rich("styleguide.paletteNote", {
+              code: (chunks) => <code>{chunks}</code>,
+            })}
           </p>
 
           <div className="flex flex-wrap gap-2.5 pt-1">
             <div className="flex h-[34px] items-center rounded-xs bg-background px-3.5 text-caption font-540 text-ink-a60">
-              Тени: shadow-card
+              {t("styleguide.chips.shadow")}
             </div>
             <div className="flex h-[34px] items-center rounded-xs bg-background px-3.5 text-caption font-540 text-ink-a60">
-              Радиусы: 12/13/18/20/22/26/28/32
+              {t("styleguide.chips.radius")}
             </div>
             <button
               type="button"
               className="flex h-[34px] items-center rounded-xs bg-background px-3.5 text-caption font-540 text-ink-a60 transition-transform active:scale-[0.95]"
             >
-              Нажатие: transform scale(0.93–0.98)
+              {t("styleguide.chips.press")}
             </button>
           </div>
         </SectionCard>
 
-        <SectionCard eyebrow="Типографика · --font-sans (системный стек)">
+        <SectionCard eyebrow={t("styleguide.sections.typography")}>
           <div className="flex flex-col gap-4">
             {TYPE_SCALE.map((row, i) => (
-              <div key={row.label}>
+              <div key={row.key}>
                 <div className="flex items-baseline gap-5">
                   <span className="w-[170px] shrink-0 text-[12px] font-540 text-ink-a45">
-                    {row.label}
+                    {t(`styleguide.typeScale.${row.key}.label`)}
                   </span>
-                  <span className={row.className}>{row.sample}</span>
+                  <span className={row.className}>{t(`styleguide.typeScale.${row.key}.sample`)}</span>
                 </div>
-                {i < TYPE_SCALE.length - 1 && (
-                  <div className="mt-4 h-px bg-ink-a07" />
-                )}
+                {i < TYPE_SCALE.length - 1 && <div className="mt-4 h-px bg-ink-a07" />}
               </div>
             ))}
           </div>
           <p className="text-caption font-540 leading-relaxed text-ink-a50 text-pretty">
-            Все цифры — <code>tabular-nums</code>, чтобы значения не «прыгали»
-            при пересчёте. Часы в интерфейсе — формат «2:15»; в текстах о
-            цели и отклонении — словами: «27 ч 45 мин», «(−9 ч)».
+            {t.rich("styleguide.typeScaleNote", {
+              code: (chunks) => <code>{chunks}</code>,
+            })}
           </p>
         </SectionCard>
 
-        <SectionCard eyebrow="Радиусы и тень">
+        <SectionCard eyebrow={t("styleguide.sections.radius")}>
           <div className="grid grid-cols-4 gap-3.5 sm:grid-cols-8">
             {RADIUS_SCALE.map((r) => (
               <div key={r.name} className="flex flex-col items-center gap-2">
                 <div
                   className={`h-14 w-14 bg-background ${r.className} border border-ink-a09`}
                 />
-                <span className="text-caption font-540 text-ink-a50">
-                  {r.px}
-                </span>
+                <span className="text-caption font-540 text-ink-a50">{r.px}</span>
               </div>
             ))}
           </div>
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 rounded-2xl bg-card shadow-card" />
-            <p className="text-caption font-540 text-ink-a50">
-              shadow-card — 0 1px 2px rgba(34,48,44,0.05)
-            </p>
+            <p className="text-caption font-540 text-ink-a50">{t("styleguide.shadowCaption")}</p>
           </div>
         </SectionCard>
 
-        <SectionCard eyebrow="Иконки · собственные SVG, в манере SF Symbols">
+        <SectionCard eyebrow={t("styleguide.sections.icons")}>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {ICONS.map((icon) => (
               <div
-                key={icon.label}
+                key={icon.key}
                 className="flex flex-col items-center gap-3 rounded-lg bg-background p-4.5"
               >
                 <div className="flex h-11 items-center">{icon.render()}</div>
-                <p className="text-center text-caption font-560">
-                  {icon.label}
-                </p>
+                <p className="text-center text-caption font-560">{t(`styleguide.icons.${icon.key}`)}</p>
               </div>
             ))}
           </div>
           <p className="text-caption font-540 leading-relaxed text-ink-a50 text-pretty">
-            Иконки вкладок — SVG 18×18 при viewBox 20×20: штрих 1.5 (ушки
-            календаря 1.6), скругление контейнеров rx 4.2, столбиков графика
-            rx 1.45, точки r 0.9–0.95, все окончания линий круглые. Цвет
-            наследуется от состояния через <code>currentColor</code>.
-            Отдельного шрифта иконок и эмодзи в проекте нет.
+            {t.rich("styleguide.iconsNote", {
+              code: (chunks) => <code>{chunks}</code>,
+            })}
           </p>
         </SectionCard>
 
-        <SectionCard eyebrow="Кнопки shadcn/ui на токенах проекта">
+        <SectionCard eyebrow={t("styleguide.sections.buttons")}>
           <div className="flex flex-wrap items-center gap-3">
-            <Button variant="default">Отметить сегодня</Button>
-            <Button variant="secondary">Изменить</Button>
-            <Button variant="outline">Отмена</Button>
-            <Button variant="ghost">Пропустить</Button>
-            <Button variant="destructive">Удалить запись</Button>
+            <Button variant="default">{t("styleguide.buttons.markToday")}</Button>
+            <Button variant="secondary">{t("styleguide.buttons.edit")}</Button>
+            <Button variant="outline">{t("styleguide.buttons.cancel")}</Button>
+            <Button variant="ghost">{t("styleguide.buttons.skip")}</Button>
+            <Button variant="destructive">{t("styleguide.buttons.delete")}</Button>
+          </div>
+        </SectionCard>
+
+        <SectionCard eyebrow={t("plurals.sectionTitle")}>
+          <p className="text-caption font-540 leading-relaxed text-ink-a50 text-pretty">
+            {t("plurals.sectionDescription")}
+          </p>
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+            {PLURAL_ROWS.map(({ labelKey, valueKey }) => (
+              <div key={valueKey} className="flex flex-col gap-2 rounded-lg bg-background p-4.5">
+                <span className="text-caption font-540 text-ink-a45">
+                  {t(`plurals.${labelKey}`)}
+                </span>
+                <div className="flex flex-col gap-0.5">
+                  {PLURAL_SAMPLES.map((count) => (
+                    <span key={count} className="text-list-row font-580 tracking-list-row">
+                      {t(`plurals.${valueKey}`, { count })}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </SectionCard>
       </div>

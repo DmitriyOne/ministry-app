@@ -1,10 +1,37 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import i18next from "eslint-plugin-i18next";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    // Ни одной строки — ни видимого JSX-текста, ни aria-label/title/alt/
+    // placeholder — мимо словаря (ADR 0014). Область действия — то, что
+    // рендерится в разметке: mode "jsx-only" не трогает обычные строковые
+    // литералы вне JSX (enum-значения вроде variant="deep", технические
+    // константы, cn()-классы, zod-сообщения — им линтер эту проверку не
+    // включает, они проверяются вручную/код-ревью, иначе пришлось бы
+    // заводить исключения на каждый технический литерал в кодовой базе).
+    files: ["src/**/*.tsx"],
+    plugins: { i18next },
+    rules: {
+      "i18next/no-literal-string": [
+        "error",
+        {
+          mode: "jsx-only",
+          "jsx-attributes": {
+            include: ["aria-label", "aria-labelledby", "alt", "title", "placeholder"],
+          },
+          // next-intl's t.rich embeds markup (t.rich("key", { code: ... }))
+          // — the key argument is a dictionary lookup, not literal UI text,
+          // same as a plain t("key") call (already excluded by default).
+          callees: { exclude: ["i18n(ext)?", "t", "t\\.rich"] },
+        },
+      ],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

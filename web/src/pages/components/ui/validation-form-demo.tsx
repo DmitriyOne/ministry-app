@@ -1,6 +1,8 @@
 "use client";
 
+import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -8,17 +10,25 @@ import { ActionStack } from "@/shared/ui/action-stack";
 import { Button } from "@/shared/ui/button";
 import { FieldCard, FieldRow } from "@/shared/ui/field-card";
 
-// Схема и useForm — здесь, не в shared/ui: shared/ui знает только про
-// errors, не про то, что именно проверяется (см. ADR 0013). На реальных
-// экранах эта обвязка переедет в соответствующий features-слайс.
-const schema = z.object({
-  email: z.string().min(1, "Укажите эл. почту").email("Неверный формат почты"),
-  password: z.string().min(6, "Пароль — минимум 6 символов"),
-});
-
-type FormValues = z.infer<typeof schema>;
-
 export const ValidationFormDemo = () => {
+  const t = useTranslations("showcase.components.cards.validationDemo");
+
+  // Схема и useForm — здесь, не в shared/ui: shared/ui знает только про
+  // errors, не про то, что именно проверяется (см. ADR 0013). На реальных
+  // экранах эта обвязка переедет в соответствующий features-слайс. Тексты
+  // ошибок — из словаря, поэтому схема строится внутри компонента, не на
+  // уровне модуля, и пересобирается только если сам t поменяется.
+  const schema = useMemo(
+    () =>
+      z.object({
+        email: z.string().min(1, t("emailRequired")).email(t("emailInvalid")),
+        password: z.string().min(6, t("passwordMinLength")),
+      }),
+    [t],
+  );
+
+  type FormValues = z.infer<typeof schema>;
+
   const {
     control,
     handleSubmit,
@@ -44,8 +54,8 @@ export const ValidationFormDemo = () => {
           control={control}
           render={({ field: { name, value, onChange, onBlur }, fieldState }) => (
             <FieldRow
-              label="Эл. почта"
-              placeholder="имя@почта.ру"
+              label={t("emailLabel")}
+              placeholder={t("emailPlaceholder")}
               errors={fieldState.error ? [fieldState.error] : undefined}
               name={name}
               value={value}
@@ -59,9 +69,9 @@ export const ValidationFormDemo = () => {
           control={control}
           render={({ field: { name, value, onChange, onBlur }, fieldState }) => (
             <FieldRow
-              label="Пароль"
+              label={t("passwordLabel")}
               secure
-              placeholder="••••••••"
+              placeholder={t("passwordPlaceholder")}
               errors={fieldState.error ? [fieldState.error] : undefined}
               name={name}
               value={value}
@@ -73,7 +83,7 @@ export const ValidationFormDemo = () => {
       </FieldCard>
       <ActionStack maxWidth="full">
         <Button type="submit" variant="deep" size="role" isDisabled={hasErrors}>
-          Отправить
+          {t("submit")}
         </Button>
       </ActionStack>
     </form>
