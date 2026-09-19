@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+
 import { env } from "@/shared/config";
 
 // Scaffold-stage signal that the two projects are wired together, not business logic.
@@ -31,13 +33,16 @@ const getSupabaseStatus = async (): Promise<"ok" | "unreachable"> => {
 };
 
 export const DayPage = async () => {
-  const supabaseStatus = await getSupabaseStatus();
+  const [supabaseStatus, t] = await Promise.all([
+    getSupabaseStatus(),
+    getTranslations("screens.day"),
+  ]);
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
-      <h1 className="text-2xl font-semibold">Day</h1>
+      <h1 className="text-2xl font-semibold">{t("title")}</h1>
       <p className="text-sm text-muted-foreground">
-        Supabase:{" "}
+        {t("supabaseStatusLabel")}{" "}
         <span
           data-testid="supabase-status"
           className={

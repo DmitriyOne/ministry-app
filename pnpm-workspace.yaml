@@ -23,6 +23,10 @@ allowBuilds:
   # fine without running it) — deliberately left disabled rather than
   # granted script execution it doesn't need.
   unrs-resolver: false
+  # Transitive dep of next-intl (native FS watcher for its optional CLI).
+  # We don't use the next-intl CLI's watch mode — no need for the compiled
+  # binary, same reasoning as unrs-resolver above.
+  "@parcel/watcher": false
 
 # Explicit even though it's pnpm's own default since v11 — documents the
 # intent (fail the install on any unlisted build script) rather than

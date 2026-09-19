@@ -1,12 +1,14 @@
 // Из каталога компонентов (components.html, вне репозитория) — см. ADR 0012.
-// 1 = основной, 2 = второстепенный, 0 = не используется.
-export const SCREENS = [
+// 1 = основной, 2 = второстепенный, 0 = не используется. Ключи экранов —
+// техническая часть (совпадают с ключами showcase.components.matrix.screens
+// в словаре), сами подписи берутся из словаря в usage-matrix.tsx.
+export const SCREEN_KEYS = [
   "404",
   "500",
-  "Coming soon",
-  "Вход",
-  "Desktop block",
-  "О приложении",
+  "comingSoon",
+  "login",
+  "desktopBlock",
+  "about",
 ] as const;
 
 export const USAGE_MATRIX: Array<[string, ...number[]]> = [

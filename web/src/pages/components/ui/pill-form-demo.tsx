@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { PillForm } from "@/shared/ui/pill-form";
 
@@ -8,18 +9,19 @@ import { PillForm } from "@/shared/ui/pill-form";
 // здесь, в витрине, потому что сценарий записи в вайтлист (Supabase и т.п.)
 // в будущем переедет в features, а не в shared/ui (см. ADR 0013).
 export const PillFormDemo = () => {
+  const t = useTranslations("showcase.components.cards.pillForm");
   const [value, setValue] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   return (
     <PillForm
-      placeholder="Ваш email"
-      cta="Записаться"
-      hint="Оставьте свой email для записи в вайтлист"
+      placeholder={t("placeholder")}
+      cta={t("cta")}
+      hint={t("hint")}
       value={value}
       onValueChange={setValue}
       submitted={submitted}
-      successText="Спасибо! Мы напишем вам, когда всё будет готово."
+      successText={t("successText")}
       onSubmit={() => setSubmitted(true)}
     />
   );
