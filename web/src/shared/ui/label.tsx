@@ -1,10 +1,10 @@
 "use client";
 
-import { cn } from "cn";
+import { cn } from "@/shared/lib/cn";
 import { LabelContext, Label as LabelPrimitive, type LabelProps } from "react-aria-components";
 
-// htmlFor без slot — использование вне <TextField>: сбрасываем унаследованный
-// LabelContext, иначе react-aria может подменить связку label/control своей.
+// htmlFor without slot — used outside <TextField>: reset the inherited
+// LabelContext, otherwise react-aria may swap in its own label/control pairing.
 export const Label = ({ className, htmlFor, slot, ...props }: LabelProps) => {
   const label = (
     <LabelPrimitive

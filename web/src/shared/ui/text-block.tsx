@@ -1,21 +1,22 @@
 import type { ElementType, ReactNode } from "react";
-import { cn } from "cn";
+import { cn } from "@/shared/lib/cn";
 
 import { BodyText } from "@/shared/ui/body-text";
 import { Eyebrow } from "@/shared/ui/eyebrow";
 import { Title } from "@/shared/ui/title";
 
-// Заголовок + абзац идут парой почти на каждом экране-состоянии — один
-// компонент вместо копирования одной и той же колонки с gap.
+// A title + paragraph pair shows up on almost every state screen — one
+// component instead of copying the same gapped column everywhere.
 type TextBlockProps = {
   eyebrow?: ReactNode;
   title: ReactNode;
   text?: ReactNode;
   titleSize?: "default" | "compact";
-  // Уровень заголовка в документе решает вызывающий экран, а не сам блок:
-  // TextBlock — это главный заголовок state-экрана (h1) на реальном
-  // экране, но в чужом контексте (например, в карточке-примере) должен
-  // стать h2/h3 и т.д., чтобы не плодить второй h1 на странице.
+  // The calling screen decides the heading level in the document, not
+  // the block itself: TextBlock is the main heading (h1) of a state
+  // screen on a real screen, but in someone else's context (e.g. a
+  // showcase card) it should become h2/h3 etc. to avoid a second h1
+  // on the page.
   titleAs?: ElementType;
   tone?: "ink" | "hero";
   align?: "start" | "center";

@@ -1,8 +1,9 @@
 "use client";
 
 import type { RefAttributes } from "react";
+import NextLink from "next/link";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "cn";
+import { cn } from "@/shared/lib/cn";
 import {
   Button as ButtonPrimitive,
   Link as LinkPrimitive,
@@ -25,9 +26,9 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
-        // Роли из каталога компонентов (ADR 0012) — экраны-состояния.
-        // Радиус/высота задаются через size="role"/"role-lg", не через
-        // size-варианты выше.
+        // Roles from the component catalogue (ADR 0012) — state screens.
+        // Radius/height come from size="role"/"role-lg", not the
+        // size variants above.
         deep: "rounded-button bg-hero text-hero-foreground pressable [--press-scale:0.98]",
         action:
           "rounded-button bg-primary text-primary-foreground pressable [--press-scale:0.98]",
@@ -35,9 +36,8 @@ const buttonVariants = cva(
           "rounded-button bg-negative text-negative-foreground pressable [--press-scale:0.98]",
         plain:
           "rounded-button bg-card text-card-foreground shadow-card pressable [--press-scale:0.98]",
-        // Роль "ghost" каталога — heroGhost, чтобы не конфликтовать с
-        // generic-вариантом shadcn "ghost" (hover-only, уже используется
-        // на /styleguide). Только поверх --hero.
+        // The catalogue's "ghost" role is heroGhost here, to avoid clashing
+        // with shadcn's generic "ghost" variant (hover-only). Only over --hero.
         heroGhost:
           "rounded-button bg-white/10 text-hero-foreground pressable [--press-scale:0.98]",
       },
@@ -53,9 +53,9 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
-        // Высота/типографика кнопки-состояния (48–54 в каталоге, сведены к
-        // двум шагам: role — стандартная (50), role-lg — крупная (54,
-        // экран входа).
+        // State-button height/typography (48–54 in the catalogue, reduced
+        // to two steps: role — standard (50), role-lg — large (54,
+        // login screen).
         role: "h-[50px] gap-2 px-6 text-base font-580",
         "role-lg": "h-[54px] gap-2 px-6 text-list-row font-580",
       },
@@ -93,17 +93,37 @@ type LinkButtonProps = Omit<LinkPrimitiveProps, "className"> &
     className?: string;
   };
 
+// Delegates navigation to next/link via react-aria-components' `render`
+// prop (see ADR 0024) so every LinkButton gets client-side routing — the
+// launch gate (LaunchGate/LaunchLoading, features/launch-gate, ADR 0017/0019/0028) only runs once, on
+// the initial document load, not on every in-app navigation. Restricted to
+// internal paths ("/..."): next/link expects an app route, not an
+// arbitrary/external href, so anything else (mailto:, tel:, external
+// https://...) falls back to a plain <a> (react-aria-components' default).
+const isInternalHref = (href: LinkPrimitiveProps["href"]): href is string =>
+  typeof href === "string" && href.startsWith("/");
+
 export const LinkButton = ({
   className,
   variant = "default",
   size = "default",
+  href,
   ...props
 }: LinkButtonProps) => (
   <LinkPrimitive
     data-slot="button"
     data-variant={variant}
     data-size={size}
+    href={href}
     className={cn(buttonVariants({ variant, size, className }))}
+    render={
+      isInternalHref(href)
+        ? // react-aria-components' Link can render as a plain <span> when
+          // there's no href (onPress-only links) — "href" in linkProps is
+          // its own documented way to narrow which case this is.
+          (linkProps) => ("href" in linkProps ? <NextLink {...linkProps} href={href} /> : <span {...linkProps} />)
+        : undefined
+    }
     {...props}
   />
 );

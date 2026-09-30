@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import { cn } from "cn";
+import { cn } from "@/shared/lib/cn";
 
-// Экран одного состояния (404, 500, Coming soon): всё по центру по обеим
-// осям, слоты glyph → текст → действия → сноска.
+// A single-state screen (404, 500, Coming soon): everything centred on
+// both axes, slots glyph → text → actions → footnote.
 type CenteredStateProps = {
   background?: "warm" | "deep";
   glyph?: ReactNode;

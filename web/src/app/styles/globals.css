@@ -5,22 +5,22 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Дизайн-система «Учёт служения».
- * Источник — прототип-стайлгайд (не в репозитории, см.
- * docs/decisions/0011-design-tokens.md). Правило: цвета, размеры шрифтов,
- * радиусы и тени берутся ТОЛЬКО из токенов ниже — никаких магических хексов
- * или чисел в разметке (кроме layout-специфичных отступов/размеров, не
- * входящих в шкалу).
+ * Ministry design system.
+ * Source — a prototype styleguide (not in the repository, see
+ * docs/decisions/0011-design-tokens.md). Rule: colours, font sizes, radii
+ * and shadows come ONLY from the tokens below — no magic hex values or
+ * numbers in markup (except layout-specific spacing/sizes that don't fit
+ * the scale).
  *
- * Слои:
- *  1) --palette-*  — сырые значения из прототипа (не использовать в
- *     разметке напрямую).
+ * Layers:
+ *  1) --palette-* — raw values from the prototype (don't use directly in
+ *     markup).
  *  2) --color-*, --ink-a*, --shadow-*, --radius-*, --text-*,
- *     --font-weight-*, --tracking-* в :root — семантические токены,
- *     подключённые к Tailwind через @theme inline ниже.
- *  3) --background/--foreground/--card/--primary/... — токены shadcn/ui,
- *     переопределены значениями палитры проекта, чтобы компоненты shadcn
- *     сразу были в фирменном стиле.
+ *     --font-weight-*, --tracking-* on :root — semantic tokens, wired
+ *     into Tailwind via @theme inline below.
+ *  3) --background/--foreground/--card/--primary/... — shadcn/ui tokens,
+ *     overridden with the project's palette values so shadcn components
+ *     come out in the house style straight away.
  */
 
 @theme inline {
@@ -60,9 +60,9 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
 
-  /* Токены-компаньоны сверх стандартного набора shadcn — используются
-     напрямую в разметке (`bg-hero`, `text-negative`, `text-positive-hero`
-     и т.д.), названы по назначению, а не по HEX. */
+  /* Companion tokens on top of the standard shadcn set — used directly in
+     markup (`bg-hero`, `text-negative`, `text-positive-hero`, etc.),
+     named by purpose rather than by hex value. */
   --color-hero: var(--hero);
   --color-hero-foreground: var(--hero-foreground);
   --color-negative: var(--negative);
@@ -71,22 +71,20 @@
   --color-negative-hero: var(--negative-hero);
   --color-accent-hover: var(--accent-hover);
   --color-ink: var(--ink);
-  --color-ink-a60: var(--ink-a60);
   --color-ink-a55: var(--ink-a55);
-  --color-ink-a50: var(--ink-a50);
-  --color-ink-a45: var(--ink-a45);
-  --color-ink-a40: var(--ink-a40);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
   --color-ink-a09: var(--ink-a09);
   --color-ink-a07: var(--ink-a07);
   --color-ink-a05: var(--ink-a05);
 
-  /* Тень: единственная тень прототипа (карточки). */
+  /* Shadow: the prototype's only shadow (cards). */
   --shadow-card: var(--shadow-card);
 
-  /* Радиусы. Прототип использует фиксированный набор: 12/13, 18, 20, 22,
-     26, 28, 32 — заведены как ступени Tailwind-шкалы (rounded-xs …
-     rounded-4xl), а не через calc() от одного базового --radius, потому
-     что реальные радиусы прототипа не образуют арифметическую прогрессию. */
+  /* Radii. The prototype uses a fixed set: 12/13, 18, 20, 22, 26, 28, 32 —
+     set up as Tailwind scale steps (rounded-xs … rounded-4xl) rather than
+     via calc() from a single base --radius, because the prototype's
+     actual radii don't form an arithmetic progression. */
   --radius-xs: var(--radius-12);
   --radius-sm: var(--radius-13);
   --radius-md: var(--radius-18);
@@ -96,24 +94,23 @@
   --radius-3xl: var(--radius-28);
   --radius-4xl: var(--radius-32);
 
-  /* Радиусы из каталога компонентов (ADR 0012), именованы по назначению —
-     они не встают в шкалу xs…4xl выше (та шкала — упорядочивание по
-     возрастанию, а не по смыслу, и уже занята). */
+  /* Radii from the component catalogue (ADR 0012), named by purpose —
+     they don't fit the xs…4xl scale above (that scale is ordered by
+     size, not by meaning, and is already spoken for). */
   --radius-mark-sm: var(--radius-14); /* AppMark 44 */
-  --radius-mark-md: var(--radius-16); /* AppMark 52 / плашка знака в HeroCard */
+  --radius-mark-md: var(--radius-16); /* AppMark 52 / PasswordField trailing button (component removed, see ADR 0012) */
   --radius-mark-lg: var(--radius-24); /* AppMark 88 */
   --radius-button: var(--radius-17); /* Button */
-  --radius-field-card: var(--radius-24); /* FieldCard — то же число, что и mark-lg, но другая роль */
 
-  /* Насыщенность начертания и размеры заголовка/текста из каталога
-     компонентов. Трекинг для них не заводится отдельно: значения каталога
-     совпадают со шкалой выше — tracking-screen-title (-0.03em) у Title и
-     StatusGlyph, tracking-day-title (-0.025em) у HeroCard, tracking-list-row
-     (-0.015em) у ListRow, tracking-eyebrow (0.12em) у FieldRow-лейбла. */
-  /* 500 численно равен стандартному font-medium Tailwind, но заведён явным
-     токеном по решению из ревью ADR 0012/0013 — в shared/ui все веса идут
-     через один и тот же механизм (font-500…font-640), без смешения с
-     именованными утилитами Tailwind (font-medium/font-semibold и т.д.). */
+  /* Font weights and heading/text sizes from the component catalogue.
+     No separate tracking is set up for them: the catalogue's values
+     match the scale above — tracking-screen-title (-0.03em) on Title and
+     StatusGlyph. */
+  /* 500 is numerically equal to Tailwind's standard font-medium, but set
+     up as an explicit token per the ADR 0012/0013 review decision — in
+     shared/ui, all weights go through the same mechanism (font-500…
+     font-640), without mixing in Tailwind's named utilities
+     (font-medium/font-semibold etc.). */
   --font-weight-500: 500;
   --font-weight-520: 520;
   --text-title: 32px;
@@ -122,16 +119,12 @@
   --text-body--line-height: 1.45;
   --text-status: 34px;
   --text-status--line-height: 1;
-  --text-hero-title: 24px;
-  --text-list-title: 16px;
-  --text-field-label: 10px;
-  --text-field-label--line-height: 1.4;
 
-  /* Тень приподнятого AppMark (88 px, Coming soon / О приложении). */
+  /* Shadow for the elevated AppMark (88 px, Coming soon / About). */
   --shadow-mark-elevated: var(--shadow-mark-elevated);
 
-  /* Типографическая шкала прототипа: имя → (размер, начертание см. ниже
-     через --font-weight-*, трекинг через --tracking-*). Использование:
+  /* Prototype's typographic scale: name → (size, weight set below via
+     --font-weight-*, tracking via --tracking-*). Usage:
      `text-display font-[620] tracking-display tabular-nums`. */
   --text-display: 56px;
   --text-display--line-height: 1;
@@ -148,8 +141,8 @@
   --text-eyebrow: 11px;
   --text-eyebrow--line-height: 1.4;
 
-  /* Начертания, которых нет в стандартной шкале Tailwind (400/500/600/700…),
-     но которые заданы прототипом дробными значениями. */
+  /* Weights not in Tailwind's standard scale (400/500/600/700…), but set
+     by the prototype as fractional values. */
   --font-weight-540: 540;
   --font-weight-560: 560;
   --font-weight-580: 580;
@@ -157,7 +150,7 @@
   --font-weight-620: 620;
   --font-weight-640: 640;
 
-  /* Трекинг (letter-spacing) типографической шкалы. */
+  /* Tracking (letter-spacing) for the typographic scale. */
   --tracking-display: -0.04em;
   --tracking-totals: -0.04em;
   --tracking-screen-title: -0.03em;
@@ -167,25 +160,25 @@
 }
 
 :root {
-  /* ---- 1) Сырая палитра прототипа (не использовать напрямую в разметке) ---- */
+  /* ---- 1) Prototype's raw palette (don't use directly in markup) ---- */
   --palette-warm-gray: #f6f5f3;
   --palette-deep-green: #1e4a40;
   --palette-muted-green: #2e6f5e;
-  /* #245549 — hover/pressed-состояние приглушённого зелёного, найдено в
-     прототипе как цвет ссылок при наведении (`a:hover{color:#245549}`).
-     Отдельного назначения в таблице палитры у него нет — заведено как
-     производный токен состояния, не самостоятельный цвет. См. ADR 0011. */
+  /* #245549 — hover/pressed state of the muted green, found in the
+     prototype as the link hover colour (`a:hover{color:#245549}`). It
+     has no separate entry in the palette table — set up as a derived
+     state token, not a standalone colour. See ADR 0011. */
   --palette-muted-green-hover: #245549;
   --palette-ink: #22302c;
   --palette-terracotta: #9a5238;
   --palette-mint: #8fd4b4;
-  /* Терракота на глубоком зелёном (InlineError на TopAndBottomState) —
-     самостоятельный тон каталога компонентов, не производится из
-     --palette-terracotta через прозрачность: там светлее и теплее. */
+  /* Terracotta on deep green (InlineError on --hero) — a standalone tone
+     from the component catalogue, not derived from --palette-terracotta
+     via opacity: it's lighter and warmer there. */
   --palette-terracotta-tint: #e9b49c;
   --palette-white: #ffffff;
 
-  /* Радиусы прототипа как сырые значения (использовать через --radius-xs…4xl выше). */
+  /* Prototype's radii as raw values (use via --radius-xs…4xl above). */
   --radius-12: 12px;
   --radius-13: 13px;
   --radius-18: 18px;
@@ -195,41 +188,48 @@
   --radius-28: 28px;
   --radius-32: 32px;
 
-  /* Радиусы каталога компонентов (ADR 0012) — знаки приложения и Button. */
+  /* Radii from the component catalogue (ADR 0012) — app marks and Button. */
   --radius-14: 14px;
   --radius-16: 16px;
   --radius-17: 17px;
   --radius-24: 24px;
 
-  /* Тень прототипа. */
+  /* Prototype's shadow. */
   --shadow-card: 0 1px 2px rgba(34, 48, 44, 0.05);
   --shadow-mark-elevated: 0 12px 24px rgba(30, 74, 64, 0.18);
 
-  /* ---- 2) Семантические токены поверх палитры ---- */
-  /* --background/--foreground заданы один раз, ниже, в блоке токенов
-     shadcn (раздел 3) — они совпадают по смыслу с фоном/текстом
-     приложения, дублировать их здесь не нужно. */
+  /* ---- 2) Semantic tokens on top of the palette ---- */
+  /* --background/--foreground are set once, below, in the shadcn token
+     block (section 3) — they mean the same as the app's background/text,
+     no need to duplicate them here. */
   --hero: var(--palette-deep-green);
   --hero-foreground: var(--palette-white);
   --negative: var(--palette-terracotta);
   --negative-foreground: var(--palette-white);
-  /* Мята — ТОЛЬКО поверх --hero (глубокого зелёного), нигде больше. */
+  /* Mint — ONLY on top of --hero (deep green), nowhere else. */
   --positive-hero: var(--palette-mint);
-  /* Терракота-тинт — ТОЛЬКО поверх --hero, для InlineError на тёмном фоне. */
+  /* Terracotta tint — ONLY on top of --hero, for InlineError on a dark
+     background. */
   --negative-hero: var(--palette-terracotta-tint);
   --accent-hover: var(--palette-muted-green-hover);
   --ink: var(--palette-ink);
-  --ink-a60: rgba(34, 48, 44, 0.6);
+  /* --ink-a55 — a decorative step (lock icons on /styleguide), not part
+   * of the muted-text scale below — text contrast doesn't apply to it,
+   * see ADR 0011. */
   --ink-a55: rgba(34, 48, 44, 0.55);
-  --ink-a50: rgba(34, 48, 44, 0.5);
-  --ink-a45: rgba(34, 48, 44, 0.45);
-  --ink-a40: rgba(34, 48, 44, 0.4);
+  /* Muted text — two steps (not three, not five): the prototype's
+   * original 0.5/0.45/0.4 failed WCAG AA on --background (2.90:1 /
+   * 2.55:1 / 2.26:1); after raising them to pass AA (0.72/0.68/0.67),
+   * a45 and a40 became visually indistinguishable (0.01 difference) —
+   * collapsed into a single token. Full history and reasoning — ADR 0011. */
+  --ink-muted: rgba(34, 48, 44, 0.72);
+  --ink-faint: rgba(34, 48, 44, 0.67);
   --ink-a09: rgba(34, 48, 44, 0.09);
   --ink-a07: rgba(34, 48, 44, 0.07);
   --ink-a05: rgba(34, 48, 44, 0.05);
 
-  /* Системный шрифт — задаётся в root-layout.tsx через CSS-переменные
-     --font-sans / --font-mono (Geist убран, см. ADR 0011). */
+  /* System font — set in root-layout.tsx via the CSS variables
+     --font-sans / --font-mono (Geist removed, see ADR 0011). */
   --font-sans:
     -apple-system, system-ui, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif;
@@ -237,21 +237,21 @@
     ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas,
     monospace;
 
-  /* ---- 3) Токены shadcn/ui — переписаны под палитру проекта ---- */
+  /* ---- 3) shadcn/ui tokens — overridden with the project's palette ---- */
   --background: var(--palette-warm-gray);
   --foreground: var(--palette-ink);
   --card: var(--palette-white);
   --card-foreground: var(--palette-ink);
   --popover: var(--palette-white);
   --popover-foreground: var(--palette-ink);
-  /* primary = «Приглушённый зелёный» — действия, «+», прогресс. */
+  /* primary = "Muted green" — actions, "+", progress. */
   --primary: var(--palette-muted-green);
   --primary-foreground: var(--palette-white);
-  /* secondary/muted = «Тёплый серый» — фон экранов, вдавленные поля, чипы. */
+  /* secondary/muted = "Warm grey" — screen backgrounds, inset fields, chips. */
   --secondary: var(--palette-warm-gray);
   --secondary-foreground: var(--palette-ink);
   --muted: var(--palette-warm-gray);
-  --muted-foreground: var(--ink-a50);
+  --muted-foreground: var(--ink-muted);
   --accent: var(--palette-warm-gray);
   --accent-foreground: var(--palette-ink);
   --destructive: var(--palette-terracotta);
@@ -262,7 +262,7 @@
   --chart-2: var(--palette-deep-green);
   --chart-3: var(--palette-terracotta);
   --chart-4: var(--palette-mint);
-  --chart-5: var(--ink-a50);
+  --chart-5: var(--ink-muted);
   --radius: var(--radius-12);
   --sidebar: var(--palette-white);
   --sidebar-foreground: var(--palette-ink);
@@ -275,14 +275,14 @@
 }
 
 /*
- * Тёмная тема не поддерживается — продукт сознательно light-only (решение
- * пользователя, см. docs/decisions/0011-design-tokens.md). Класс оставлен
- * пустым (а не удалён), чтобы:
- *  - `@custom-variant dark` и `dark:`-утилиты в коде продолжали резолвиться
- *    без ошибок сборки, если где-то случайно применены;
- *  - при будущем решении добавить тёмную тему было достаточно заполнить
- *    этот блок переопределениями токенов из :root выше, не меняя структуру
- *    файла и не переписывая семантические токены в разметке.
+ * Dark theme isn't supported — the product is deliberately light-only
+ * (user's decision, see docs/decisions/0011-design-tokens.md). The class
+ * is left empty (rather than removed) so that:
+ *  - `@custom-variant dark` and `dark:` utilities in the code keep
+ *    resolving without build errors if applied anywhere by accident;
+ *  - if a dark theme is decided on later, it's enough to fill this block
+ *    with overrides for the tokens from :root above, without changing
+ *    the file's structure or rewriting the semantic tokens in markup.
  */
 .dark {
 }
@@ -299,12 +299,105 @@
   }
 }
 
+/*
+ * Shell gate transition — the "unfocus" effect (ADR 0019). Ownership
+ * moved from CSS to React (LaunchGate, web/src/features/launch-gate/ui/launch-gate.tsx):
+ * the loading overlay and the app content are mounted/unmounted by React
+ * state (`phase`), not toggled by a `data-shell` attribute switch. This
+ * block only supplies the animated look while both are briefly mounted
+ * together during the crossfade — LaunchGate removes the overlay from the
+ * tree the instant its exit transition actually finishes (`transitionend`,
+ * not a duplicated timer), which is what guarantees it can never linger as
+ * an invisible layer over the app (the real-iPhone bug that prompted this
+ * rewrite — see ADR 0019, "Обновление: state вместо CSS-оверлея").
+ *
+ * Both animations share one duration — the --shell-transition-duration
+ * variable right below. To change the effect's duration, change only it.
+ *
+ * .shell-loading fades into transparency and blur at once (opacity 1→0,
+ * filter blur(0)→blur(9px)) via `transition`, not `@keyframes`: unlike the
+ * old design, LaunchGate only starts this transition from a React effect,
+ * which always runs strictly after the browser has already painted the
+ * element's starting state at least once — there's a genuine "before"
+ * value for `transition` to interpolate from, so the ADR 0019 concern
+ * that motivated `@keyframes` there (data-shell="ready" landing before
+ * the first paint, via a pre-hydration inline <script>) doesn't apply
+ * here; there's no pre-hydration script left.
+ *
+ * .shell-content-enter (the app content, entering to meet the overlay
+ * fading out) still uses `@keyframes` — it only exists in the DOM from
+ * the moment LaunchGate mounts it, already in its "entering" phase, so a
+ * `transition` would never see a prior value to animate from;
+ * `@keyframes` always plays regardless. Only continuous properties
+ * (opacity/filter) are animated here — no discrete property (visibility/
+ * display) lives inside these keyframes, sidestepping the "only one
+ * keyframe endpoint set" trap documented in ADR 0019 for the old design.
+ *
+ * Deliberately OUTSIDE @layer — same Tailwind v4 cascade order as before
+ * (unlayered rules sit above the utilities layer, see ADR 0019's "@layer
+ * и специфичность" pitfall), in case competing utility classes ever land
+ * on these elements.
+ */
+:root {
+  --shell-transition-duration: 3000ms;
+  /* Both variables live on :root, not on .shell-loading: .shell-content-
+     enter isn't its descendant, and an invalid var() inside the
+     `animation`/`transition` shorthand silently kills the whole thing
+     (ADR 0019). */
+  --shell-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+.shell-loading {
+  --shell-loading-exit-blur: 9px;
+  opacity: 1;
+  filter: blur(0);
+  transition:
+    opacity var(--shell-transition-duration) var(--shell-transition-easing),
+    filter var(--shell-transition-duration) var(--shell-transition-easing);
+}
+.shell-loading-exit {
+  opacity: 0;
+  filter: blur(var(--shell-loading-exit-blur));
+  /* Not animated — applied the instant the exit starts, not at the end of
+     the transition. This is the pointer-events fix: while the overlay is
+     still mounted and visually fading out, it must not intercept a tap
+     meant for the content emerging underneath it. */
+  pointer-events: none;
+}
+@keyframes shell-content-enter {
+  from {
+    opacity: 0;
+    filter: blur(7px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+.shell-content-enter {
+  animation: shell-content-enter var(--shell-transition-duration) var(--shell-transition-easing) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Defence in depth — LaunchGate's own effect already checks
+     prefers-reduced-motion and skips the "exiting" phase entirely
+     (straight from "loading" to "ready", no transition to wait for), so
+     these rules are not normally exercised. They stay as a CSS-only
+     fallback in case that check is ever bypassed (e.g. the media query
+     changes mid-transition). */
+  .shell-loading,
+  .shell-loading-exit {
+    transition: none;
+  }
+  .shell-content-enter {
+    animation: none;
+  }
+}
+
 @layer components {
   /*
-   * Единый механизм нажатия (scale 0.93–0.98 в каталоге компонентов —
-   * Button, ScreenHeader, ListRow). Величина задаётся через --press-scale
-   * у элемента (`className="pressable [--press-scale:0.98]"`), а не
-   * копированием transition/active в каждом компоненте.
+   * A single press mechanism (scale 0.93–0.98 in the component catalogue
+   * — Button, ScreenHeader, ListRow). The value is set via --press-scale
+   * on the element (`className="pressable [--press-scale:0.98]"`) rather
+   * than copying transition/active into every component.
    */
   .pressable {
     transition: transform 0.15s ease;

@@ -1,8 +1,8 @@
-import { cn } from "cn";
+import { cn } from "@/shared/lib/cn";
 
 import { AppMarkIcon } from "@/shared/ui/icons";
 
-// Радиус растёт вместе с размером (каталог компонентов): 14 / 16 / 18 / 24.
+// Radius grows with size (component catalogue): 14 / 16 / 18 / 24.
 const SIZE = {
   44: { box: "size-11", radius: "rounded-mark-sm", icon: 24 },
   52: { box: "size-13", radius: "rounded-mark-md", icon: 30 },
@@ -11,9 +11,9 @@ const SIZE = {
 } as const;
 
 const TONE = {
-  // Светлый фон — плашка глубокого зелёного.
+  // Light background — deep green tile.
   solid: "bg-hero",
-  // Зелёный фон — белая плашка с прозрачностью 0.12.
+  // Green background — white tile at 0.12 opacity.
   translucent: "bg-white/12",
 } as const;
 
@@ -21,9 +21,9 @@ type AppMarkProps = {
   size?: keyof typeof SIZE;
   tone?: keyof typeof TONE;
   elevated?: boolean;
-  // Знак почти всегда стоит рядом с видимым текстом (заголовком экрана) —
-  // по умолчанию декоративный. Передать label, когда AppMark — единственный
-  // логотип без соседнего текста (например, будущий favicon-подобный кейс).
+  // The mark almost always sits next to visible text (a screen title) —
+  // decorative by default. Pass label when AppMark is the sole
+  // logo with no adjacent text (e.g. a future favicon-like case).
   label?: string;
   className?: string;
 };

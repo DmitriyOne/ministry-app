@@ -1,15 +1,15 @@
 "use client";
 
-import { cn } from "cn";
+import { cn } from "@/shared/lib/cn";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/shared/ui/button";
 import { Eyebrow } from "@/shared/ui/eyebrow";
 import { ChevronLeftIcon } from "@/shared/ui/icons";
 
-// "use client" только из-за useTranslations (для default backLabel) — до
-// словаря компонент был серверным (см. ADR 0013), обработчик нажатия и
-// сейчас живёт внутри Button (react-aria, onPress, не onClick).
+// "use client" is only for useTranslations (default backLabel) — before
+// the dictionary the component was server-only (see ADR 0013); the press
+// handler still lives inside Button (react-aria, onPress, not onClick).
 type ScreenHeaderProps = {
   eyebrow: string;
   onBack?: () => void;

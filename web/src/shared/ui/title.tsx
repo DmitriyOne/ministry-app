@@ -1,10 +1,9 @@
 import type { ComponentPropsWithoutRef, ElementType } from "react";
-import { cn } from "cn";
+import { cn } from "@/shared/lib/cn";
 
-// Каталог компонентов описывал 4 размера (26/30/32/36) под четыре
-// экрана-состояния — сведены к двум по решению из ADR 0012: 32 для
-// мобильных состояний (404/500/Coming soon/Вход), 30 — только для
-// Desktop block.
+// The component catalogue described 4 sizes (26/30/32/36) for four
+// state screens — reduced to two per ADR 0012: 32 for mobile
+// states (404/500/Coming soon/Login), 30 for Desktop block only.
 const SIZE = {
   default: "text-title font-640 tracking-screen-title",
   compact: "text-day-title font-620 tracking-day-title",
