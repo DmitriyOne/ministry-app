@@ -1,20 +1,20 @@
-# Зачем эта пустая папка
+# Why this empty folder exists
 
-Next.js App Router резервирует директорию `pages` (в корне пакета или в
-`src/`) под legacy Pages Router. Если рядом с `app/` (наш App Router) нет
-вообще никакой директории `pages`, Next при любом расположении обнаруживает
-`web/src/pages/**` — FSD-слой "pages" в этом проекте — и либо падает с
-ошибкой `pages and app directories should be under the same folder`, либо
-начинает трактовать файлы внутри `src/pages` как страницы legacy Pages
-Router (требуя от них `default export` и т.п.).
+Next.js App Router reserves a `pages` directory (at the package root or
+under `src/`) for the legacy Pages Router. If there's no `pages` directory
+at all next to `app/` (our App Router), Next.js discovers `web/src/pages/**`
+— the FSD "pages" layer in this project — at whatever location it lives,
+and either fails with `pages and app directories should be under the same
+folder`, or starts treating files inside `src/pages` as legacy Pages
+Router pages (requiring a `default export` from them, and so on).
 
-Если же пустая (кроме этого README) `web/pages/` присутствует рядом с
-`web/app/` — Next.js считает, что Pages Router уже "определён" здесь (и он
-пуст), и перестаёт сканировать `src/pages` вообще. `src/pages` в таком
-случае остаётся свободным именем для FSD-слоя `pages`.
+If, instead, an empty `web/pages/` (aside from this README) sits next to
+`web/app/`, Next.js considers the Pages Router already "defined" here (and
+empty), and stops scanning `src/pages` altogether. `src/pages` is then
+free to be used as the FSD `pages` layer's name.
 
-Подробности и рассмотренные альтернативы — `docs/decisions/0004-fsd-pages-layer-named-pages.md`.
+Details and alternatives considered — `docs/decisions/0004-fsd-pages-layer-named-pages.md`.
 
-**Не добавляйте сюда файлы.** Эта папка должна оставаться пустой (кроме
-этого README) — как только в ней появится `page.tsx`/`layout.tsx` и т.п.,
-она станет настоящим Pages Router.
+**Don't add files here.** This folder must stay empty (aside from this
+README) — as soon as a `page.tsx`/`layout.tsx` etc. shows up in it, it
+becomes a real Pages Router.
