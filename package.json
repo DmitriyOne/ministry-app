@@ -20,6 +20,7 @@
     "functions:deploy": "pnpm --filter backend run functions:deploy",
     "lint": "pnpm --filter web run lint",
     "typecheck": "pnpm --filter web run typecheck",
+    "test": "pnpm --filter web run test",
     "build": "dotenv -e envs/web.local.env -- pnpm --filter web run build"
   },
   "devDependencies": {
