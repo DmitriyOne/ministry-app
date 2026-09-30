@@ -1,0 +1,111 @@
+{
+  "metadata": {
+    "title": "MinistryApp",
+    "description": "Track ministry hours for pioneers and publishers"
+  },
+  "common": {
+    "back": "Back",
+    "loading": "Loading",
+    "noscriptRequired": "MinistryApp needs JavaScript enabled to run."
+  },
+  "a11y": {
+    "sheet": {
+      "close": "Close"
+    },
+    "honeypotLabel": "Leave this field blank"
+  },
+  "screens": {
+    "day": {
+      "title": "Day",
+      "supabaseStatusLabel": "Supabase:"
+    },
+    "access": {
+      "desktop": {
+        "title": "Phones only, for now",
+        "text": "Open MinistryApp on your phone. All your records are already there."
+      },
+      "android": {
+        "title": "iOS only, for now",
+        "text": "We're working on an Android version. MinistryApp only opens on iPhone for now."
+      },
+      "iosBrowser": {
+        "title": "Safari only, for now",
+        "text": "Open this page in Safari on your iPhone.",
+        "copyLinkButton": "Copy link",
+        "linkCopied": "Link copied",
+        "copyLinkError": "Couldn't copy the link automatically. Select the address below and copy it manually.",
+        "addressLabel": "Address"
+      }
+    },
+    "notFound": {
+      "code": "404",
+      "title": "Page not found",
+      "text": "This page doesn't exist or has moved. Check the link or go back to MinistryApp.",
+      "homeButton": "Go to home screen"
+    },
+    "serverError": {
+      "code": "500",
+      "title": "Server not responding",
+      "text": "We couldn't load your data. Check your connection and try again.",
+      "retryButton": "Try again",
+      "homeButton": "Go to home screen",
+      "errorCode": "Error code: {code} · {date}"
+    },
+    "installApp": {
+      "eyebrow": "MinistryApp",
+      "title": "Install the app on your phone",
+      "text": "An icon will appear on your home screen. Your report will open in one tap, with no browser address bar.",
+      "installButton": "How to install",
+      "inAppBrowserHint": "Opened this from Telegram, WhatsApp or another app? Open it in Safari first — installing won’t work from inside the app.",
+      "sheet": {
+        "title": "Install on iPhone",
+        "prevLabel": "Back",
+        "nextLabel": "Next",
+        "okButton": "OK",
+        "stepLabel": "Step {step} of {total}",
+        "steps": {
+          "step1": {
+            "text": "Tap the ‘…’ button to the right of the Safari address bar.",
+            "imageAlt": "Safari address bar with the ‘…’ button on the right, circled in red"
+          },
+          "step2": {
+            "text": "In the menu that opens, tap Share.",
+            "imageAlt": "Safari menu with the Share option highlighted by a red box and arrow"
+          },
+          "step3": {
+            "text": "Scroll down and tap Add to Home Screen.",
+            "imageAlt": "Share menu scrolled down, with Add to Home Screen circled in red"
+          },
+          "step4": {
+            "text": "Check the name and address, then tap Add in the top-right corner.",
+            "imageAlt": "Add to Home Screen dialog showing the name MinistryApp, the address jw.fenko.dev, and the Add button"
+          },
+          "step5": {
+            "text": "Done. The icon is now on your home screen. Open the app from there.",
+            "imageAlt": "iPhone home screen with the MinistryApp icon circled in red"
+          }
+        }
+      }
+    },
+    "comingSoon": {
+      "eyebrow": "Coming soon",
+      "title": "MinistryApp",
+      "text": "The app for tracking ministry hours is on its way. We'll let you know as soon as it's ready.",
+      "emailPlaceholder": "Your email",
+      "submitButton": "Join the waitlist",
+      "submitButtonPending": "Joining…",
+      "hint": "Leave your email to join the waitlist",
+      "successText": "Thanks! We'll email you as soon as it's ready.",
+      "emailRequired": "Enter your email",
+      "emailInvalid": "Enter a valid email address",
+      "submitError": "Couldn't join the waitlist. Please try again.",
+      "tooManyRequests": "Too many attempts. Please wait a few minutes and try again."
+    },
+    "globalError": {
+      "code": "500",
+      "title": "Server not responding",
+      "text": "Please refresh the page in a minute.",
+      "retryButton": "Try again"
+    }
+  }
+}
