@@ -1,8 +1,8 @@
 import type { ComponentPropsWithoutRef, ElementType } from "react";
-import { cn } from "cn";
+import { cn } from "@/shared/lib/cn";
 
 const TONE = {
-  ink: "text-ink-a50",
+  ink: "text-ink-muted",
   hero: "text-hero-foreground/60",
 } as const;
 

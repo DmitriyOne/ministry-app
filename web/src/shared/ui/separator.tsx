@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentProps } from "react";
-import { cn } from "cn";
+import { cn } from "@/shared/lib/cn";
 import { Separator as SeparatorPrimitive } from "react-aria-components";
 
 type SeparatorProps = ComponentProps<typeof SeparatorPrimitive>;

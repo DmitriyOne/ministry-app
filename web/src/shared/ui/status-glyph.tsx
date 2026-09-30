@@ -1,7 +1,7 @@
-import { cn } from "cn";
+import { cn } from "@/shared/lib/cn";
 
 const TONE = {
-  neutral: "bg-ink/6 text-ink-a50",
+  neutral: "bg-ink/6 text-ink-muted",
   alert: "bg-negative/10 text-negative",
 } as const;
 

@@ -5,9 +5,10 @@ type ProvidersProps = {
   children: ReactNode;
 };
 
-// Без i18n-роутинга (ADR 0014) локаль и messages next-intl берёт из
-// request.ts сам — NextIntlClientProvider без пропов подхватывает их же,
-// делая доступными клиентским компонентам (useTranslations).
+// With no i18n routing (ADR 0014), next-intl reads locale and messages
+// from request.ts on its own — NextIntlClientProvider with no props
+// picks up the same values, making them available to client components
+// (useTranslations).
 export const Providers = ({ children }: ProvidersProps) => (
   <NextIntlClientProvider>{children}</NextIntlClientProvider>
 );

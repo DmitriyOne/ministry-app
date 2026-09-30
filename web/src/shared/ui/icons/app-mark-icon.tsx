@@ -1,7 +1,8 @@
 import type { IconProps } from "./icon-props";
 
-// Боковые фигуры — currentColor с fillOpacity 0.5 (в прототипе это тот же
-// белый на 50%, не отдельный цвет), чтобы оттенок наследовался целиком.
+// The side shapes use currentColor with fillOpacity 0.5 (in the prototype
+// this is the same white at 50%, not a separate colour), so the shade is
+// inherited entirely.
 export const AppMarkIcon = ({ size = 24, className, ...props }: IconProps) => {
   const height = (size / 32) * 26;
 

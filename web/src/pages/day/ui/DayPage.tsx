@@ -1,6 +1,9 @@
 import { getTranslations } from "next-intl/server";
 
 import { env } from "@/shared/config";
+import { BodyText } from "@/shared/ui/body-text";
+import { CenteredState } from "@/shared/ui/centered-state";
+import { Title } from "@/shared/ui/title";
 
 // Scaffold-stage signal that the two projects are wired together, not business logic.
 const getSupabaseStatus = async (): Promise<"ok" | "unreachable"> => {
@@ -39,19 +42,23 @@ export const DayPage = async () => {
   ]);
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
-      <h1 className="text-2xl font-semibold">{t("title")}</h1>
-      <p className="text-sm text-muted-foreground">
+    <CenteredState>
+      <Title size="compact">{t("title")}</Title>
+      <BodyText>
         {t("supabaseStatusLabel")}{" "}
+        {/* No dedicated "connected/disconnected" pair in the palette
+            (ADR 0011) — --positive-hero (mint) is restricted to the
+            --hero/deep-green background only, so it can't be reused here.
+            --primary (muted green, already the app's general "go"/action
+            colour) and --negative (terracotta, the general error colour)
+            are the closest tokens that are valid on --background. */}
         <span
           data-testid="supabase-status"
-          className={
-            supabaseStatus === "ok" ? "text-green-600" : "text-red-600"
-          }
+          className={supabaseStatus === "ok" ? "font-600 text-primary" : "font-600 text-negative"}
         >
           {supabaseStatus}
         </span>
-      </p>
-    </main>
+      </BodyText>
+    </CenteredState>
   );
 };

@@ -7,14 +7,18 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
-    // Ни одной строки — ни видимого JSX-текста, ни aria-label/title/alt/
-    // placeholder — мимо словаря (ADR 0014). Область действия — то, что
-    // рендерится в разметке: mode "jsx-only" не трогает обычные строковые
-    // литералы вне JSX (enum-значения вроде variant="deep", технические
-    // константы, cn()-классы, zod-сообщения — им линтер эту проверку не
-    // включает, они проверяются вручную/код-ревью, иначе пришлось бы
-    // заводить исключения на каждый технический литерал в кодовой базе).
-    files: ["src/**/*.tsx"],
+    // Not a single string — neither visible JSX text nor aria-label/title/
+    // alt/placeholder — bypasses the dictionary (ADR 0014). Scope is
+    // anything rendered in markup: mode "jsx-only" leaves ordinary string
+    // literals outside JSX alone (enum values like variant="deep",
+    // technical constants, cn() classes, zod messages — the linter
+    // doesn't check those, they're caught manually/in code review,
+    // otherwise every technical literal in the codebase would need its
+    // own exception). app/**/*.tsx — Next.js's thin routes — are in scope
+    // too: ADR 0018 found literals in app/global-error.tsx (the one file
+    // that used to be a deliberate exception to the rule, before it
+    // switched to importing the dictionary directly; see CLAUDE.md).
+    files: ["src/**/*.tsx", "app/**/*.tsx"],
     plugins: { i18next },
     rules: {
       "i18next/no-literal-string": [
@@ -25,8 +29,9 @@ const eslintConfig = defineConfig([
             include: ["aria-label", "aria-labelledby", "alt", "title", "placeholder"],
           },
           // next-intl's t.rich embeds markup (t.rich("key", { code: ... }))
-          // — the key argument is a dictionary lookup, not literal UI text,
-          // same as a plain t("key") call (already excluded by default).
+          // — the key argument here is also a dictionary reference, not a
+          // UI text literal, same as a plain t("key") call (already
+          // excluded by default).
           callees: { exclude: ["i18n(ext)?", "t", "t\\.rich"] },
         },
       ],
