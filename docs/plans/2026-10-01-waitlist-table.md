@@ -269,11 +269,21 @@ $$;
 comment on function public.join_waitlist(text) is
   'Adds an email to the waitlist (or recognises it) and returns its place in the list. The only access path to waitlist_signups (ADR 0033).';
 
--- Postgres grants execute on a new function to role `public` — that is,
--- to everyone — so revoking first is what makes the grant below mean
--- what it says. `authenticated` is deliberately not granted: nothing
--- signed in has any reason to join a pre-launch waitlist.
-revoke all on function public.join_waitlist(text) from public;
+-- Revoking by role name, not just from `public`. Two separate things
+-- hand out execute on a new function here, and only one of them is the
+-- familiar implicit PUBLIC grant. Supabase also sets default privileges
+-- on schema `public` for functions (`pg_default_acl`, objtype `f`, from
+-- both the `postgres` and `supabase_admin` roles), so the function is
+-- created with EXPLICIT execute grants for anon, authenticated and
+-- service_role — and an explicit grant is not removed by revoking from
+-- PUBLIC. Exactly the same trap as the table grants above, and it has to
+-- be answered the same way: name the roles.
+--
+-- `authenticated` is deliberately left without it: nothing signed in has
+-- any reason to join a pre-launch waitlist. `service_role` keeps it, and
+-- revoking there would be theatre — that key bypasses RLS entirely and
+-- is not used in `web` at all (ADR 0006).
+revoke all on function public.join_waitlist(text) from public, anon, authenticated;
 grant execute on function public.join_waitlist(text) to anon;
 ```
 
@@ -285,7 +295,7 @@ pnpm db:reset && pnpm db:test
 
 (`db:reset` without `--linked` — the local database only. Never against the remote project.)
 
-Expected: PASS, 12 of 12. If `results_eq` complains the first signup is at a position other than 1, the local database was not reset and already holds rows — re-run `pnpm db:reset`.
+Expected: PASS, 12 of 12. If `results_eq` complains the first signup is at a position other than 1, the local database was not reset and already holds rows — re-run `pnpm db:reset`. If test 8 fails (`authenticated` still has execute), the revoke above was written as `from public` alone — see the comment in it for why that is not enough on Supabase.
 
 - [ ] **Step 6: Commit**
 

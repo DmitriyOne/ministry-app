@@ -163,9 +163,36 @@ grant execute on function public.join_waitlist(text) to anon;
    зарезервировано (это встроенная функция), с таким именем поле
    приходилось бы квотировать в каждом обращении.
 
-`revoke ... from public` перед `grant` — не формальность: Postgres по
-умолчанию выдаёт `execute` роли `public`, то есть всем. Без `revoke`
-«выдали только `anon`» было бы иллюзией.
+`revoke` перед `grant` — не формальность, и снимать права нужно
+**поимённо**, а не только с роли `public`. Execute на новую функцию здесь
+выдают два независимых механизма:
+
+1. неявный грант роли `public`, который Postgres даёт любой новой функции;
+2. **default privileges Supabase на схему `public`** (`pg_default_acl`,
+   objtype `f`, от владельцев `postgres` и `supabase_admin`) — они дают
+   `anon`, `authenticated` и `service_role` **явные**, персональные гранты.
+
+Явный грант не снимается отзывом у `public`. Проверено на локальной базе:
+после `revoke all ... from public` функция имела
+`{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}`,
+и `has_function_privilege('authenticated', …)` возвращал `true`. Это та же
+ловушка, что с grants на таблицу выше, и отвечать на неё нужно так же —
+перечислить роли:
+
+```sql
+revoke all on function public.join_waitlist(text) from public, anon, authenticated;
+grant execute on function public.join_waitlist(text) to anon;
+```
+
+`service_role` оставлен сознательно: отзыв у него был бы декорацией —
+этот ключ обходит RLS целиком и в `web` не используется вообще (ADR 0006).
+
+Ошибка была поймана не на обзоре, а pgTAP-тестом
+(`has_function_privilege('authenticated', …)` должен быть `false`) —
+первая версия миграции прошла одиннадцать проверок из двенадцати. Это и
+есть причина, по которой модель доступа проверяется тестами, а не
+вычитывается глазами: «`revoke` написан» и «права действительно сняты» —
+разные утверждения.
 
 ### Номер в списке — счётчик, а не `id`
 
