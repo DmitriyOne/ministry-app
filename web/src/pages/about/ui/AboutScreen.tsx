@@ -29,15 +29,26 @@ export const AboutScreen = async () => {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background text-ink">
-      <ScreenBackHeader eyebrow={t("eyebrow")} />
+      {/* The DOCUMENT is the scroll container here (no overflow-y-auto
+          on <main> below), so `sticky` on this header is real: it pins
+          to the top of the viewport as the page scrolls underneath it,
+          not a no-op. (ADR 0031 originally removed `sticky` from this
+          same header for the opposite — inner-scroll — layout; its
+          amendment explains why it's back.) `bg-background` keeps
+          content from showing through as it slides under the header;
+          the padding-top override below adds the iOS safe-area inset
+          (notch/status bar, `viewport-fit=cover` — ADR 0020) on top of
+          the header's own `pt-6`, so the back button never sits under
+          the status bar.
+          Same classes as the Privacy screen — kept identical rather
+          than factored into ScreenBackHeader itself, because not every
+          future caller of that component will want a sticky header. */}
+      <ScreenBackHeader
+        eyebrow={t("eyebrow")}
+        className="sticky top-0 z-10 bg-background pt-[calc(--spacing(6)+env(safe-area-inset-top))]"
+      />
 
-      {/* No `sticky` on the header above and none needed: this <main>,
-          not the document, is the scroll container (flex-1 +
-          overflow-y-auto), so the header sits outside its scroll flow
-          and is already permanently visible without `position: sticky`
-          doing anything (same structure as the Privacy screen, ADR
-          0031). */}
-      <main className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pt-1.5 pb-10">
+      <main className="flex flex-1 flex-col gap-4 px-5 pt-1.5 pb-10">
         <div className="flex flex-col gap-3.5 rounded-2xl bg-hero px-5.5 py-6">
           <AppMark size={52} tone="translucent" />
           <TextBlock
