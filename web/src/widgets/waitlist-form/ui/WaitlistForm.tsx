@@ -14,7 +14,8 @@ import { PillForm } from "@/shared/ui/pill-form";
 export const WaitlistForm = () => {
   const t = useTranslations("screens.comingSoon");
   const tA11y = useTranslations("a11y");
-  const { control, onSubmit, hasErrors, isPending, submitted, formError } = useJoinWaitlist();
+  const { control, onSubmit, hasErrors, isPending, submitted, formError, position, alreadyJoined } =
+    useJoinWaitlist();
 
   return (
     <Controller
@@ -26,6 +27,17 @@ export const WaitlistForm = () => {
           : formError
             ? [{ message: formError }]
             : undefined;
+
+        // Three cases, in the order they are decided: a number and the
+        // address was already there, a number and it is new, or no number
+        // at all (the honeypot branch returns a success without one —
+        // ADR 0026 — and a bot must see an ordinary success card).
+        const successText =
+          position === undefined
+            ? t("successText")
+            : alreadyJoined
+              ? t("alreadyJoinedText", { position })
+              : t("successTextNumbered", { position });
 
         return (
           <PillForm
@@ -40,7 +52,7 @@ export const WaitlistForm = () => {
             errors={errors}
             isSubmitDisabled={hasErrors || isPending}
             submitted={submitted}
-            successText={t("successText")}
+            successText={successText}
             onSubmit={(_value, honeypotValue) => onSubmit(honeypotValue)}
             honeypot={{ name: "company", label: tA11y("honeypotLabel") }}
           />

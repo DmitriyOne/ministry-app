@@ -63,6 +63,11 @@ export const useJoinWaitlist = () => {
     hasErrors: Object.keys(errors).length > 0,
     isPending,
     submitted: state.status === "success",
+    // Undefined when the server returned a success with no number — the
+    // honeypot branch does exactly that on purpose (ADR 0026), so the
+    // widget needs a wording that works without one.
+    position: state.status === "success" ? state.position : undefined,
+    alreadyJoined: state.status === "success" && state.alreadyJoined === true,
     formError: state.status === "error" ? state.formError : undefined,
   };
 };

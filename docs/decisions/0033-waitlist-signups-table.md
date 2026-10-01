@@ -222,8 +222,11 @@ grant execute on function public.join_waitlist(text) to anon;
   0027. Вместо него лог факта без значения, тем же способом, что уже
   принят для IP посетителя (ADR 0026: в лог идёт скоуп/факт, не
   значение).
-- Словарь: вместо одного `successText` два ключа с параметром
-  `{position}` — `successText` и `alreadyJoinedText`.
+- Словарь: три ключа вместо одного `successText` — `successTextNumbered` и
+  `alreadyJoinedText` с параметром `{position}`, и прежний `successText`
+  без номера. Третий ключ не рудимент: ветка honeypot намеренно
+  возвращает успех без номера (ADR 0026), и бот должен увидеть обычную
+  карточку успеха, а не сломанную.
 - `PillForm` (`shared/ui/pill-form.tsx`) получает проп `isPending`: поле
   становится `readOnly`, на `<form>` — `aria-busy`, в кнопку добавляется
   `Spinner` (`shared/ui/spinner.tsx`) рядом с уже существующей подменой

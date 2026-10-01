@@ -127,6 +127,8 @@
       "submitButtonPending": "Joining…",
       "hint": "Leave your email to join the waitlist",
       "successText": "Thanks! We'll email you as soon as it's ready.",
+      "successTextNumbered": "You're #{position} on the list. We'll email you as soon as it's ready.",
+      "alreadyJoinedText": "You're already #{position} on the list. We'll email you as soon as it's ready.",
       "emailRequired": "Enter your email",
       "emailInvalid": "Enter a valid email address",
       "emailTooLong": "That email address is too long",
