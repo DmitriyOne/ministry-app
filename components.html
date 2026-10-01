@@ -1,0 +1,728 @@
+<html style="color-scheme: light;"><div id="in-page-channel-node-id" data-channel-name="in_page_channel_pLCKoS"></div><head><style>
+    .sc-placeholder{background:color-mix(in srgb,currentColor 8%,transparent);
+      border:1px solid color-mix(in srgb,currentColor 50%,transparent);
+      border-radius:2px;box-sizing:border-box;overflow:hidden}
+    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+    html.sc-dc-streaming .sc-placeholder,
+    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
+      background:color-mix(in srgb,currentColor 5%,transparent);
+      border-color:transparent}
+    html.sc-dc-streaming .sc-placeholder::before,
+    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
+      position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
+      background-size:400% 100%;animation:sc-shine 1.4s ease infinite}
+    html.sc-dc-streaming .sc-placeholder:nth-child(n+9 of .sc-placeholder)::before,
+    html.sc-dc-streaming .sc-interp.sc-missing:nth-child(n+9 of .sc-interp.sc-missing)::before{animation:none;
+      background:color-mix(in srgb,currentColor 8%,transparent)}
+    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
+      color:color-mix(in srgb,currentColor 70%,transparent);word-break:break-word}
+    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
+      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;color:transparent;
+      user-select:none}
+    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
+      color:color-mix(in srgb,currentColor 50%,transparent);
+      background:color-mix(in srgb,currentColor 10%,transparent);border-radius:3px;
+      padding:0 3px}
+    .sc-host.sc-has-error{position:relative}
+    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
+      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
+      border-radius:4px;white-space:pre-wrap;pointer-events:none}
+    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
+       in sync until dc-runtime regains a build step. */
+    @media print {
+      @page { margin: 0.5cm; }
+      figure, table { break-inside: avoid; }
+      #dc-root, #dc-root > .sc-host { height: auto; }
+      *, *::before, *::after {
+        print-color-adjust: exact; -webkit-print-color-adjust: exact;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        animation-delay: -99s !important; animation-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+        animation-play-state: running !important; transition-duration: 0s !important;
+      }
+    }
+  </style>
+<style data-omelette-injected="">html,body{background:transparent}</style><script data-omelette-injected="">(()=>{{const n=new URLSearchParams(location.search).get("theme");if(n==="light"||n==="dark"){document.documentElement.dataset.theme=n}}{if(new URLSearchParams(location.search).get("_omthumb")==="1"){const n=(f)=>{const g=f.focus;if(!g)return;f.focus=function(h){g.call(this,{...h,preventScroll:true})}};n(HTMLElement.prototype);n(SVGElement.prototype);if(typeof MathMLElement!=="undefined"){n(MathMLElement.prototype)}const d=(f)=>{f.removeAttribute("autofocus");f.inert=true;if(!(f instanceof HTMLElement))f.removeAttribute("tabindex")};const p=(f)=>{if(f.hasAttribute("autofocus"))d(f);for(const g of f.querySelectorAll("[autofocus]")){d(g)}};p(document.documentElement);new MutationObserver((f)=>{for(const g of f){for(const h of g.addedNodes){if(h.nodeType===1)p(h)}}}).observe(document,{childList:true,subtree:true})}}{const n=()=>{try{if(document.querySelector('meta[name="color-scheme"]'))return;const d=getComputedStyle(document.documentElement).getPropertyValue("color-scheme").trim();if(d&&d!=="normal")return;const p=(y)=>{if(!y)return null;const m=getComputedStyle(y).backgroundColor.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)(?:[,\s/]+([\d.]+%?))?\s*\)$/);if(!m)return null;const w=m[4]==null?1:parseFloat(m[4])/(m[4].endsWith("%")?100:1);if(w<0.99)return null;return[+m[1],+m[2],+m[3]]};const f=p(document.body)||p(document.documentElement);if(!f)return;const g=(y)=>{const m=y/255;return m<=0.04045?m/12.92:((m+0.055)/1.055)**2.4};const h=0.2126*g(f[0])+0.7152*g(f[1])+0.0722*g(f[2]);document.documentElement.style.setProperty("color-scheme",h<0.4?"dark":"light")}catch{}};if(document.readyState==="complete")n();else window.addEventListener("load",n)}var I=["https://claude.ai","https://preview.claude.ai","https://339b3313-a0d1-4b81-9856-7ae3c54ef335.claudeusercontent.com"];var B=true;var K=false;var C=()=>{};if(K===true){try{const n=setTimeout.bind(window);const d=1e4;const p=15;const f=1e4;const g=120000;const h=200;const y=(o)=>{try{let r;if(typeof o==="string")r=o;else if(o instanceof URL)r=o.href;else if(typeof Request!=="undefined"&&o instanceof Request)r=o.url;else return null;if(!r)return null;const l=document.baseURI;const i=new URL(r,l);if(i.protocol!=="http:"&&i.protocol!=="https:")return null;if(i.origin!==new URL(l).origin)return null;return i.origin+i.pathname}catch{return null}};const m=new Map;const w=(o)=>{let r=m.get(o);if(!r){if(m.size>=h){const l=m.keys().next().value;if(l!==undefined)m.delete(l)}r={fails:[],until:0,cooldown:f,hard:false};m.set(o,r)}return r};const R=(o)=>{const r=m.get(o);return r!==undefined&&r.until>Date.now()};const O=(o,r)=>{const l=Date.now();const i=w(o);if(r)i.hard=true;if(i.until>l)return;i.fails.push(l);while(i.fails.length>0&&i.fails[0]<=l-d)i.fails.shift();if(i.fails.length>=p){i.until=l+i.cooldown;if(i.hard)i.cooldown=Math.min(i.cooldown*2,g);i.fails.length=0;try{n(()=>{try{S(true)}catch{}},i.until-l+100)}catch{}console.warn("[omelette] asset circuit breaker: pausing requests to "+o+" for "+Math.round((i.until-l)/1000)+"s after "+p+" failures in "+d/1000+"s")}};const e=(o)=>{m.delete(o)};const t=100;const a=new WeakMap;const u=new Set;let s=null;const S=(o)=>{for(const r of Array.from(u)){try{const l=a.get(r);if(l===undefined){u.delete(r);continue}if(o){const i=y(l);if(i!==null&&R(i))continue}a.delete(r);u.delete(r);if(s!==null)s.call(r,l)}catch{}}};C=()=>{try{m.clear();S(false)}catch{}};document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")C()});const _=window.fetch;if(typeof _==="function"){const o=function(...r){let l=null;try{l=y(r[0])}catch{}if(l!==null&&R(l)){let c;try{if(r[1]&&r[1].signal!==undefined){c=r[1].signal||undefined}else if(typeof Request!=="undefined"&&r[0]instanceof Request){c=r[0].signal||undefined}}catch{c=undefined}return new Promise((k,b)=>{const E=()=>{try{return c.reason!==undefined?c.reason:new DOMException("The operation was aborted.","AbortError")}catch{return new DOMException("The operation was aborted.","AbortError")}};try{if(c&&c.aborted){b(E());return}}catch{}let T=false;const j=()=>{if(T)return;T=true;b(E())};try{if(c)c.addEventListener("abort",j,{once:true})}catch{}n(()=>{if(T)return;T=true;try{if(c)c.removeEventListener("abort",j)}catch{}let L;try{L=new Response(null,{status:429,statusText:"Too Many Requests",headers:{"Retry-After":"10"}})}catch{L={ok:false,status:429}}k(L)},250)})}const i=_.apply(window,r);if(l!==null){const c=l;i.then((k)=>{try{if(k.ok)e(c);else if(k.status===401||k.status===403||k.status===404||k.status===429){O(c,k.status!==404)}}catch{}},()=>{})}return i};window.fetch=o}const v=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,"src");if(v!==undefined&&v.set!==undefined&&v.get!==undefined){const o=v.set;s=o;Object.defineProperty(HTMLImageElement.prototype,"src",{configurable:true,enumerable:v.enumerable,get:v.get,set(r){const l=`${r}`;try{const i=y(l);if(i!==null&&R(i)){a.set(this,l);if(u.size<t)u.add(this);return}}catch{}try{a.delete(this);u.delete(this)}catch{}o.call(this,l)}})}try{const o=HTMLImageElement.prototype.setAttribute;HTMLImageElement.prototype.setAttribute=function(r,l){if(arguments.length<2){o.apply(this,arguments);return}if(typeof r==="string"&&r.toLowerCase()==="src"){const i=`${l}`;try{const c=y(i);if(c!==null&&R(c)){a.set(this,i);if(u.size<t)u.add(this);return}a.delete(this);u.delete(this)}catch{}o.call(this,r,i);return}o.call(this,r,l)}}catch{}window.addEventListener("error",(o)=>{try{const r=o.target;if(r instanceof HTMLImageElement){const l=y(r.currentSrc||r.src||"");if(l!==null)O(l,true)}}catch{}},true);window.addEventListener("load",(o)=>{try{const r=o.target;if(r instanceof HTMLImageElement){const l=y(r.currentSrc||r.src||"");if(l!==null)e(l);const i=a.get(r);if(i!==undefined){let c=false;try{c=new URL(i,document.baseURI).href===new URL(r.currentSrc||r.src||"",document.baseURI).href}catch{c=false}if(c){a.delete(r);u.delete(r)}}}}catch{}},true)}catch{}}var J=30000;var G=3000;document.addEventListener("DOMContentLoaded",()=>{const n=window.Babel;const d="om-src-id";if(n&&n.registerPlugin&&!(n.availablePlugins&&n.availablePlugins[d])){n.registerPlugin(d,({types:h})=>({visitor:{JSXOpeningElement(y,m){const w=y.node;if(w.name&&w.name.type==="JSXMemberExpression")return;for(let t=0;t<w.attributes.length;t++){const a=w.attributes[t];if(a.type==="JSXAttribute"&&a.name&&a.name.name==="data-om-id")return}const R=m.file&&m.file.opts&&m.file.opts.filename||"?";const O=w.loc&&w.loc.start;const e=`jsx:${R}:${w.start??0}:${O?O.line:0}:${O?O.column+1:0}`;w.attributes.push(h.jsxAttribute(h.jsxIdentifier("data-om-id"),h.stringLiteral(e)))}}}))}const p="om-text-extract";let f=false;if(B&&n&&n.registerPlugin&&!(n.availablePlugins&&n.availablePlugins[p])){const h=window.React;if(h&&h.useSyncExternalStore&&h.createElement){f=true;const y={};const m=new Set;let w=0;window.__omTextO=y;window.__omTextSet=(e)=>{for(const t in e){const a=e[t];if(a==null)delete y[t];else y[t]=a}w++;m.forEach((t)=>t())};const R=(e)=>{m.add(e);return()=>m.delete(e)};const O=()=>w;window.__OmT=function e(t){h.useSyncExternalStore(R,O,O);return h.createElement("span",{"data-om-text":t.i,className:"__om-t"},t.i in y?y[t.i]:t.children)};n.registerPlugin(p,({types:e})=>{const t={style:1,script:1,noscript:1,textarea:1,title:1,option:1,text:1,tspan:1,textPath:1};const a={placeholder:1,alt:1,title:1,label:1,"aria-label":1,"aria-description":1,"aria-placeholder":1};const u=(o,r)=>e.logicalExpression("??",e.memberExpression(e.logicalExpression("||",e.memberExpression(e.identifier("window"),e.identifier("__omTextO")),e.objectExpression([])),e.stringLiteral(o),true),r);const s=(o)=>o.file&&o.file.opts&&o.file.opts.filename||"?";const S=(o)=>o.file&&o.file.code||"";const _=(o,r)=>{const l=(c)=>c&&c.start!=null&&c.end!=null&&(c.type==="StringLiteral"||c.type==="TemplateLiteral"&&c.expressions.length===0)?[c.start,c.end]:null;const i=l(r);if(i)return i;if(r&&r.type==="Identifier"){const c=o.scope.getBinding(r.name);if(c&&c.constant&&c.path.node.type==="VariableDeclarator"){return l(c.path.node.init)}}return null};const v=(o,r,l)=>{const i=o.node;let c=false;const k=(E,T)=>{c=true;return e.jsxElement(e.jsxOpeningElement(e.jsxIdentifier("__OmT"),[e.jsxAttribute(e.jsxIdentifier("i"),e.stringLiteral(E))],false),e.jsxClosingElement(e.jsxIdentifier("__OmT")),[T],false)};const b=i.children.map((E)=>{if(E.type==="JSXText"){if(E.start==null||E.end==null)return E;const T=l.slice(E.start,E.end);const j=T.length-T.trimStart().length;const L=T.length-T.trimEnd().length;if(j+L>=T.length)return E;return k(`txt:${r}:${E.start+j}:${E.end-L}`,E)}if(E.type==="JSXExpressionContainer"){const T=_(o,E.expression);if(T)return k(`str:${r}:${T[0]}:${T[1]}`,E)}return E});if(c)i.children=b};return{visitor:{JSXOpeningElement(o,r){const l=o.node;const i=s(r);const c={};for(let k=0;k<l.attributes.length;k++){const b=l.attributes[k];if(b.type!=="JSXAttribute"||!b.name)continue;const E=b.name.name;if(!a[E])continue;if(!b.value||b.value.type!=="StringLiteral")continue;if(b.value.start==null||b.value.end==null)continue;const T=`txt:${i}:${b.value.start}:${b.value.end}`;c[E]=T;b.value=e.jsxExpressionContainer(u(T,e.stringLiteral(b.value.value)))}if(Object.keys(c).length){l.attributes.push(e.jsxAttribute(e.jsxIdentifier("data-om-text-attrs"),e.stringLiteral(JSON.stringify(c))))}},JSXElement(o,r){const l=o.node.openingElement;const i=l&&l.name&&l.name.name;if(i==="__OmT")return;if(typeof i==="string"&&t[i])return;v(o,s(r),S(r))},JSXFragment(o,r){v(o,s(r),S(r))}}}})}}const g=f?["transform-react-jsx-source",d,p]:["transform-react-jsx-source",d];document.querySelectorAll('script[type="text/babel"],script[type="text/jsx"]').forEach((h,y)=>{const m=h.getAttribute("data-plugins")||"";const w=g.filter((R)=>m.indexOf(R)<0);if(w.length){h.setAttribute("data-plugins",m?`${m},${w.join(",")}`:w.join(","))}if(!h.hasAttribute("data-filename")){h.setAttribute("data-filename",h.getAttribute("src")||`inline-${y}`)}})});var A=window.parent;var U="not editable here — open the project in the Claude Design editor to save";var W=()=>Promise.resolve({persisted:false,noHost:true,reason:U});var H=W;var M="data/storage.json";var z=()=>{try{const n=new URL(document.baseURI);const d=n.pathname.match(/\/projects\/([^/]+)\/serve\//);if(d)return d[1];return n.hostname.split(".")[0]||""}catch{return location.hostname.split(".")[0]||""}};var Z=()=>{try{const n=new URL(document.baseURI);const d=n.pathname.indexOf("/serve/");if(d>=0)return n.origin+n.pathname.slice(0,d+"/serve/".length)+M}catch{}return"./"+M};var x=null;var N=()=>{if(!x){x=fetch(Z(),{cache:"no-store"}).then((n)=>{if(n.ok)return n.text();return n.status===404?"":null}).catch(()=>null).then((n)=>{if(n===null){x=null;return null}const d=new Map;if(!n)return d;let p;try{p=JSON.parse(n)}catch{console.warn("[omelette.storage] "+M+" is not valid JSON; treating the store as unreadable so a save cannot overwrite the "+"hand-edited bytes. Fix the JSON (or delete the file) to re-enable persistence.");x=null;return null}if(p===null||typeof p!=="object"||Array.isArray(p)){console.warn("[omelette.storage] "+M+" doesn't hold a JSON object; treating the store as unreadable so a save cannot "+"overwrite the hand-edited bytes. Make the top level a JSON object to re-enable persistence.");x=null;return null}const f=p;if("data"in f){const g=f.data;if(g===null||typeof g!=="object"||Array.isArray(g)){console.warn("[omelette.storage] "+M+' has a "data" field that is not a JSON object; treating the store as unreadable so a '+'save cannot overwrite the hand-edited bytes. Make "data" a JSON object to re-enable persistence.');x=null;return null}const h=f._meta;const y=h!==null&&typeof h==="object"?h.project:undefined;if(typeof y==="string"&&y!==""&&y!==z())return d;for(const m of Object.keys(g))d.set(m,g[m]);return d}for(const g of Object.keys(f)){if(g!=="_meta")d.set(g,f[g])}return d})}return x};var F=(n)=>H(M,JSON.stringify({_meta:{project:z(),version:1},data:Object.fromEntries(n)},null,2));var D=Promise.resolve();var $=(n)=>{const d=D.then(n);D=d.then(()=>{return},()=>{return});return d};var V=/sk-(?:ant-)?[A-Za-z0-9_-]{16,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,}|xox[a-z]-[A-Za-z0-9][A-Za-z0-9-]{9,}|AIza[0-9A-Za-z_-]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/;var Y=/password|passwd|secret|api[_-]?key|access[_-]?token|auth[_-]?token|credential/i;var Q=(n,d,p)=>{if(V.test(d)||Y.test(n)&&typeof p==="string"&&p.length>=8){console.warn('[omelette.storage] the value for "'+n+'" looks like a credential. The storage file is a plaintext project file — visible to '+"everyone with project access and copied when the project is duplicated. Do not store secrets here.")}};var q={persisted:false,reason:"could not load the existing store — not overwriting it"};var X={persisted:false,reason:"stored value changed since a failed read — re-read this key before saving"};var P=new Set;var ee={get:(n)=>{if(typeof n!=="string"){return Promise.reject(new TypeError("storage.get: key must be a string"))}return $(N).then((d)=>{if(d===null){P.add(n);return null}P.delete(n);if(!d.has(n))return null;const p=d.get(n);return p==null?null:JSON.parse(JSON.stringify(p))})},set:(n,d)=>{if(typeof n!=="string"){return Promise.reject(new TypeError("storage.set: key must be a string"))}let p;try{p=JSON.stringify(d)}catch(g){return Promise.reject(new TypeError("storage.set: value must be JSON-serializable ("+String(g)+")"))}if(p===undefined){return Promise.reject(new TypeError("storage.set: value must be JSON-serializable"))}Q(n,p,d);const f=JSON.parse(p);return $(()=>N().then((g)=>{if(g===null)return q;if(P.has(n)){if(g.has(n))return X;P.delete(n)}g.set(n,f);return F(g)}))},delete:(n)=>{if(typeof n!=="string"){return Promise.reject(new TypeError("storage.delete: key must be a string"))}return $(()=>N().then((d)=>{if(d===null)return q;if(P.has(n)){if(d.has(n))return X;P.delete(n)}d.delete(n);return F(d)}))},keys:()=>$(N).then((n)=>n===null?[]:Array.from(n.keys()))};window.omelette={writeFile:(n,d)=>H(n,d).then((p)=>{if(!p.persisted&&!p.noHost){throw new Error(p.reason||"write failed")}}),storage:ee};if(A&&A!==window){const n=(e,t)=>{try{A.postMessage({__omelette_log:true,type:e,data:t},"*")}catch{}};["log","warn","error"].forEach((e)=>{const t=console[e];console[e]=(...a)=>{const u=a.map((s)=>{try{return typeof s==="object"?JSON.stringify(s):String(s)}catch{try{return String(s)}catch{return"[unstringifiable]"}}}).join(" ");n(e,u);t.apply(console,a)}});window.addEventListener("error",(e)=>{const t=e.target;if(t&&t!==window&&t.tagName){const a=t.src||t.href||"";n("resource_error",`${t.tagName} failed to load: ${a}`)}else{n("error",`${e.message||"Unknown error"} at ${e.filename||"?"}:${e.lineno||0}:${e.colno||0}`)}},true);window.addEventListener("unhandledrejection",(e)=>{const t=e.reason;const a=t instanceof Error?`${t.message} ${t.stack}`:String(t);n("error",`Unhandled rejection: ${a}`)});window.addEventListener("click",(e)=>{if(e.defaultPrevented||e.button!==0)return;if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;const t=e.composedPath?e.composedPath():[];const a=["button","input","select","textarea","summary","label"];let u=null;for(const v of t){if(!(v instanceof Element))continue;if(v.localName==="a"){if(!(v instanceof HTMLAnchorElement))return;u=v;break}if(a.indexOf(v.localName)!==-1)return}if(!u)return;if(u.isContentEditable)return;const s=u.closest("[contenteditable]");if(s&&s.getAttribute("contenteditable")!=="false")return;const S=(u.getAttribute("target")||"_self").toLowerCase();if(S!=="_self"&&S!=="_top"&&S!=="_parent")return;let _;try{_=new URL(u.href)}catch{return}if(_.protocol!=="http:"&&_.protocol!=="https:")return;if(location.origin==="null")return;if(_.origin===location.origin)return;e.preventDefault();window.open(_.href,"_blank","noopener,noreferrer")});const d=()=>{try{A.postMessage({type:"omelette:height",height:document.documentElement.scrollHeight},"*")}catch{}};if(window.ResizeObserver)new ResizeObserver(d).observe(document.documentElement);const p=()=>{d();if(!document.querySelector('script[type="text/babel"],script[type="text/jsx"]'))return;const e=()=>document.getElementById("root")||document.querySelector("body > div[id]");const t=e()?.firstElementChild??null;let a=0;const u=()=>{const s=e();if(s&&s.firstElementChild!==t||++a>30){d();return}setTimeout(u,100)};setTimeout(u,100)};if(document.readyState==="complete")p();else window.addEventListener("load",p);const f={};let g=0;const h=(e)=>new Promise((t,a)=>{if(!I.length){a(new Error("claude.complete: no parent origin"));return}const u=`c${++g}`;const s=()=>setTimeout(()=>{delete f[u];a(new Error(`claude.complete: no data for ${J/1000}s`))},J);const S=s();f[u]={resolve:t,reject:a,text:"",t:S,arm:s};try{for(const _ of I){A.postMessage({__om_api:true,id:u,body:e},_)}}catch(_){clearTimeout(S);delete f[u];a(_)}});const y=8;const m=async(e,t)=>{if(!Array.isArray(e.messages)){throw new Error("claude.complete: tools require a messages array")}const a=e.messages.slice();const u={...e,tools:e.tools.map((_)=>{if(_===null||typeof _!=="object")return _;const v={};for(const o of Object.keys(_)){if(typeof _[o]!=="function")v[o]=_[o]}return v})};const s=u.tool_choice;const S=s!=null&&(s.type==="any"||s.type==="tool")?{...u,tool_choice:s.disable_parallel_tool_use!==undefined?{type:"auto",disable_parallel_tool_use:s.disable_parallel_tool_use}:{type:"auto"}}:u;for(let _=0;_<y;_++){const v=await h({..._===0?u:S,messages:a});const o=v.message;const r=o&&Array.isArray(o.content)?o.content:null;const l=r?r.filter((c)=>c?.type==="tool_use"):[];if(o?.stop_reason!=="tool_use"||l.length===0){return v.text}const i=[];for(const c of l){const k=t.get(c.name);if(!k){i.push({type:"tool_result",tool_use_id:c.id,content:`no handler for tool "${c.name}"`,is_error:true});continue}try{const b=await k(c.input);const E=typeof b==="string"?b:O(b)??"";i.push({type:"tool_result",tool_use_id:c.id,content:E})}catch(b){i.push({type:"tool_result",tool_use_id:c.id,content:String(b?.message??b??"tool handler failed"),is_error:true})}}a.push({role:"assistant",content:r},{role:"user",content:i})}throw new Error(`claude.complete: exceeded ${y} tool turns`)};window.claude={complete(e){const t=e;if(t!==null&&typeof t==="object"&&Array.isArray(t.tools)&&t.tools.some((a)=>a!==null&&typeof a==="object"&&typeof a.run==="function")){const a=new Map;for(const u of t.tools){if(u!==null&&typeof u==="object"&&typeof u.run==="function"){a.set(String(u.name),u.run)}}return m(t,a)}return h(e).then((a)=>a.text)}};const w={};let R=0;H=(e,t)=>new Promise((a)=>{if(!I.length){a({persisted:false,noHost:true,reason:U});return}const u=`f${++R}`;const s=setTimeout(()=>{delete w[u];a({persisted:false,noHost:true,reason:U})},G);w[u]={settle:a,t:s};try{for(const S of I){A.postMessage({__om_file:true,id:u,op:"write",path:e,content:t},S)}}catch{clearTimeout(s);delete w[u];a({persisted:false,noHost:true,reason:U})}});const O=(e)=>{try{return JSON.stringify(e)}catch{return JSON.stringify(String(e))}};window.addEventListener("message",(e)=>{if(I.indexOf(e.origin)<0)return;if(e.source!==A)return;const t=e.data;if(!t)return;if(t.type==="omelette-preview-refresh"){if(typeof t.token!=="string"||!/^[0-9a-f.-]+(\.(rc|pr-[0-9]+))?(\.[0-9]+\.[0-9a-f]{16})?$/.test(t.token))return;const s=Math.max(1,Math.floor((t.expiresAt||0)-Date.now()/1000));document.cookie="__Host-omelette-preview="+t.token+"; Path=/; Secure; SameSite=None; Partitioned; Max-Age="+s;C();return}if(t.__om_file_r){const s=w[t.id];if(!s)return;clearTimeout(s.t);delete w[t.id];s.settle(t.ok?{persisted:true}:{persisted:false,reason:t.error||"write failed"});return}if(t.__om_api_r){const s=f[t.id];if(!s)return;if(t.error!=null){clearTimeout(s.t);delete f[t.id];s.reject(new Error(t.error));return}if(t.chunk!=null){clearTimeout(s.t);s.t=s.arm();s.text+=t.chunk;return}if(t.done){clearTimeout(s.t);delete f[t.id];s.resolve({text:t.text!=null?t.text:s.text,message:t.message});return}return}if(!t.__om_eval)return;const a=t;const u=(s)=>{e.source.postMessage({...s,__om_eval_r:1,id:a.id},e.origin)};try{const s=(0,eval)(a.code);if(s&&typeof s.then==="function"){s.then((S)=>u({ok:1,v:O(S)}),(S)=>u({ok:0,e:String(S)}))}else{u({ok:1,v:O(s)})}}catch(s){u({ok:0,e:String(s)})}})}})();
+</script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script><style>x-dc{display:none!important}</style><script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script><script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
+<style id="__dc-atomics">.fx{display:flex}.col{display:flex;flex-direction:column}.grid{display:grid}.ac{align-items:center}.jc{justify-content:center}.jb{justify-content:space-between}.f1{flex:1}.noshrink{flex-shrink:0}.wrap{flex-wrap:wrap}.fw5{font-weight:500}.fw6{font-weight:600}.fw7{font-weight:700}.fw8{font-weight:800}.fs11{font-size:11px}.fs12{font-size:12px}.fs13{font-size:13px}.fs14{font-size:14px}.fs15{font-size:15px}.fs16{font-size:16px}.fs20{font-size:20px}.fs22{font-size:22px}.upper{text-transform:uppercase}.tc{text-align:center}.nowrap{white-space:nowrap}.gap8{gap:8px}.gap10{gap:10px}.gap12{gap:12px}.gap16{gap:16px}.gap24{gap:24px}.m0{margin:0}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.posrel{position:relative}.posabs{position:absolute}.round{border-radius:50%}.ohide{overflow:hidden}.bbox{box-sizing:border-box}.pointer{cursor:pointer}.w100{width:100%}.b0{border:none}</style><style></style><style data-dc-tpl="1">*{box-sizing:border-box}body{margin:0;background:#EDECE8}a{color:#2E6F5E;text-decoration:none}a:hover{color:#245549}</style><style data-designer-overlay="1"></style><meta name="x-build-id" content="f6ca85d0921d01251a3df5d859c6c8062c3fe858"></head>
+<body>
+<div id="dc-root"><div class="sc-host" data-sc-name="Components"><div data-dc-tpl="2" style="width: 1180px; background: rgb(237, 236, 232); font-family: -apple-system, system-ui, sans-serif; color: rgb(34, 48, 44); -webkit-font-smoothing: antialiased; padding: 48px 40px 72px; display: flex; flex-direction: column; gap: 26px;">
+
+  <div data-dc-tpl="3" style="display: flex; flex-direction: column; gap: 7px;">
+    <div data-dc-tpl="4" style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4);">Учёт служения · разбор</div>
+    <div data-dc-tpl="5" style="font-size: 34px; font-weight: 640; letter-spacing: -0.03em; line-height: 1.1;">Компоненты экранов</div>
+    <div data-dc-tpl="6" style="font-size: 15px; font-weight: 500; line-height: 1.5; color: rgba(34, 48, 44, 0.5); max-width: 620px; text-wrap: pretty;">Шесть экранов — 404, 500, Coming soon, Вход, Только с телефона, О приложении — собраны из 18 повторяющихся частей. Ниже: матрица использования и каталог с вариантами и параметрами.</div>
+  </div>
+
+  <div data-dc-tpl="7" style="background: rgb(255, 255, 255); border-radius: 28px; padding: 28px; display: flex; flex-direction: column; gap: 18px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+    <div data-dc-tpl="8" style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4);">Матрица использования</div>
+    <div data-dc-tpl="9" style="display: grid; grid-template-columns: 230px repeat(6, 1fr); gap: 0px;">
+      <div data-dc-tpl="10" style="padding: 0px 0px 10px; font-size: 12px; font-weight: 540; color: rgba(34, 48, 44, 0.45);">Компонент</div>
+      <div data-dc-tpl="11" style="padding: 0px 0px 10px; font-size: 12px; font-weight: 600; text-align: center;">404</div>
+      <div data-dc-tpl="12" style="padding: 0px 0px 10px; font-size: 12px; font-weight: 600; text-align: center;">500</div>
+      <div data-dc-tpl="13" style="padding: 0px 0px 10px; font-size: 12px; font-weight: 600; text-align: center;">Coming soon</div>
+      <div data-dc-tpl="14" style="padding: 0px 0px 10px; font-size: 12px; font-weight: 600; text-align: center;">Вход</div>
+      <div data-dc-tpl="15" style="padding: 0px 0px 10px; font-size: 12px; font-weight: 600; text-align: center;">Desktop block</div>
+      <div data-dc-tpl="16" style="padding: 0px 0px 10px; font-size: 12px; font-weight: 600; text-align: center;">О приложении</div>
+
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">CenteredState</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">TopAndBottomState</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">ScrollState</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">ScreenHeader</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">AppMark</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.45);"><span class="sc-interp">○</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">StatusGlyph</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">Eyebrow</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.45);"><span class="sc-interp">○</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">Title</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.45);"><span class="sc-interp">○</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.45);"><span class="sc-interp">○</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">BodyText</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.45);"><span class="sc-interp">○</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">Caption / footnote</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.45);"><span class="sc-interp">○</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">InlineError</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">Button</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.45);"><span class="sc-interp">○</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">ActionStack</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">FieldCard + FieldRow</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">PillForm</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">HeroCard</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">SectionLabel</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+      
+        <div data-dc-tpl="18" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13.5px; font-weight: 560; letter-spacing: -0.01em;"><span class="sc-interp">ListCard + Row</span></div>
+        <div data-dc-tpl="19" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="20" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="21" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="22" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="23" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgba(34, 48, 44, 0.2);"><span class="sc-interp">·</span></div>
+        <div data-dc-tpl="24" style="padding: 9px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07); font-size: 13px; font-weight: 600; text-align: center; color: rgb(46, 111, 94);"><span class="sc-interp">●</span></div>
+      
+    </div>
+    <div data-dc-tpl="25" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">● — используется · ○ — вариант того же компонента с другими токенами</div>
+  </div>
+
+  <div data-dc-tpl="26" style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4); padding: 8px 4px 0px;">1 · Каркас экрана</div>
+
+  <div data-dc-tpl="27" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+    <div data-dc-tpl="28" style="background: rgb(255, 255, 255); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+      <div data-dc-tpl="29" style="display: flex; flex-direction: column; gap: 5px;">
+        <div data-dc-tpl="30" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="31" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">CenteredState</div>
+          <div data-dc-tpl="32" style="height: 22px; padding: 0px 9px; border-radius: 8px; background: rgb(246, 245, 243); display: flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">каркас</div>
+        </div>
+        <div data-dc-tpl="33" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Экран одного состояния: всё по центру по обеим осям, колонка с gap 26, padding 40/32, выравнивание текста по центру. Слоты: glyph → текстовый блок → стек действий → сноска.</div>
+      </div>
+      <div data-dc-tpl="34" style="background: rgb(246, 245, 243); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; min-height: 190px; border: 1px dashed rgba(34, 48, 44, 0.15);">
+        <div data-dc-tpl="35" style="width: 58px; height: 58px; border-radius: 29px; background: rgba(34, 48, 44, 0.08); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.4);">glyph</div>
+        <div data-dc-tpl="36" style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+          <div data-dc-tpl="37" style="width: 180px; height: 13px; border-radius: 7px; background: rgba(34, 48, 44, 0.18);"></div>
+          <div data-dc-tpl="38" style="width: 230px; height: 9px; border-radius: 5px; background: rgba(34, 48, 44, 0.1);"></div>
+          <div data-dc-tpl="39" style="width: 196px; height: 9px; border-radius: 5px; background: rgba(34, 48, 44, 0.1);"></div>
+        </div>
+        <div data-dc-tpl="40" style="display: flex; flex-direction: column; gap: 7px; width: 180px;">
+          <div data-dc-tpl="41" style="height: 30px; border-radius: 11px; background: rgba(30, 74, 64, 0.85);"></div>
+          <div data-dc-tpl="42" style="height: 30px; border-radius: 11px; background: rgb(255, 255, 255); box-shadow: rgba(34, 48, 44, 0.06) 0px 1px 2px;"></div>
+        </div>
+      </div>
+      <div data-dc-tpl="43" style="display: flex; flex-direction: column; gap: 7px;">
+        <div data-dc-tpl="44" style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(34, 48, 44, 0.35);">Параметры</div>
+        <div data-dc-tpl="45" style="font-size: 13px; font-weight: 520; line-height: 1.55; color: rgba(34, 48, 44, 0.62);">background: warm | deep · glyph · title · text · actions[] · footnote?</div>
+        <div data-dc-tpl="46" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">Экраны: 404, 500, Coming soon, Desktop block</div>
+      </div>
+    </div>
+
+    <div data-dc-tpl="47" style="background: rgb(255, 255, 255); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+      <div data-dc-tpl="48" style="display: flex; flex-direction: column; gap: 5px;">
+        <div data-dc-tpl="49" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="50" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">TopAndBottomState</div>
+          <div data-dc-tpl="51" style="height: 22px; padding: 0px 9px; border-radius: 8px; background: rgb(246, 245, 243); display: flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">каркас</div>
+        </div>
+        <div data-dc-tpl="52" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Экран ввода: шапка прижата к верху (padding-top 96), форма и кнопки — к низу, под большой палец. Фон — глубокий зелёный, карточка формы белая.</div>
+      </div>
+      <div data-dc-tpl="53" style="background: rgb(30, 74, 64); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; min-height: 190px;">
+        <div data-dc-tpl="54" style="display: flex; flex-direction: column; gap: 9px;">
+          <div data-dc-tpl="55" style="width: 36px; height: 36px; border-radius: 12px; background: rgba(255, 255, 255, 0.14);"></div>
+          <div data-dc-tpl="56" style="width: 150px; height: 13px; border-radius: 7px; background: rgba(255, 255, 255, 0.75);"></div>
+          <div data-dc-tpl="57" style="width: 210px; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.25);"></div>
+        </div>
+        <div data-dc-tpl="58" style="display: flex; flex-direction: column; gap: 8px;">
+          <div data-dc-tpl="59" style="height: 56px; border-radius: 14px; background: rgb(255, 255, 255);"></div>
+          <div data-dc-tpl="60" style="height: 30px; border-radius: 11px; background: rgb(46, 111, 94);"></div>
+          <div data-dc-tpl="61" style="height: 26px; border-radius: 11px; background: rgba(255, 255, 255, 0.1);"></div>
+        </div>
+      </div>
+      <div data-dc-tpl="62" style="display: flex; flex-direction: column; gap: 7px;">
+        <div data-dc-tpl="63" style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(34, 48, 44, 0.35);">Параметры</div>
+        <div data-dc-tpl="64" style="font-size: 13px; font-weight: 520; line-height: 1.55; color: rgba(34, 48, 44, 0.62);">mark · title · text · form · actions[] · footnote</div>
+        <div data-dc-tpl="65" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">Экраны: Вход</div>
+      </div>
+    </div>
+
+    <div data-dc-tpl="66" style="background: rgb(255, 255, 255); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+      <div data-dc-tpl="67" style="display: flex; flex-direction: column; gap: 5px;">
+        <div data-dc-tpl="68" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="69" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">ScrollState</div>
+          <div data-dc-tpl="70" style="height: 22px; padding: 0px 9px; border-radius: 8px; background: rgb(246, 245, 243); display: flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">каркас</div>
+        </div>
+        <div data-dc-tpl="71" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Контентный экран: фиксированная шапка с кнопкой «назад», ниже прокручиваемая колонка карточек с gap 16 и padding 6/20/40.</div>
+      </div>
+      <div data-dc-tpl="72" style="background: rgb(246, 245, 243); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-height: 190px; border: 1px dashed rgba(34, 48, 44, 0.15);">
+        <div data-dc-tpl="73" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="74" style="width: 26px; height: 26px; border-radius: 13px; background: rgb(255, 255, 255); box-shadow: rgba(34, 48, 44, 0.06) 0px 1px 2px;"></div>
+          <div data-dc-tpl="75" style="width: 96px; height: 8px; border-radius: 4px; background: rgba(34, 48, 44, 0.18);"></div>
+        </div>
+        <div data-dc-tpl="76" style="height: 54px; border-radius: 14px; background: rgb(30, 74, 64);"></div>
+        <div data-dc-tpl="77" style="width: 70px; height: 8px; border-radius: 4px; background: rgba(34, 48, 44, 0.2);"></div>
+        <div data-dc-tpl="78" style="height: 62px; border-radius: 14px; background: rgb(255, 255, 255); box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;"></div>
+      </div>
+      <div data-dc-tpl="79" style="display: flex; flex-direction: column; gap: 7px;">
+        <div data-dc-tpl="80" style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(34, 48, 44, 0.35);">Параметры</div>
+        <div data-dc-tpl="81" style="font-size: 13px; font-weight: 520; line-height: 1.55; color: rgba(34, 48, 44, 0.62);">header{back, eyebrow} · sections[]</div>
+        <div data-dc-tpl="82" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">Экраны: О приложении</div>
+      </div>
+    </div>
+
+    <div data-dc-tpl="83" style="background: rgb(255, 255, 255); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+      <div data-dc-tpl="84" style="display: flex; flex-direction: column; gap: 5px;">
+        <div data-dc-tpl="85" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="86" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">ScreenHeader</div>
+          <div data-dc-tpl="87" style="height: 22px; padding: 0px 9px; border-radius: 8px; background: rgb(246, 245, 243); display: flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">навигация</div>
+        </div>
+        <div data-dc-tpl="88" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Круглая белая кнопка 38 px с шевроном и надзаголовок раздела рядом. Нажатие — scale(0.94).</div>
+      </div>
+      <div data-dc-tpl="89" style="background: rgb(246, 245, 243); border-radius: 18px; padding: 22px 18px; display: flex; align-items: center; gap: 12px; min-height: 190px; border: 1px dashed rgba(34, 48, 44, 0.15);">
+        <div data-dc-tpl="90" role="button" class="scp0" style="width: 38px; height: 38px; flex: 0 0 auto; border-radius: 19px; background: rgb(255, 255, 255); display: flex; align-items: center; justify-content: center; font-size: 17px; color: rgb(34, 48, 44); box-shadow: rgba(34, 48, 44, 0.06) 0px 1px 2px;">‹</div>
+        <div data-dc-tpl="91" style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4);">О приложении</div>
+      </div>
+      <div data-dc-tpl="92" style="display: flex; flex-direction: column; gap: 7px;">
+        <div data-dc-tpl="93" style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(34, 48, 44, 0.35);">Параметры</div>
+        <div data-dc-tpl="94" style="font-size: 13px; font-weight: 520; line-height: 1.55; color: rgba(34, 48, 44, 0.62);">eyebrow · onBack</div>
+        <div data-dc-tpl="95" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">Экраны: О приложении</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div data-dc-tpl="96" style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4); padding: 8px 4px 0px;">2 · Опознавательные знаки</div>
+
+  <div data-dc-tpl="97" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+    <div data-dc-tpl="98" style="background: rgb(255, 255, 255); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+      <div data-dc-tpl="99" style="display: flex; flex-direction: column; gap: 5px;">
+        <div data-dc-tpl="100" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="101" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">AppMark</div>
+          <div data-dc-tpl="102" style="height: 22px; padding: 0px 9px; border-radius: 8px; background: rgb(246, 245, 243); display: flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">4 размера</div>
+        </div>
+        <div data-dc-tpl="103" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Логотип в скруглённом квадрате. На светлом фоне плашка глубокая зелёная, на зелёном — белая с прозрачностью 0.12. Радиус растёт вместе с размером: 14 / 16 / 18 / 24.</div>
+      </div>
+      <div data-dc-tpl="104" style="display: flex; gap: 14px;">
+        <div data-dc-tpl="105" style="flex: 1 1 0%; background: rgb(246, 245, 243); border-radius: 18px; padding: 20px; display: flex; align-items: center; justify-content: center; gap: 16px;">
+          <div data-dc-tpl="106" style="width: 44px; height: 44px; border-radius: 14px; background: rgb(30, 74, 64); display: flex; align-items: center; justify-content: center;">
+            <svg data-dc-tpl="107" width="24" height="19" viewBox="0 0 32 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path data-dc-tpl="108" d="M7.2 9.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8Zm0 1.8c-3.1 0-5.6 2-6.2 4.8-.2.9.5 1.7 1.4 1.7h6.6c-.4-.9-.6-1.9-.6-2.9 0-1.3.3-2.5.9-3.5-.7-.1-1.4-.1-2.1-.1Z" fill="rgba(255,255,255,0.5)"></path>
+              <path data-dc-tpl="109" d="M24.8 9.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8Zm0 1.8c-.7 0-1.4 0-2.1.1.6 1 .9 2.2.9 3.5 0 1-.2 2-.6 2.9h6.6c.9 0 1.6-.8 1.4-1.7-.6-2.8-3.1-4.8-6.2-4.8Z" fill="rgba(255,255,255,0.5)"></path>
+              <path data-dc-tpl="110" d="M16 10.2a4.3 4.3 0 1 0 0-8.6 4.3 4.3 0 0 0 0 8.6Zm0 2.2c-4.2 0-7.5 2.7-8.3 6.5-.3 1.2.7 2.3 1.9 2.3h12.8c1.2 0 2.2-1.1 1.9-2.3-.8-3.8-4.1-6.5-8.3-6.5Z" fill="#fff"></path>
+            </svg>
+          </div>
+          <div data-dc-tpl="111" style="width: 88px; height: 88px; border-radius: 24px; background: rgb(30, 74, 64); display: flex; align-items: center; justify-content: center; box-shadow: rgba(30, 74, 64, 0.18) 0px 12px 24px;">
+            <svg data-dc-tpl="112" width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <path data-dc-tpl="113" d="M12 2L4 6V11C4 15.55 7.16 19.74 12 21C16.84 19.74 20 15.55 20 11V6L12 2Z" stroke="#F6F5F3" stroke-width="1.6" stroke-linejoin="round"></path>
+              <path data-dc-tpl="114" d="M9 12L11 14L15.5 9.5" stroke="#F6F5F3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+        </div>
+        <div data-dc-tpl="115" style="flex: 1 1 0%; background: rgb(30, 74, 64); border-radius: 18px; padding: 20px; display: flex; align-items: center; justify-content: center; gap: 16px;">
+          <div data-dc-tpl="116" style="width: 52px; height: 52px; border-radius: 16px; background: rgba(255, 255, 255, 0.12); display: flex; align-items: center; justify-content: center;">
+            <svg data-dc-tpl="117" width="30" height="24" viewBox="0 0 32 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path data-dc-tpl="118" d="M7.2 9.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8Zm0 1.8c-3.1 0-5.6 2-6.2 4.8-.2.9.5 1.7 1.4 1.7h6.6c-.4-.9-.6-1.9-.6-2.9 0-1.3.3-2.5.9-3.5-.7-.1-1.4-.1-2.1-.1Z" fill="rgba(255,255,255,0.5)"></path>
+              <path data-dc-tpl="119" d="M24.8 9.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8Zm0 1.8c-.7 0-1.4 0-2.1.1.6 1 .9 2.2.9 3.5 0 1-.2 2-.6 2.9h6.6c.9 0 1.6-.8 1.4-1.7-.6-2.8-3.1-4.8-6.2-4.8Z" fill="rgba(255,255,255,0.5)"></path>
+              <path data-dc-tpl="120" d="M16 10.2a4.3 4.3 0 1 0 0-8.6 4.3 4.3 0 0 0 0 8.6Zm0 2.2c-4.2 0-7.5 2.7-8.3 6.5-.3 1.2.7 2.3 1.9 2.3h12.8c1.2 0 2.2-1.1 1.9-2.3-.8-3.8-4.1-6.5-8.3-6.5Z" fill="#fff"></path>
+            </svg>
+          </div>
+          <div data-dc-tpl="121" style="width: 56px; height: 56px; border-radius: 18px; background: rgba(255, 255, 255, 0.12); display: flex; align-items: center; justify-content: center;">
+            <svg data-dc-tpl="122" width="32" height="26" viewBox="0 0 32 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path data-dc-tpl="123" d="M7.2 9.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8Zm0 1.8c-3.1 0-5.6 2-6.2 4.8-.2.9.5 1.7 1.4 1.7h6.6c-.4-.9-.6-1.9-.6-2.9 0-1.3.3-2.5.9-3.5-.7-.1-1.4-.1-2.1-.1Z" fill="rgba(255,255,255,0.55)"></path>
+              <path data-dc-tpl="124" d="M24.8 9.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8Zm0 1.8c-.7 0-1.4 0-2.1.1.6 1 .9 2.2.9 3.5 0 1-.2 2-.6 2.9h6.6c.9 0 1.6-.8 1.4-1.7-.6-2.8-3.1-4.8-6.2-4.8Z" fill="rgba(255,255,255,0.55)"></path>
+              <path data-dc-tpl="125" d="M16 10.2a4.3 4.3 0 1 0 0-8.6 4.3 4.3 0 0 0 0 8.6Zm0 2.2c-4.2 0-7.5 2.7-8.3 6.5-.3 1.2.7 2.3 1.9 2.3h12.8c1.2 0 2.2-1.1 1.9-2.3-.8-3.8-4.1-6.5-8.3-6.5Z" fill="#fff"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div data-dc-tpl="126" style="display: flex; flex-direction: column; gap: 7px;">
+        <div data-dc-tpl="127" style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(34, 48, 44, 0.35);">Параметры</div>
+        <div data-dc-tpl="128" style="font-size: 13px; font-weight: 520; line-height: 1.55; color: rgba(34, 48, 44, 0.62);">size: 44 | 52 | 56 | 88 · tone: solid | translucent · elevated?</div>
+        <div data-dc-tpl="129" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">Экраны: Coming soon, Вход, Desktop block, О приложении</div>
+      </div>
+    </div>
+
+    <div data-dc-tpl="130" style="background: rgb(255, 255, 255); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+      <div data-dc-tpl="131" style="display: flex; flex-direction: column; gap: 5px;">
+        <div data-dc-tpl="132" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="133" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">StatusGlyph</div>
+          <div data-dc-tpl="134" style="height: 22px; padding: 0px 9px; border-radius: 8px; background: rgb(246, 245, 243); display: flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">2 тона</div>
+        </div>
+        <div data-dc-tpl="135" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Круг 104 px с кодом состояния: нейтральный для 404, терракотовый для 500. Цифры табличные, 34 / 620.</div>
+      </div>
+      <div data-dc-tpl="136" style="background: rgb(246, 245, 243); border-radius: 18px; padding: 20px; display: flex; align-items: center; justify-content: center; gap: 24px; min-height: 190px;">
+        <div data-dc-tpl="137" style="width: 104px; height: 104px; border-radius: 52px; background: rgba(34, 48, 44, 0.06); display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 620; letter-spacing: -0.03em; color: rgba(34, 48, 44, 0.5); font-variant-numeric: tabular-nums;">404</div>
+        <div data-dc-tpl="138" style="width: 104px; height: 104px; border-radius: 52px; background: rgba(154, 82, 56, 0.1); display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 620; letter-spacing: -0.03em; color: rgb(154, 82, 56); font-variant-numeric: tabular-nums;">500</div>
+      </div>
+      <div data-dc-tpl="139" style="display: flex; flex-direction: column; gap: 7px;">
+        <div data-dc-tpl="140" style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(34, 48, 44, 0.35);">Параметры</div>
+        <div data-dc-tpl="141" style="font-size: 13px; font-weight: 520; line-height: 1.55; color: rgba(34, 48, 44, 0.62);">code · tone: neutral | alert</div>
+        <div data-dc-tpl="142" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">Экраны: 404, 500</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div data-dc-tpl="143" style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4); padding: 8px 4px 0px;">3 · Текст</div>
+
+  <div data-dc-tpl="144" style="background: rgb(255, 255, 255); border-radius: 28px; padding: 28px; display: flex; flex-direction: column; gap: 20px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+    <div data-dc-tpl="145" style="display: flex; flex-direction: column; gap: 5px;">
+      <div data-dc-tpl="146" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">Eyebrow · Title · BodyText · Caption · InlineError</div>
+      <div data-dc-tpl="147" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); max-width: 640px; text-wrap: pretty;">Пять текстовых роли. Заголовок и абзац всегда идут парой в колонке с gap 8–16 — это единый блок TextBlock.</div>
+    </div>
+
+    <div data-dc-tpl="148" style="display: flex; flex-direction: column;">
+      
+        <div data-dc-tpl="150" style="display: flex; align-items: baseline; gap: 22px; padding: 15px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07);">
+          <div data-dc-tpl="151" style="width: 118px; flex: 0 0 auto; font-size: 12px; font-weight: 600; color: rgba(34, 48, 44, 0.42);"><span class="sc-interp">Eyebrow</span></div>
+          <div data-dc-tpl="152" style="width: 132px; flex: 0 0 auto; font-size: 12px; font-weight: 520; color: rgba(34, 48, 44, 0.42); font-variant-numeric: tabular-nums;"><span class="sc-interp">11 / 600 · 0.14em</span></div>
+          <div data-dc-tpl="153" style="flex: 1 1 0%; min-width: 0px;"><div style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4);">О приложении</div></div>
+          <div data-dc-tpl="154" style="width: 180px; flex: 0 0 auto; font-size: 12px; font-weight: 500; color: rgba(34, 48, 44, 0.42); text-align: right;"><span class="sc-interp">О приложении, Coming soon</span></div>
+        </div>
+      
+        <div data-dc-tpl="150" style="display: flex; align-items: baseline; gap: 22px; padding: 15px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07);">
+          <div data-dc-tpl="151" style="width: 118px; flex: 0 0 auto; font-size: 12px; font-weight: 600; color: rgba(34, 48, 44, 0.42);"><span class="sc-interp">Title XL</span></div>
+          <div data-dc-tpl="152" style="width: 132px; flex: 0 0 auto; font-size: 12px; font-weight: 520; color: rgba(34, 48, 44, 0.42); font-variant-numeric: tabular-nums;"><span class="sc-interp">36 / 700</span></div>
+          <div data-dc-tpl="153" style="flex: 1 1 0%; min-width: 0px;"><div style="font-size: 36px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; color: rgb(30, 74, 64);">Учёт служения</div></div>
+          <div data-dc-tpl="154" style="width: 180px; flex: 0 0 auto; font-size: 12px; font-weight: 500; color: rgba(34, 48, 44, 0.42); text-align: right;"><span class="sc-interp">Coming soon</span></div>
+        </div>
+      
+        <div data-dc-tpl="150" style="display: flex; align-items: baseline; gap: 22px; padding: 15px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07);">
+          <div data-dc-tpl="151" style="width: 118px; flex: 0 0 auto; font-size: 12px; font-weight: 600; color: rgba(34, 48, 44, 0.42);"><span class="sc-interp">Title L</span></div>
+          <div data-dc-tpl="152" style="width: 132px; flex: 0 0 auto; font-size: 12px; font-weight: 520; color: rgba(34, 48, 44, 0.42); font-variant-numeric: tabular-nums;"><span class="sc-interp">32 / 640</span></div>
+          <div data-dc-tpl="153" style="flex: 1 1 0%; min-width: 0px;"><div style="font-size: 32px; font-weight: 640; letter-spacing: -0.03em; line-height: 1.1;">Учёт служения</div></div>
+          <div data-dc-tpl="154" style="width: 180px; flex: 0 0 auto; font-size: 12px; font-weight: 500; color: rgba(34, 48, 44, 0.42); text-align: right;"><span class="sc-interp">Вход</span></div>
+        </div>
+      
+        <div data-dc-tpl="150" style="display: flex; align-items: baseline; gap: 22px; padding: 15px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07);">
+          <div data-dc-tpl="151" style="width: 118px; flex: 0 0 auto; font-size: 12px; font-weight: 600; color: rgba(34, 48, 44, 0.42);"><span class="sc-interp">Title M</span></div>
+          <div data-dc-tpl="152" style="width: 132px; flex: 0 0 auto; font-size: 12px; font-weight: 520; color: rgba(34, 48, 44, 0.42); font-variant-numeric: tabular-nums;"><span class="sc-interp">30 / 620</span></div>
+          <div data-dc-tpl="153" style="flex: 1 1 0%; min-width: 0px;"><div style="font-size: 30px; font-weight: 620; letter-spacing: -0.025em;">Доступно только с телефона</div></div>
+          <div data-dc-tpl="154" style="width: 180px; flex: 0 0 auto; font-size: 12px; font-weight: 500; color: rgba(34, 48, 44, 0.42); text-align: right;"><span class="sc-interp">Desktop block</span></div>
+        </div>
+      
+        <div data-dc-tpl="150" style="display: flex; align-items: baseline; gap: 22px; padding: 15px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07);">
+          <div data-dc-tpl="151" style="width: 118px; flex: 0 0 auto; font-size: 12px; font-weight: 600; color: rgba(34, 48, 44, 0.42);"><span class="sc-interp">Title S</span></div>
+          <div data-dc-tpl="152" style="width: 132px; flex: 0 0 auto; font-size: 12px; font-weight: 520; color: rgba(34, 48, 44, 0.42); font-variant-numeric: tabular-nums;"><span class="sc-interp">26 / 620</span></div>
+          <div data-dc-tpl="153" style="flex: 1 1 0%; min-width: 0px;"><div style="font-size: 26px; font-weight: 620; letter-spacing: -0.025em; line-height: 1.15;">Страница не найдена</div></div>
+          <div data-dc-tpl="154" style="width: 180px; flex: 0 0 auto; font-size: 12px; font-weight: 500; color: rgba(34, 48, 44, 0.42); text-align: right;"><span class="sc-interp">404, 500</span></div>
+        </div>
+      
+        <div data-dc-tpl="150" style="display: flex; align-items: baseline; gap: 22px; padding: 15px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07);">
+          <div data-dc-tpl="151" style="width: 118px; flex: 0 0 auto; font-size: 12px; font-weight: 600; color: rgba(34, 48, 44, 0.42);"><span class="sc-interp">BodyText</span></div>
+          <div data-dc-tpl="152" style="width: 132px; flex: 0 0 auto; font-size: 12px; font-weight: 520; color: rgba(34, 48, 44, 0.42); font-variant-numeric: tabular-nums;"><span class="sc-interp">15 / 500 · 0.5</span></div>
+          <div data-dc-tpl="153" style="flex: 1 1 0%; min-width: 0px;"><div style="font-size: 15px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Такого раздела нет или он был перемещён. Проверьте ссылку.</div></div>
+          <div data-dc-tpl="154" style="width: 180px; flex: 0 0 auto; font-size: 12px; font-weight: 500; color: rgba(34, 48, 44, 0.42); text-align: right;"><span class="sc-interp">все экраны</span></div>
+        </div>
+      
+        <div data-dc-tpl="150" style="display: flex; align-items: baseline; gap: 22px; padding: 15px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07);">
+          <div data-dc-tpl="151" style="width: 118px; flex: 0 0 auto; font-size: 12px; font-weight: 600; color: rgba(34, 48, 44, 0.42);"><span class="sc-interp">SectionLabel</span></div>
+          <div data-dc-tpl="152" style="width: 132px; flex: 0 0 auto; font-size: 12px; font-weight: 520; color: rgba(34, 48, 44, 0.42); font-variant-numeric: tabular-nums;"><span class="sc-interp">13 / 600 · 0.5</span></div>
+          <div data-dc-tpl="153" style="flex: 1 1 0%; min-width: 0px;"><div style="font-size: 13px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">Возможности</div></div>
+          <div data-dc-tpl="154" style="width: 180px; flex: 0 0 auto; font-size: 12px; font-weight: 500; color: rgba(34, 48, 44, 0.42); text-align: right;"><span class="sc-interp">О приложении</span></div>
+        </div>
+      
+        <div data-dc-tpl="150" style="display: flex; align-items: baseline; gap: 22px; padding: 15px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07);">
+          <div data-dc-tpl="151" style="width: 118px; flex: 0 0 auto; font-size: 12px; font-weight: 600; color: rgba(34, 48, 44, 0.42);"><span class="sc-interp">Caption</span></div>
+          <div data-dc-tpl="152" style="width: 132px; flex: 0 0 auto; font-size: 12px; font-weight: 520; color: rgba(34, 48, 44, 0.42); font-variant-numeric: tabular-nums;"><span class="sc-interp">12 / 520 · 0.38</span></div>
+          <div data-dc-tpl="153" style="flex: 1 1 0%; min-width: 0px;"><div style="font-size: 12px; font-weight: 520; color: rgba(34, 48, 44, 0.38); font-variant-numeric: tabular-nums;">Код ошибки: SRV-500 · 03.09.2026</div></div>
+          <div data-dc-tpl="154" style="width: 180px; flex: 0 0 auto; font-size: 12px; font-weight: 500; color: rgba(34, 48, 44, 0.42); text-align: right;"><span class="sc-interp">500, Вход, Coming soon</span></div>
+        </div>
+      
+        <div data-dc-tpl="150" style="display: flex; align-items: baseline; gap: 22px; padding: 15px 0px; border-top: 1px solid rgba(34, 48, 44, 0.07);">
+          <div data-dc-tpl="151" style="width: 118px; flex: 0 0 auto; font-size: 12px; font-weight: 600; color: rgba(34, 48, 44, 0.42);"><span class="sc-interp">InlineError</span></div>
+          <div data-dc-tpl="152" style="width: 132px; flex: 0 0 auto; font-size: 12px; font-weight: 520; color: rgba(34, 48, 44, 0.42); font-variant-numeric: tabular-nums;"><span class="sc-interp">13 / 540 · #E9B49C</span></div>
+          <div data-dc-tpl="153" style="flex: 1 1 0%; min-width: 0px;"><div style="background: rgb(30, 74, 64); border-radius: 10px; padding: 8px 12px; display: inline-block; font-size: 13px; font-weight: 540; color: rgb(233, 180, 156);">Проверьте почту и пароль</div></div>
+          <div data-dc-tpl="154" style="width: 180px; flex: 0 0 auto; font-size: 12px; font-weight: 500; color: rgba(34, 48, 44, 0.42); text-align: right;"><span class="sc-interp">Вход</span></div>
+        </div>
+      
+    </div>
+  </div>
+
+  <div data-dc-tpl="155" style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4); padding: 8px 4px 0px;">4 · Действия</div>
+
+  <div data-dc-tpl="156" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+    <div data-dc-tpl="157" style="background: rgb(255, 255, 255); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+      <div data-dc-tpl="158" style="display: flex; flex-direction: column; gap: 5px;">
+        <div data-dc-tpl="159" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="160" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">Button</div>
+          <div data-dc-tpl="161" style="height: 22px; padding: 0px 9px; border-radius: 8px; background: rgb(246, 245, 243); display: flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">5 вариантов</div>
+        </div>
+        <div data-dc-tpl="162" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Одна кнопка: высота 48–54, радиус 17–18, текст 15–17 / 540–580, нажатие scale(0.98). Меняется только заливка — она и задаёт роль.</div>
+      </div>
+      <div data-dc-tpl="163" style="display: flex; gap: 14px;">
+        <div data-dc-tpl="164" style="flex: 1 1 0%; background: rgb(246, 245, 243); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+          <div data-dc-tpl="165" role="button" class="scp1" style="height: 50px; border-radius: 17px; background: rgb(30, 74, 64); color: rgb(255, 255, 255); font-size: 16px; font-weight: 580; display: flex; align-items: center; justify-content: center;">На главный экран</div>
+          <div data-dc-tpl="166" role="button" class="scp1" style="height: 50px; border-radius: 17px; background: rgb(154, 82, 56); color: rgb(255, 255, 255); font-size: 16px; font-weight: 580; display: flex; align-items: center; justify-content: center;">Повторить попытку</div>
+          <div data-dc-tpl="167" role="button" class="scp1" style="height: 50px; border-radius: 17px; background: rgb(255, 255, 255); color: rgb(34, 48, 44); font-size: 16px; font-weight: 540; display: flex; align-items: center; justify-content: center; box-shadow: rgba(34, 48, 44, 0.06) 0px 1px 2px;">Работать оффлайн</div>
+        </div>
+        <div data-dc-tpl="168" style="flex: 1 1 0%; background: rgb(30, 74, 64); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+          <div data-dc-tpl="169" role="button" class="scp1" style="height: 54px; border-radius: 18px; background: rgb(46, 111, 94); color: rgb(255, 255, 255); font-size: 17px; font-weight: 580; display: flex; align-items: center; justify-content: center;">Войти</div>
+          <div data-dc-tpl="170" role="button" class="scp1" style="height: 48px; border-radius: 18px; background: rgba(255, 255, 255, 0.1); color: rgb(255, 255, 255); font-size: 15px; font-weight: 540; display: flex; align-items: center; justify-content: center;">Забыли пароль?</div>
+          <div data-dc-tpl="171" style="font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.4); text-align: center; padding-top: 6px;">ghost — только на зелёном</div>
+        </div>
+      </div>
+      <div data-dc-tpl="172" style="display: flex; flex-direction: column; gap: 7px;">
+        <div data-dc-tpl="173" style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(34, 48, 44, 0.35);">Параметры</div>
+        <div data-dc-tpl="174" style="font-size: 13px; font-weight: 520; line-height: 1.55; color: rgba(34, 48, 44, 0.62);">variant: deep | action | alert | plain | ghost · label · onPress</div>
+        <div data-dc-tpl="175" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">Экраны: 404, 500, Coming soon, Вход</div>
+      </div>
+    </div>
+
+    <div data-dc-tpl="176" style="background: rgb(255, 255, 255); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+      <div data-dc-tpl="177" style="display: flex; flex-direction: column; gap: 5px;">
+        <div data-dc-tpl="178" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="179" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">ActionStack</div>
+          <div data-dc-tpl="180" style="height: 22px; padding: 0px 9px; border-radius: 8px; background: rgb(246, 245, 243); display: flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">раскладка</div>
+        </div>
+        <div data-dc-tpl="181" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Колонка кнопок: gap 10, ширина 100% при max-width 260 на экранах-состояниях и во всю карточку на экране входа. Первая кнопка — основное действие.</div>
+      </div>
+      <div data-dc-tpl="182" style="background: rgb(246, 245, 243); border-radius: 18px; padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 190px;">
+        <div data-dc-tpl="183" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 260px;">
+          <div data-dc-tpl="184" role="button" class="scp1" style="height: 50px; border-radius: 17px; background: rgb(30, 74, 64); color: rgb(255, 255, 255); font-size: 16px; font-weight: 580; display: flex; align-items: center; justify-content: center;">На главный экран</div>
+          <div data-dc-tpl="185" role="button" class="scp1" style="height: 50px; border-radius: 17px; background: rgb(255, 255, 255); color: rgb(34, 48, 44); font-size: 16px; font-weight: 540; display: flex; align-items: center; justify-content: center; box-shadow: rgba(34, 48, 44, 0.06) 0px 1px 2px;">Открыть профиль</div>
+        </div>
+      </div>
+      <div data-dc-tpl="186" style="display: flex; flex-direction: column; gap: 7px;">
+        <div data-dc-tpl="187" style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(34, 48, 44, 0.35);">Параметры</div>
+        <div data-dc-tpl="188" style="font-size: 13px; font-weight: 520; line-height: 1.55; color: rgba(34, 48, 44, 0.62);">actions[] · maxWidth: 260 | full</div>
+        <div data-dc-tpl="189" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">Экраны: 404, 500, Вход</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div data-dc-tpl="190" style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4); padding: 8px 4px 0px;">5 · Ввод</div>
+
+  <div data-dc-tpl="191" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+    <div data-dc-tpl="192" style="background: rgb(255, 255, 255); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+      <div data-dc-tpl="193" style="display: flex; flex-direction: column; gap: 5px;">
+        <div data-dc-tpl="194" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="195" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">FieldCard + FieldRow</div>
+          <div data-dc-tpl="196" style="height: 22px; padding: 0px 9px; border-radius: 8px; background: rgb(246, 245, 243); display: flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">форма</div>
+        </div>
+        <div data-dc-tpl="197" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Белая карточка (радиус 24, padding 8/18) со строками поля внутри: надпись капсом 10 px, значение 17 / 560, между строками линия 1 px. Справа опциональная иконка-действие 32 px.</div>
+      </div>
+      <div data-dc-tpl="198" style="background: rgb(30, 74, 64); border-radius: 18px; padding: 20px; display: flex; align-items: center; min-height: 190px;">
+        <div data-dc-tpl="199" style="width: 100%; background: rgb(255, 255, 255); border-radius: 24px; padding: 8px 18px; display: flex; flex-direction: column; box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 2px;">
+          <div data-dc-tpl="200" style="padding: 12px 0px 13px; display: flex; flex-direction: column; gap: 5px;">
+            <div data-dc-tpl="201" style="font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4);">Эл. почта</div>
+            <div data-dc-tpl="202" style="font-size: 17px; font-weight: 560; letter-spacing: -0.01em;">имя@почта.ру</div>
+          </div>
+          <div data-dc-tpl="203" style="height: 1px; background: rgba(34, 48, 44, 0.08);"></div>
+          <div data-dc-tpl="204" style="padding: 12px 0px 13px; display: flex; flex-direction: column; gap: 5px;">
+            <div data-dc-tpl="205" style="font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4);">Пароль</div>
+            <div data-dc-tpl="206" style="display: flex; align-items: center; gap: 10px;">
+              <div data-dc-tpl="207" style="flex: 1 1 0%; font-size: 17px; font-weight: 560; letter-spacing: 0.02em;">••••••••</div>
+              <div data-dc-tpl="208" style="width: 32px; height: 32px; flex: 0 0 auto; margin: -6px -6px -6px 0px; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                <svg data-dc-tpl="209" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="rgba(34,48,44,0.45)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                  <path data-dc-tpl="210" d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z"></path>
+                  <circle data-dc-tpl="211" cx="12" cy="12" r="3.1"></circle>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-dc-tpl="212" style="display: flex; flex-direction: column; gap: 7px;">
+        <div data-dc-tpl="213" style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(34, 48, 44, 0.35);">Параметры</div>
+        <div data-dc-tpl="214" style="font-size: 13px; font-weight: 520; line-height: 1.55; color: rgba(34, 48, 44, 0.62);">rows[{label, value, placeholder, secure, trailing}]</div>
+        <div data-dc-tpl="215" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">Экраны: Вход</div>
+      </div>
+    </div>
+
+    <div data-dc-tpl="216" style="background: rgb(255, 255, 255); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+      <div data-dc-tpl="217" style="display: flex; flex-direction: column; gap: 5px;">
+        <div data-dc-tpl="218" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="219" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">PillForm</div>
+          <div data-dc-tpl="220" style="height: 22px; padding: 0px 9px; border-radius: 8px; background: rgb(246, 245, 243); display: flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">форма</div>
+        </div>
+        <div data-dc-tpl="221" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Одно поле и кнопка в строку, оба радиусом 100 px, gap 10, max-width 400. Ниже — успешное состояние и подпись-подсказка.</div>
+      </div>
+      <div data-dc-tpl="222" style="background: rgb(246, 245, 243); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 190px;">
+        <div data-dc-tpl="223" style="display: flex; gap: 10px; width: 100%; max-width: 400px;">
+          <div data-dc-tpl="224" style="flex: 1 1 0%; padding: 14px 18px; border-radius: 100px; border: 1px solid rgba(30, 74, 64, 0.15); background: rgb(255, 255, 255); font-size: 15px; color: rgba(30, 74, 64, 0.45);">Ваш email</div>
+          <div data-dc-tpl="225" role="button" style="padding: 14px 24px; border-radius: 100px; background: rgb(30, 74, 64); color: rgb(246, 245, 243); font-size: 15px; font-weight: 600; white-space: nowrap;">Записаться</div>
+        </div>
+        <div data-dc-tpl="226" style="font-size: 14px; font-weight: 500; color: rgb(46, 111, 94);">Спасибо! Мы напишем вам, когда всё будет готово.</div>
+        <div data-dc-tpl="227" style="font-size: 13px; color: rgb(139, 149, 143);">Оставьте свой email для записи в вайтлист</div>
+      </div>
+      <div data-dc-tpl="228" style="display: flex; flex-direction: column; gap: 7px;">
+        <div data-dc-tpl="229" style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(34, 48, 44, 0.35);">Параметры</div>
+        <div data-dc-tpl="230" style="font-size: 13px; font-weight: 520; line-height: 1.55; color: rgba(34, 48, 44, 0.62);">placeholder · cta · value · submitted · hint</div>
+        <div data-dc-tpl="231" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">Экраны: Coming soon</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div data-dc-tpl="232" style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4); padding: 8px 4px 0px;">6 · Контентные блоки</div>
+
+  <div data-dc-tpl="233" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+    <div data-dc-tpl="234" style="background: rgb(255, 255, 255); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+      <div data-dc-tpl="235" style="display: flex; flex-direction: column; gap: 5px;">
+        <div data-dc-tpl="236" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="237" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">HeroCard</div>
+          <div data-dc-tpl="238" style="height: 22px; padding: 0px 9px; border-radius: 8px; background: rgb(246, 245, 243); display: flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">карточка</div>
+        </div>
+        <div data-dc-tpl="239" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Тёмно-зелёная карточка радиусом 26 с знаком, названием 24 / 640 и описанием на белом с прозрачностью 0.6. Открывает контентный экран.</div>
+      </div>
+      <div data-dc-tpl="240" style="background: rgb(246, 245, 243); border-radius: 18px; padding: 18px; display: flex; align-items: center; min-height: 190px;">
+        <div data-dc-tpl="241" style="width: 100%; background: rgb(30, 74, 64); border-radius: 26px; padding: 24px 22px; display: flex; flex-direction: column; gap: 14px;">
+          <div data-dc-tpl="242" style="width: 52px; height: 52px; border-radius: 16px; background: rgba(255, 255, 255, 0.12); display: flex; align-items: center; justify-content: center;">
+            <svg data-dc-tpl="243" width="30" height="24" viewBox="0 0 32 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path data-dc-tpl="244" d="M7.2 9.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8Zm0 1.8c-3.1 0-5.6 2-6.2 4.8-.2.9.5 1.7 1.4 1.7h6.6c-.4-.9-.6-1.9-.6-2.9 0-1.3.3-2.5.9-3.5-.7-.1-1.4-.1-2.1-.1Z" fill="rgba(255,255,255,0.5)"></path>
+              <path data-dc-tpl="245" d="M24.8 9.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8Zm0 1.8c-.7 0-1.4 0-2.1.1.6 1 .9 2.2.9 3.5 0 1-.2 2-.6 2.9h6.6c.9 0 1.6-.8 1.4-1.7-.6-2.8-3.1-4.8-6.2-4.8Z" fill="rgba(255,255,255,0.5)"></path>
+              <path data-dc-tpl="246" d="M16 10.2a4.3 4.3 0 1 0 0-8.6 4.3 4.3 0 0 0 0 8.6Zm0 2.2c-4.2 0-7.5 2.7-8.3 6.5-.3 1.2.7 2.3 1.9 2.3h12.8c1.2 0 2.2-1.1 1.9-2.3-.8-3.8-4.1-6.5-8.3-6.5Z" fill="#fff"></path>
+            </svg>
+          </div>
+          <div data-dc-tpl="247" style="display: flex; flex-direction: column; gap: 6px;">
+            <div data-dc-tpl="248" style="font-size: 24px; font-weight: 640; letter-spacing: -0.025em; color: rgb(255, 255, 255);">Учёт служения</div>
+            <div data-dc-tpl="249" style="font-size: 14px; font-weight: 500; line-height: 1.5; color: rgba(255, 255, 255, 0.6); text-wrap: pretty;">Приложение для личного отчёта о служении: часы, изучения Библии, цели по месяцу и служебному году.</div>
+          </div>
+        </div>
+      </div>
+      <div data-dc-tpl="250" style="display: flex; flex-direction: column; gap: 7px;">
+        <div data-dc-tpl="251" style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(34, 48, 44, 0.35);">Параметры</div>
+        <div data-dc-tpl="252" style="font-size: 13px; font-weight: 520; line-height: 1.55; color: rgba(34, 48, 44, 0.62);">mark · title · text</div>
+        <div data-dc-tpl="253" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">Экраны: О приложении</div>
+      </div>
+    </div>
+
+    <div data-dc-tpl="254" style="background: rgb(255, 255, 255); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+      <div data-dc-tpl="255" style="display: flex; flex-direction: column; gap: 5px;">
+        <div data-dc-tpl="256" style="display: flex; align-items: center; gap: 9px;">
+          <div data-dc-tpl="257" style="font-size: 18px; font-weight: 620; letter-spacing: -0.015em;">ListCard + Row</div>
+          <div data-dc-tpl="258" style="height: 22px; padding: 0px 9px; border-radius: 8px; background: rgb(246, 245, 243); display: flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(34, 48, 44, 0.5);">2 вида строк</div>
+        </div>
+        <div data-dc-tpl="259" style="font-size: 13.5px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Белая карточка радиусом 22, padding 4/16. Строка: иконка-плитка 38 px (опционально), заголовок 16 / 580 и описание 13 / 500. Разделитель у всех строк, кроме последней.</div>
+      </div>
+      <div data-dc-tpl="260" style="background: rgb(246, 245, 243); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px; min-height: 190px;">
+        <div data-dc-tpl="261" style="font-size: 13px; font-weight: 600; color: rgba(34, 48, 44, 0.5); padding: 0px 4px;">Экраны</div>
+        <div data-dc-tpl="262" style="background: rgb(255, 255, 255); border-radius: 22px; padding: 4px 16px; display: flex; flex-direction: column; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+          <div data-dc-tpl="263" style="display: flex; align-items: flex-start; gap: 14px; padding: 16px 0px; border-bottom: 1px solid rgba(34, 48, 44, 0.07);">
+            <div data-dc-tpl="264" style="width: 38px; height: 38px; flex: 0 0 auto; border-radius: 12px; background: rgba(46, 111, 94, 0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 300; color: rgb(46, 111, 94);">+</div>
+            <div data-dc-tpl="265" style="display: flex; flex-direction: column; gap: 3px;">
+              <div data-dc-tpl="266" style="font-size: 16px; font-weight: 580; letter-spacing: -0.01em;">День</div>
+              <div data-dc-tpl="267" style="font-size: 13px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Строка с иконкой — для разделов приложения.</div>
+            </div>
+          </div>
+          <div data-dc-tpl="268" style="padding: 16px 0px;">
+            <div data-dc-tpl="269" style="font-size: 16px; font-weight: 580; letter-spacing: -0.01em; margin-bottom: 3px;">Личные цели</div>
+            <div data-dc-tpl="270" style="font-size: 13px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.5); text-wrap: pretty;">Строка без иконки — для описания возможностей.</div>
+          </div>
+        </div>
+      </div>
+      <div data-dc-tpl="271" style="display: flex; flex-direction: column; gap: 7px;">
+        <div data-dc-tpl="272" style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(34, 48, 44, 0.35);">Параметры</div>
+        <div data-dc-tpl="273" style="font-size: 13px; font-weight: 520; line-height: 1.55; color: rgba(34, 48, 44, 0.62);">sectionLabel · rows[{icon?, title, text}]</div>
+        <div data-dc-tpl="274" style="font-size: 12.5px; font-weight: 500; color: rgba(34, 48, 44, 0.42);">Экраны: О приложении</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div data-dc-tpl="275" style="background: rgb(255, 255, 255); border-radius: 28px; padding: 28px; display: flex; flex-direction: column; gap: 16px; box-shadow: rgba(34, 48, 44, 0.05) 0px 1px 2px;">
+    <div data-dc-tpl="276" style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(34, 48, 44, 0.4);">Что стоит свести к одному</div>
+    <div data-dc-tpl="277" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+      <div data-dc-tpl="278" style="background: rgb(246, 245, 243); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
+        <div data-dc-tpl="279" style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">Заголовки: 4 размера</div>
+        <div data-dc-tpl="280" style="font-size: 13px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.55); text-wrap: pretty;">26 / 30 / 32 / 36 на четырёх экранах-состояниях. Хватит двух: 32 на мобильном, 30 на десктопном блоке.</div>
+      </div>
+      <div data-dc-tpl="281" style="background: rgb(246, 245, 243); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
+        <div data-dc-tpl="282" style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">Coming soon живёт отдельно</div>
+        <div data-dc-tpl="283" style="font-size: 13px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.55); text-wrap: pretty;">Радиусы 100 px, шрифт SF Pro Display, свой серый #8B958F. Остальные экраны используют радиусы 17–26 и текст #22302C.</div>
+      </div>
+      <div data-dc-tpl="284" style="background: rgb(246, 245, 243); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
+        <div data-dc-tpl="285" style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">Знак приложения</div>
+        <div data-dc-tpl="286" style="font-size: 13px; font-weight: 500; line-height: 1.45; color: rgba(34, 48, 44, 0.55); text-wrap: pretty;">На Coming soon стоит щит, на остальных — группа людей. Нужен один знак в четырёх размерах.</div>
+      </div>
+    </div>
+  </div></div></div></div>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180}}">
+const D = '#22302C', M = 'rgba(34,48,44,0.28)';
+const ROWS = [
+  ['CenteredState',       1,1,1,0,1,0],
+  ['TopAndBottomState',   0,0,0,1,0,0],
+  ['ScrollState',         0,0,0,0,0,1],
+  ['ScreenHeader',        0,0,0,0,0,1],
+  ['AppMark',             0,0,2,1,1,1],
+  ['StatusGlyph',         1,1,0,0,0,0],
+  ['Eyebrow',             0,0,2,0,0,1],
+  ['Title',               1,1,2,1,2,1],
+  ['BodyText',            1,1,2,1,1,1],
+  ['Caption / footnote',  0,1,2,1,0,0],
+  ['InlineError',         0,0,0,1,0,0],
+  ['Button',              1,1,2,1,0,0],
+  ['ActionStack',         1,1,0,1,0,0],
+  ['FieldCard + FieldRow',0,0,0,1,0,0],
+  ['PillForm',            0,0,1,0,0,0],
+  ['HeroCard',            0,0,0,0,0,1],
+  ['SectionLabel',        0,0,0,0,0,1],
+  ['ListCard + Row',      0,0,0,0,0,1]
+];
+const TYPE = [
+  ['Eyebrow', '11 / 600 · 0.14em', React.createElement('div',{style:{fontSize:11,fontWeight:600,letterSpacing:'0.14em',textTransform:'uppercase',color:'rgba(34,48,44,0.4)'}},'О приложении'), 'О приложении, Coming soon'],
+  ['Title XL', '36 / 700', React.createElement('div',{style:{fontSize:36,fontWeight:700,letterSpacing:'-0.02em',lineHeight:1.1,color:'#1E4A40'}},'Учёт служения'), 'Coming soon'],
+  ['Title L', '32 / 640', React.createElement('div',{style:{fontSize:32,fontWeight:640,letterSpacing:'-0.03em',lineHeight:1.1}},'Учёт служения'), 'Вход'],
+  ['Title M', '30 / 620', React.createElement('div',{style:{fontSize:30,fontWeight:620,letterSpacing:'-0.025em'}},'Доступно только с телефона'), 'Desktop block'],
+  ['Title S', '26 / 620', React.createElement('div',{style:{fontSize:26,fontWeight:620,letterSpacing:'-0.025em',lineHeight:1.15}},'Страница не найдена'), '404, 500'],
+  ['BodyText', '15 / 500 · 0.5', React.createElement('div',{style:{fontSize:15,fontWeight:500,lineHeight:1.45,color:'rgba(34,48,44,0.5)',textWrap:'pretty'}},'Такого раздела нет или он был перемещён. Проверьте ссылку.'), 'все экраны'],
+  ['SectionLabel', '13 / 600 · 0.5', React.createElement('div',{style:{fontSize:13,fontWeight:600,color:'rgba(34,48,44,0.5)'}},'Возможности'), 'О приложении'],
+  ['Caption', '12 / 520 · 0.38', React.createElement('div',{style:{fontSize:12,fontWeight:520,color:'rgba(34,48,44,0.38)',fontVariantNumeric:'tabular-nums'}},'Код ошибки: SRV-500 · 03.09.2026'), '500, Вход, Coming soon'],
+  ['InlineError', '13 / 540 · #E9B49C', React.createElement('div',{style:{background:'#1E4A40',borderRadius:10,padding:'8px 12px',display:'inline-block',fontSize:13,fontWeight:540,color:'#E9B49C'}},'Проверьте почту и пароль'), 'Вход']
+];
+class Component extends DCLogic {
+  renderVals() {
+    const mark = (v) => (v === 1 ? '●' : v === 2 ? '○' : '·');
+    const col = (v) => (v === 0 ? 'rgba(34,48,44,0.2)' : v === 1 ? '#2E6F5E' : 'rgba(34,48,44,0.45)');
+    return {
+      matrix: ROWS.map((r) => {
+        const o = { name: r[0] };
+        for (let i = 0; i < 6; i++) { o['v' + i] = mark(r[i + 1]); o['c' + i] = col(r[i + 1]); }
+        return o;
+      }),
+      type: TYPE.map((t) => ({ role: t[0], spec: t[1], demo: t[2], where: t[3] }))
+    };
+  }
+}
+</script>
+
+
+</body></html>

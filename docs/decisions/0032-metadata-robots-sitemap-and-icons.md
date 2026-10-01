@@ -413,3 +413,62 @@ shield").
   `VERCEL_PROJECT_PRODUCTION_URL` оба не заданы локально — деградация
   работает, но реальный `sitemap.xml` останется пустым до линковки
   Vercel-проекта или явной установки `SITE_URL`).
+
+## Обновление: OG-изображение подключено
+
+Вынесенный выше вопрос про OG-изображение закрыт: файл
+`web/public/og-image.jpg` (JPEG, 75 КБ) теперь входит в `openGraph` и
+`twitter` каждой страницы. Пункты «OG-изображение отсутствует» в разделах
+выше описывают состояние до этого обновления.
+
+**Где объявлено.** В одном месте — `web/src/shared/lib/metadata/
+build-social-metadata.ts` (`buildSocialMetadata`), возвращающем сразу
+`openGraph` и `twitter`. Его вызывают `buildPageMetadata` (все девять
+страниц) и `generateMetadata` корневого layout. Только в layout
+объявлять нельзя: Next.js не домешивает `openGraph`/`twitter`, а
+заменяет объект целиком в сегменте, который его задаёт (проверено по
+`resolve-metadata.js`: ключ из метаданных сегмента присваивается
+результату напрямую), поэтому каждая страница, вызывающая
+`buildPageMetadata`, потеряла бы картинку. Только в хелпере тоже мало:
+маршруты без собственных метаданных остались бы без неё. Один общий
+построитель вместо копирования описания в оба места — те же `type`/
+`locale`/`siteName` больше не дублируются между layout и хелпером.
+
+**Размеры.** В тегах указаны реальные 2398×1258 (`sips`), а не
+номинальные 1200×630: файл — ретина-снимок карточки 1200×630, и теги
+должны описывать фактический файл. Пропорции совпадают со стандартом
+Open Graph с точностью до долей процента. Файл не пережимался.
+`alt` лежит в словаре (`metadata.ogImageAlt`, en-GB): название приложения,
+заголовок карточки и шкала темпа от черепахи к кролику.
+
+**Twitter/X.** `twitter.card: "summary_large_image"`, `title`,
+`description` и та же картинка; часть мессенджеров читает их раньше OG.
+
+**Без базового URL.** В документации Next.js 16 сказано, что относительный
+путь без `metadataBase` — ошибка сборки. На деле (`resolve-opengraph.js` +
+сборка) ошибки нет: для относительного пути без `metadataBase` Next
+молча подставляет `VERCEL_PROJECT_PRODUCTION_URL` или
+`http://localhost:3000` и пишет предупреждение. Относительный `og:image`
+Next выдать не может. Проверено сборкой без `SITE_URL`: в HTML попал
+`http://localhost:3000/og-image.jpg` — мёртвая абсолютная ссылка для
+всех краулеров. Поэтому при `getSiteUrl() === undefined` картинка
+не объявляется вовсе: нет `og:image*`, `twitter:image*`, а
+`twitter:card` — `summary`. `og:title`/`og:description` остаются. С
+`SITE_URL` или `VERCEL_PROJECT_PRODUCTION_URL` ссылка абсолютная
+(`metadataBase` + `/og-image.jpg`).
+
+**`noindex`-страницы** (`/day`, `/soon`, `/install`, `/access/*`, 404)
+несут картинку так же: `noindex` не влияет на превью ссылки. Проверено по
+`soon.html` и `_not-found.html`: `<meta name="robots" content="noindex,
+nofollow">` и полный набор `og:image*`/`twitter:*`.
+
+**Оговорка про щит User-Agent остаётся в силе.** `web/proxy.ts` по-прежнему
+отправляет ботов превью мессенджеров (они не iPhone Safari) на
+`/access/*` с `307`, так что карточка на деле не появится, пока щит не
+снимут или не сузят; сам `proxy.ts` не менялся.
+
+**Проверка.** `pnpm lint` — без замечаний; `pnpm typecheck` — чисто;
+`pnpm test` — 40 из 40; сборка при `DEV_MODE=false` (копия env) с
+`SITE_URL=https://example.com` даёт `https://example.com/og-image.jpg` в
+`about`, `privacy`, `soon`, `_not-found`; без `SITE_URL` картинки в
+тегах нет.
