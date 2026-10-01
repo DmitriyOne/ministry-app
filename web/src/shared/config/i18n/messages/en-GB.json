@@ -6,7 +6,8 @@
   "common": {
     "back": "Back",
     "loading": "Loading",
-    "noscriptRequired": "MinistryApp needs JavaScript enabled to run."
+    "noscriptRequired": "MinistryApp needs JavaScript enabled to run.",
+    "aboutLink": "About"
   },
   "a11y": {
     "sheet": {
@@ -100,6 +101,59 @@
       "emailInvalid": "Enter a valid email address",
       "submitError": "Couldn't join the waitlist. Please try again.",
       "tooManyRequests": "Too many attempts. Please wait a few minutes and try again."
+    },
+    "about": {
+      "eyebrow": "About",
+      "hero": {
+        "title": "MinistryApp",
+        "text": "A personal record of your ministry: hours, Bible studies, and goals for the month and the service year."
+      },
+      "screensLabel": "Screens",
+      "screens": {
+        "day": {
+          "title": "Day",
+          "text": "Log ministry hours and Bible studies for a chosen day, in 15-minute steps. Shows progress for the month and the service year."
+        },
+        "calendar": {
+          "title": "Calendar",
+          "text": "A month grid marking the days you reported. Pick a day to open its hours and studies."
+        },
+        "month": {
+          "title": "Month",
+          "text": "A day-by-day summary for the month: hours and studies in a list, compared against the goal, with the month closed off into the year."
+        },
+        "year": {
+          "title": "Year",
+          "text": "The service year (September to August), month by month: hours, deviation from the goal, and switching between years."
+        },
+        "profile": {
+          "title": "Profile",
+          "text": "Your type of service and goal, personal monthly and yearly targets, pace status, and access to the beyond-the-goal screen."
+        }
+      },
+      "featuresLabel": "Features",
+      "features": {
+        "paceDeviation": {
+          "title": "Pace deviation",
+          "text": "Every day and month is measured against the share of the goal expected by that date — green when you are ahead, terracotta when you are behind."
+        },
+        "personalGoals": {
+          "title": "Personal goals",
+          "text": "The standard hours come from your type of service; you can set your own monthly and yearly goal instead, from a preset or by hand."
+        },
+        "beyondGoal": {
+          "title": "Beyond the goal",
+          "text": "Once the year's goal is met, a separate screen shows how many hours you are over, and in which months."
+        },
+        "accountSignIn": {
+          "title": "Account sign-in",
+          "text": "Accounts are issued by the administrator — write to <mail>admin@jw.fenko.dev</mail> if you need one. No registration required; your report syncs across devices."
+        },
+        "yourData": {
+          "title": "Your data",
+          "text": "Encrypted in transit and at rest, and never passed to third parties. Only you and the super administrator can read it — not to check up on you, but so an entry can be corrected or deleted at your request."
+        }
+      }
     },
     "globalError": {
       "code": "500",
