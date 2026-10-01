@@ -13,6 +13,7 @@ export const routes = {
   soon: "/soon",
   install: "/install",
   about: "/about",
+  privacy: "/privacy",
   accessDesktop: "/access/desktop",
   accessAndroid: "/access/android",
   accessIosBrowser: "/access/ios-browser",
