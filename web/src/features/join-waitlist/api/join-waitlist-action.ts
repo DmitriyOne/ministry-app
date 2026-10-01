@@ -6,23 +6,14 @@ import { z } from "zod";
 
 import { getClientIp } from "@/shared/lib/rate-limit";
 
+import { persistWaitlistSignup } from "./persist-waitlist-signup";
 import { checkJoinWaitlistRateLimit } from "./rate-limit";
+import { mapJoinWaitlistRow } from "../model/map-join-waitlist-row";
 import {
   createJoinWaitlistSchema,
   type JoinWaitlistActionState,
   type JoinWaitlistSubmission,
 } from "../model/schema";
-
-// There's no waitlist table in Supabase yet (migrations live as files in
-// backend/supabase/migrations/ — separate task). For now the only
-// persistence point is a structured entry in the server log (visible in
-// `pnpm dev` and in Vercel logs): not a fake write or a placeholder for
-// later, but a real, immediately-executing side effect that doesn't lose
-// the submitted email, and that changes to a single insert once the
-// table exists. The risk this carries is recorded in ADR 0027.
-const persistWaitlistSignup = async (email: string) => {
-  console.info("[join-waitlist] new signup", { email });
-};
 
 export const joinWaitlist = async (
   _previousState: JoinWaitlistActionState,
@@ -60,8 +51,16 @@ export const joinWaitlist = async (
   }
 
   try {
-    await persistWaitlistSignup(result.data.email);
-    return { status: "success" };
+    const row = await persistWaitlistSignup(result.data.email);
+
+    // The fact, never the address — the condition ADR 0027 set for
+    // retiring the plaintext log, and the same rule ADR 0026 already
+    // applies to the visitor's IP.
+    if (row) {
+      console.info("[join-waitlist] signup recorded", { alreadyJoined: row.already_joined });
+    }
+
+    return mapJoinWaitlistRow(row, t("submitError"));
   } catch {
     return { status: "error", formError: t("submitError") };
   }

@@ -203,7 +203,17 @@ ministry-app/
 │                                 0032), иконки, pwa/ios/*.png
 │                                 (плейсхолдеры экрана установки, ADR 0016)
 ├─ backend/
-│  ├─ supabase/                  Supabase CLI проект: config.toml, migrations/, functions/health, seed.sql
+│  ├─ supabase/                  Supabase CLI проект: config.toml,
+│  │                             migrations/ (waitlist_signups + функция
+│  │                             join_waitlist — ADR 0033; таблица закрыта
+│  │                             полностью: RLS включён, политик нет,
+│  │                             grants отозваны, наружу выдан только
+│  │                             execute на функцию роли anon),
+│  │                             tests/ (pgTAP, `pnpm db:test` — проверяют
+│  │                             именно модель доступа: что anon может
+│  │                             записаться через функцию и не может
+│  │                             прочитать таблицу), functions/health,
+│  │                             seed.sql
 │  └─ package.json               supabase CLI как devDependency, скрипты db:*/functions:deploy
 ├─ envs/                         *.local.env.example — шаблоны переменных окружения
 ├─ docs/decisions/                ADR (см. ниже)
@@ -647,10 +657,11 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
 |---|---|
 | `pnpm dev` | Поднимает Supabase (`db:start`), ждёт готовности (`wait-on` на health Supabase), затем `next dev` (Turbopack) с env из `envs/web.local.env` |
 | `pnpm db:start` / `db:stop` / `db:reset` | Обёртки над `supabase start/stop/db reset` в `backend/` |
+| `pnpm db:test` | pgTAP-тесты схемы (`supabase test db`) — модель доступа к `waitlist_signups` (ADR 0033). Только локальная БД |
 | `pnpm db:types` | Генерация TS-типов из локальной БД в `web/src/shared/api/supabase/database.types.ts` |
 | `pnpm lint` | ESLint + `steiger` (проверка границ FSD) в `web/` |
 | `pnpm typecheck` | `tsc --noEmit` в `web/` |
-| `pnpm test` | `vitest run` в `web/` — `classifyAccess` (ADR 0016), `buildRobots`/`buildSitemap` (ADR 0032) |
+| `pnpm test` | `vitest run` в `web/` — `classifyAccess` (ADR 0016), `buildRobots`/`buildSitemap` (ADR 0032), `mapJoinWaitlistRow` (ADR 0033) |
 | `pnpm build` | `next build` (Turbopack) в `web/` (с env из `envs/web.local.env`) |
 | `pnpm db:login` / `db:link` / `db:push` / `functions:deploy` | Деплой в облачный Supabase — см. раздел ниже |
 
@@ -659,6 +670,15 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
 - **Миграции Supabase — только через файлы в `backend/supabase/migrations/`.**
   Никаких ручных правок схемы через Supabase Studio без последующей
   миграции (`supabase db diff` / `supabase migration new`).
+- **Таблица в схеме `public` закрывается полностью, доступ выдаётся
+  функцией.** RLS включён, политик нет, `revoke all ... from anon,
+  authenticated` выполнен в той же миграции (grants выдаются новой
+  таблице автоматически и политиками не отбираются), а наружу выдаётся
+  `execute` на `security definer`-функцию с `set search_path = ''` —
+  образец задан ADR 0033 на `waitlist_signups`/`join_waitlist`. Отступление
+  от него — отдельное решение с отдельным ADR, не правка миграции
+  «заодно». Модель доступа проверяется pgTAP-тестами
+  (`backend/supabase/tests/`, `pnpm db:test`), а не на глаз.
 - **Переменные окружения — только через `envs/*.local.env`**, никогда не
   хардкодить и не коммитить реальные значения. В git — только
   `envs/*.local.env.example` с плейсхолдерами; реальные `*.local.env`
