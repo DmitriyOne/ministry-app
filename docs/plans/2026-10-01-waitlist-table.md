@@ -119,6 +119,17 @@ select ok(
 );
 
 -- Joining, normalisation and the counter.
+--
+-- Emptied first, so the positions below are deterministic. The three
+-- tests that follow assert exact numbers, and on a database that already
+-- holds signups — a local one someone has been clicking through, or any
+-- database that is not freshly reset — those numbers would be whatever
+-- the existing rows make them, and the tests would fail for no reason
+-- but that. This delete is safe precisely because the whole file runs in
+-- one transaction that is rolled back at the end: nothing real is lost,
+-- including on a database with live rows in it.
+delete from public.waitlist_signups;
+
 select results_eq(
   $$ select already_joined, list_position from public.join_waitlist('  First@Example.COM ') $$,
   $$ values (false, 1::bigint) $$,
@@ -295,7 +306,7 @@ pnpm db:reset && pnpm db:test
 
 (`db:reset` without `--linked` — the local database only. Never against the remote project.)
 
-Expected: PASS, 12 of 12. If `results_eq` complains the first signup is at a position other than 1, the local database was not reset and already holds rows — re-run `pnpm db:reset`. If test 8 fails (`authenticated` still has execute), the revoke above was written as `from public` alone — see the comment in it for why that is not enough on Supabase.
+Expected: PASS, 12 of 12, and repeatably so — the suite empties the table inside its own rolled-back transaction, so it does not depend on a fresh `db:reset` and does not destroy rows that are already there. If test 8 fails (`authenticated` still has execute), the revoke above was written as `from public` alone — see the comment in it for why that is not enough on Supabase.
 
 - [ ] **Step 6: Commit**
 

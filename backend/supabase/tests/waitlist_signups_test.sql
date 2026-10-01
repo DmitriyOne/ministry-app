@@ -60,6 +60,17 @@ select ok(
 );
 
 -- Joining, normalisation and the counter.
+--
+-- Emptied first, so the positions below are deterministic. The three
+-- tests that follow assert exact numbers, and on a database that already
+-- holds signups — a local one someone has been clicking through, or any
+-- database that is not freshly reset — those numbers would be whatever
+-- the existing rows make them, and the tests would fail for no reason
+-- but that. This delete is safe precisely because the whole file runs in
+-- one transaction that is rolled back at the end: nothing real is lost,
+-- including on a database with live rows in it.
+delete from public.waitlist_signups;
+
 select results_eq(
   $$ select already_joined, list_position from public.join_waitlist('  First@Example.COM ') $$,
   $$ values (false, 1::bigint) $$,
