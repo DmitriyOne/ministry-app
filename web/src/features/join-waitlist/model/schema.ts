@@ -26,13 +26,32 @@ export type JoinWaitlistActionState = {
   status: "idle" | "success" | "error";
   fieldErrors?: Partial<Record<keyof JoinWaitlistFormValues, string>>;
   formError?: string;
+  // Place in the waitlist as join_waitlist counted it, 1-based. Absent
+  // on the honeypot path (api/join-waitlist-action.ts returns a bare
+  // success for a filled decoy — ADR 0026), which is why every reader
+  // has to cope with it being undefined.
+  position?: number;
+  // True when the address was already on the list, so the screen can say
+  // so instead of implying a second signup was made.
+  alreadyJoined?: boolean;
 };
 
 export const joinWaitlistInitialState: JoinWaitlistActionState = { status: "idle" };
 
-type JoinWaitlistTranslator = (key: "emailRequired" | "emailInvalid") => string;
+type JoinWaitlistTranslator = (
+  key: "emailRequired" | "emailInvalid" | "emailTooLong",
+) => string;
 
 export const createJoinWaitlistSchema = (t: JoinWaitlistTranslator) =>
   z.object({
-    email: z.string().min(1, t("emailRequired")).pipe(z.email(t("emailInvalid"))),
+    // .max(254) before .pipe(): z.email() puts no limit on length, but the
+    // table does (RFC 5321's address limit, as a check constraint — see
+    // the migration), so without this a 300-character address passes
+    // validation and then fails in the database, turning a fixable field
+    // error into a generic "try again".
+    email: z
+      .string()
+      .min(1, t("emailRequired"))
+      .max(254, t("emailTooLong"))
+      .pipe(z.email(t("emailInvalid"))),
   });

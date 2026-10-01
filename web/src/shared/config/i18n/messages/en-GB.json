@@ -129,6 +129,7 @@
       "successText": "Thanks! We'll email you as soon as it's ready.",
       "emailRequired": "Enter your email",
       "emailInvalid": "Enter a valid email address",
+      "emailTooLong": "That email address is too long",
       "submitError": "Couldn't join the waitlist. Please try again.",
       "tooManyRequests": "Too many attempts. Please wait a few minutes and try again."
     },
