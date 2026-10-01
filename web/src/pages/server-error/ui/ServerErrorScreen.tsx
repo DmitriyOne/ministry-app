@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 
-import { locale } from "@/shared/config";
+import { locale, routes } from "@/shared/config";
 import { ActionStack } from "@/shared/ui/action-stack";
 import { Button, LinkButton } from "@/shared/ui/button";
 import { Caption } from "@/shared/ui/caption";
@@ -39,7 +39,7 @@ export const ServerErrorScreen = ({ error, reset }: ServerErrorScreenProps) => {
         <Button variant="alert" size="role" onPress={reset}>
           {t("retryButton")}
         </Button>
-        <LinkButton href="/day" variant="plain" size="role">
+        <LinkButton href={routes.day} variant="plain" size="role">
           {t("homeButton")}
         </LinkButton>
       </ActionStack>

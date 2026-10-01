@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { routes } from "@/shared/config";
 import { ActionStack } from "@/shared/ui/action-stack";
 import { CenteredState } from "@/shared/ui/centered-state";
 import { LinkButton } from "@/shared/ui/button";
@@ -18,7 +19,7 @@ export const NotFoundScreen = async () => {
     <CenteredState glyph={<StatusGlyph code={t("code")} tone="neutral" />}>
       <TextBlock align="center" title={t("title")} text={t("text")} />
       <ActionStack>
-        <LinkButton href="/day" variant="deep" size="role">
+        <LinkButton href={routes.day} variant="deep" size="role">
           {t("homeButton")}
         </LinkButton>
       </ActionStack>

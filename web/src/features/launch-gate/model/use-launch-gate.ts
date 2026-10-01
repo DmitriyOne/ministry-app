@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { routes } from "@/shared/config";
+
 // iOS Safari/WKWebView's non-standard signal for a standalone (home-screen)
 // launch — no lib.dom.d.ts type covers it. `interface` here, not `type`,
 // per the project's rule for augmenting a third-party global (see sw.ts).
@@ -12,9 +14,11 @@ declare global {
 }
 
 // Require launching from a home-screen icon (ADR 0017), otherwise → /install.
-const APP_SCREEN_PATHS = ["/", "/day", "/soon"];
-const INSTALL_PATH = "/install";
-const APP_ENTRY_PATH = "/day";
+// Paths come from shared/config/routes.ts (ADR 0030) — the single place
+// these literals are written down.
+const APP_SCREEN_PATHS: string[] = [routes.root, routes.day, routes.soon];
+const INSTALL_PATH = routes.install;
+const APP_ENTRY_PATH = routes.day;
 
 // Safety net only — NOT the source of truth for the visible exit duration
 // (that's --shell-transition-duration in globals.css, which the browser's
