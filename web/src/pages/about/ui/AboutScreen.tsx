@@ -31,6 +31,12 @@ export const AboutScreen = async () => {
     <div className="flex min-h-dvh flex-col bg-background text-ink">
       <ScreenBackHeader eyebrow={t("eyebrow")} />
 
+      {/* No `sticky` on the header above and none needed: this <main>,
+          not the document, is the scroll container (flex-1 +
+          overflow-y-auto), so the header sits outside its scroll flow
+          and is already permanently visible without `position: sticky`
+          doing anything (same structure as the Privacy screen, ADR
+          0031). */}
       <main className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pt-1.5 pb-10">
         <div className="flex flex-col gap-3.5 rounded-2xl bg-hero px-5.5 py-6">
           <AppMark size={52} tone="translucent" />

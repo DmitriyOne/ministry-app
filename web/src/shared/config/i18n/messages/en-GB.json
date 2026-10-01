@@ -161,9 +161,6 @@
       "title": "Privacy notice",
       "updated": "Last updated 1 October 2026 · version 1.0",
       "intro": "This notice explains what MinistryApp stores about you and why. It covers both your personal data and the cookies and storage the app uses on your phone.",
-      "placeholders": {
-        "supabaseRegion": "[SUPABASE_REGION]"
-      },
       "toc": {
         "whatWeStore": "1. What we store",
         "why": "2. Why",
@@ -231,10 +228,10 @@
           },
           "subProcessorsIntro": "Your data is stored and processed on our behalf by the following sub-processors:",
           "subProcessors": {
-            "supabase": "<b>Supabase</b> — our database provider. Your data is stored on Supabase's managed PostgreSQL service, encrypted in transit (TLS) and at rest, in the <b>{region}</b> region.",
+            "supabase": "<b>Supabase</b> — our database provider. Your data is stored on Supabase's managed PostgreSQL service, encrypted in transit (TLS) and at rest, in the United Kingdom (London, eu-west-2).",
             "vercel": "<b>Vercel</b> — our application hosting provider, which serves the app itself."
           },
-          "transfers": "Where any of your data is stored or processed outside the UK or the European Economic Area, we only allow this where it is covered by adequacy regulations, or by appropriate safeguards such as the UK International Data Transfer Addendum (IDTA) or the EU Standard Contractual Clauses (SCCs)."
+          "dataStaysInUk": "Your data is stored in the United Kingdom and is not transferred outside it."
         },
         "yourRights": {
           "heading": "Your rights",

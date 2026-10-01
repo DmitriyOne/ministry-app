@@ -32,16 +32,6 @@ const paragraphClassName = "text-body font-500 text-pretty text-ink-muted";
 export const PrivacyScreen = async () => {
   const t = await getTranslations("screens.privacy");
 
-  // The one placeholder still genuinely unresolved (ADR 0031): which
-  // Supabase region will hold the data is a controller decision that
-  // hasn't been made yet (the project doesn't exist), not something
-  // this screen can state truthfully today — kept as a literal
-  // bracketed token on purpose, not filled with a guess. ICO number,
-  // retention period and postal address were resolved by the
-  // controller and are now plain copy in the dictionary, not
-  // placeholders.
-  const supabaseRegion = t("placeholders.supabaseRegion");
-
   const tocItems = [
     { href: "#what-we-store", label: t("toc.whatWeStore") },
     { href: "#why", label: t("toc.why") },
@@ -53,14 +43,14 @@ export const PrivacyScreen = async () => {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background text-ink">
-      {/* Sticky, matching the mock-up — ScreenHeader (shared/ui) already
-          accepts a className override, so this is a prop, not a fork;
-          the mock-up's border-that-appears-on-scroll is dropped (would
-          need a scroll listener ScreenBackHeader doesn't have, and
-          CLAUDE.md's component rule prefers not forking shared
-          components for a cosmetic detail). */}
-      <ScreenBackHeader eyebrow={t("eyebrow")} className="sticky top-0 z-10 bg-background" />
+      <ScreenBackHeader eyebrow={t("eyebrow")} />
 
+      {/* No `sticky` on the header above and none needed: this <main>,
+          not the document, is the scroll container (flex-1 +
+          overflow-y-auto), so the header sits outside its scroll flow
+          and is already permanently visible without `position: sticky`
+          doing anything (checked while investigating ADR 0031's sticky
+          header question — same structure as the About screen). */}
       <main className="flex flex-1 flex-col gap-5 overflow-y-auto px-5 pt-1.5 pb-10">
         <div className="flex flex-col gap-1.5">
           <Title title={t("title")} />
@@ -143,13 +133,13 @@ export const PrivacyScreen = async () => {
           <p className={paragraphClassName}>{t("sections.whoCanSeeIt.subProcessorsIntro")}</p>
           <ul className="flex list-disc flex-col gap-1.5 pl-5">
             <li className={listItemClassName}>
-              {t.rich("sections.whoCanSeeIt.subProcessors.supabase", { b: bold, region: supabaseRegion })}
+              {t.rich("sections.whoCanSeeIt.subProcessors.supabase", { b: bold })}
             </li>
             <li className={listItemClassName}>
               {t.rich("sections.whoCanSeeIt.subProcessors.vercel", { b: bold })}
             </li>
           </ul>
-          <p className={paragraphClassName}>{t("sections.whoCanSeeIt.transfers")}</p>
+          <p className={paragraphClassName}>{t("sections.whoCanSeeIt.dataStaysInUk")}</p>
         </NumberedSection>
 
         <NumberedSection id="your-rights" number={5} title={t("sections.yourRights.heading")}>
