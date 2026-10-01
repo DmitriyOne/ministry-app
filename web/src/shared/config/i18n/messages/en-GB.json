@@ -1,7 +1,8 @@
 {
   "metadata": {
     "title": "MinistryApp",
-    "description": "Track ministry hours for pioneers and publishers"
+    "description": "Track ministry hours for pioneers and publishers",
+    "ogImageAlt": "MinistryApp logo beside the headline \"Slow and steady, or racing ahead — you set the pace.\" above a pace scale running from a turtle on the left to a rabbit on the right."
   },
   "common": {
     "back": "Back",

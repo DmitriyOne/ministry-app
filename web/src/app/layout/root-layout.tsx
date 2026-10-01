@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 import { LaunchGate, LaunchLoading, LaunchNoscriptFallback } from "@/features/launch-gate";
 import { env, getSiteUrl, locale } from "@/shared/config";
+import { buildSocialMetadata } from "@/shared/lib/metadata";
 
 import { Providers } from "./providers";
 
@@ -41,14 +42,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
     metadataBase: siteUrl ? new URL(siteUrl) : undefined,
     manifest: "/manifest.webmanifest",
     appleWebApp: { capable: true, statusBarStyle: "default", title: t("title") },
-    openGraph: {
-      type: "website",
-      // Open Graph's underscore form, derived from next-intl's
-      // hyphenated locale — see shared/lib/metadata/build-page-metadata.ts
-      // for the same derivation used by every screen below this layout.
-      locale: locale.replace("-", "_"),
-      siteName: t("title"),
-    },
+    ...(await buildSocialMetadata({ title: t("title"), description: t("description") })),
   };
 };
 

@@ -177,7 +177,10 @@ ministry-app/
 │  │      ├─ lib/access/          classifyAccess + тесты (vitest) — ADR 0016
 │  │      ├─ lib/metadata/        buildPageMetadata — общий помощник
 │  │      │                       generateMetadata экранов (title/
-│  │      │                       description/openGraph/robots) — ADR 0032
+│  │      │                       description/openGraph/robots) и
+│  │      │                       buildSocialMetadata (openGraph + twitter с
+│  │      │                       og-image.jpg, единственное место
+│  │      │                       объявления) — ADR 0032
 │  │      ├─ lib/seo/             buildRobots/buildSitemap — чистые
 │  │      │                       функции под app/robots.ts и
 │  │      │                       app/sitemap.ts, + тесты (vitest) — ADR 0032
