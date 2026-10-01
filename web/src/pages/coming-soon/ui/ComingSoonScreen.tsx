@@ -12,7 +12,7 @@ export const ComingSoonScreen = async () => {
   const t = await getTranslations("screens.comingSoon");
 
   return (
-    <CenteredState glyph={<AppMark size={88} tone="solid" elevated />} actions={<WaitlistForm />}>
+    <CenteredState fill glyph={<AppMark size={88} tone="solid" elevated />} actions={<WaitlistForm />}>
       <TextBlock
         align="center"
         eyebrow={t("eyebrow")}

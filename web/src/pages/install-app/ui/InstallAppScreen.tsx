@@ -24,6 +24,7 @@ export const InstallAppScreen = async () => {
 
   return (
     <CenteredState
+      fill
       glyph={<AppMark size={88} tone="solid" elevated />}
       actions={<InstallSheet />}
       footnote={<Caption className="max-w-65">{t("inAppBrowserHint")}</Caption>}

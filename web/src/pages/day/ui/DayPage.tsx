@@ -42,7 +42,7 @@ export const DayPage = async () => {
   ]);
 
   return (
-    <CenteredState>
+    <CenteredState fill>
       <Title size="compact">{t("title")}</Title>
       <BodyText>
         {t("supabaseStatusLabel")}{" "}
