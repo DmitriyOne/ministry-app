@@ -1,1 +1,1 @@
-export { DesktopBlockScreen as default } from "@/pages/desktop-block";
+export { DesktopBlockScreen as default, generateMetadata } from "@/pages/desktop-block";

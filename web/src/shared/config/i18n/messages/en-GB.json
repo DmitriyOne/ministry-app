@@ -19,16 +19,28 @@
   "screens": {
     "day": {
       "title": "Day",
-      "supabaseStatusLabel": "Supabase:"
+      "supabaseStatusLabel": "Supabase:",
+      "metadata": {
+        "title": "Day",
+        "description": "Record today's ministry hours and Bible studies in a few taps, and see how you're tracking against your monthly and yearly goal."
+      }
     },
     "access": {
       "desktop": {
         "title": "Phones only, for now",
-        "text": "Open MinistryApp on your phone. All your records are already there."
+        "text": "Open MinistryApp on your phone. All your records are already there.",
+        "metadata": {
+          "title": "Phones only, for now",
+          "description": "MinistryApp is available on iPhone only, for now. Open this page on your own phone to sign in and see your ministry report."
+        }
       },
       "android": {
         "title": "iOS only, for now",
-        "text": "We're working on an Android version. MinistryApp only opens on iPhone for now."
+        "text": "We're working on an Android version. MinistryApp only opens on iPhone for now.",
+        "metadata": {
+          "title": "iOS only, for now",
+          "description": "MinistryApp currently supports iPhone only. An Android version is on its way — check back soon, or open this page on an iPhone."
+        }
       },
       "iosBrowser": {
         "title": "Safari only, for now",
@@ -36,14 +48,22 @@
         "copyLinkButton": "Copy link",
         "linkCopied": "Link copied",
         "copyLinkError": "Couldn't copy the link automatically. Select the address below and copy it manually.",
-        "addressLabel": "Address"
+        "addressLabel": "Address",
+        "metadata": {
+          "title": "Safari only, for now",
+          "description": "MinistryApp only opens in Safari on iPhone. Open this page in Safari instead, or copy the link to open it there yourself."
+        }
       }
     },
     "notFound": {
       "code": "404",
       "title": "Page not found",
       "text": "This page doesn't exist or has moved. Check the link or go back to MinistryApp.",
-      "homeButton": "Go to home screen"
+      "homeButton": "Go to home screen",
+      "metadata": {
+        "title": "Page not found",
+        "description": "This page doesn't exist or has moved. Check the address, or go back to MinistryApp to continue tracking your ministry hours."
+      }
     },
     "serverError": {
       "code": "500",
@@ -57,6 +77,10 @@
       "eyebrow": "MinistryApp",
       "title": "Install the app on your phone",
       "text": "An icon will appear on your home screen. Your report will open in one tap, with no browser address bar.",
+      "metadata": {
+        "title": "Install the app",
+        "description": "Add MinistryApp to your iPhone's home screen for one-tap access to your ministry report, with no browser address bar in the way."
+      },
       "installButton": "How to install",
       "inAppBrowserHint": "Opened this from Telegram, WhatsApp or another app? Open it in Safari first — installing won’t work from inside the app.",
       "sheet": {
@@ -93,6 +117,10 @@
       "eyebrow": "Coming soon",
       "title": "MinistryApp",
       "text": "The app for tracking ministry hours is on its way. We'll let you know as soon as it's ready.",
+      "metadata": {
+        "title": "Coming soon",
+        "description": "MinistryApp is on its way: a simple way to track ministry hours, Bible studies, and goals. Join the waitlist to hear when it's ready."
+      },
       "emailPlaceholder": "Your email",
       "submitButton": "Join the waitlist",
       "submitButtonPending": "Joining…",
@@ -105,6 +133,10 @@
     },
     "about": {
       "eyebrow": "About",
+      "metadata": {
+        "title": "About",
+        "description": "What MinistryApp does: daily and monthly reports, pace against your goal, personal targets, and how your data is kept private."
+      },
       "hero": {
         "title": "MinistryApp",
         "text": "A personal record of your ministry: hours, Bible studies, and goals for the month and the service year."
@@ -158,6 +190,10 @@
     },
     "privacy": {
       "eyebrow": "Privacy & cookies",
+      "metadata": {
+        "title": "Privacy & cookies",
+        "description": "What MinistryApp stores about you, why it's stored, which cookies it uses, and how to access, correct, or erase your data."
+      },
       "title": "Privacy notice",
       "updated": "Last updated 1 October 2026 · version 1.0",
       "intro": "This notice explains what MinistryApp stores about you and why. It covers both your personal data and the cookies and storage the app uses on your phone.",

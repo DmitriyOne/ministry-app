@@ -1,1 +1,1 @@
-export { IosBrowserRequiredScreen as default } from "@/pages/ios-browser-required";
+export { IosBrowserRequiredScreen as default, generateMetadata } from "@/pages/ios-browser-required";

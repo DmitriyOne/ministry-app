@@ -4,7 +4,7 @@ import { SerwistProvider } from "@serwist/turbopack/react";
 import { getTranslations } from "next-intl/server";
 
 import { LaunchGate, LaunchLoading, LaunchNoscriptFallback } from "@/features/launch-gate";
-import { env, locale } from "@/shared/config";
+import { env, getSiteUrl, locale } from "@/shared/config";
 
 import { Providers } from "./providers";
 
@@ -15,15 +15,40 @@ import "../styles/globals.css";
 // Text comes from the dictionary (ADR 0014), so metadata is built via
 // generateMetadata rather than a static export — next-intl only hands
 // back translations asynchronously.
+//
+// title.template (ADR 0032) appends the product name once, consistently
+// — every screen's own generateMetadata (shared/lib/metadata/
+// build-page-metadata.ts) sets a short title, this template does the
+// " — MinistryApp" suffix, nowhere else. title.default/metadataT("title")
+// is what the root `/` route falls back to (it has no metadata of its
+// own — see app/(with-footer)/page.tsx, it only redirects) and is also
+// title.absolute-equivalent here (no page.tsx defines metadata.title
+// without going through buildPageMetadata, so the template always
+// applies below the root).
+//
+// icons.apple was removed (ADR 0020 → ADR 0032): web/app/apple-icon.png
+// (the file-based convention) now supersedes it — file-based metadata
+// always wins over the generateMetadata/metadata object (see Next.js
+// docs, generate-metadata.md: "File-based metadata has the higher
+// priority"), so keeping both was redundant, not additive.
 export const generateMetadata = async (): Promise<Metadata> => {
   const t = await getTranslations("metadata");
+  const siteUrl = getSiteUrl();
 
   return {
-    title: t("title"),
+    title: { default: t("title"), template: `%s — ${t("title")}` },
     description: t("description"),
+    metadataBase: siteUrl ? new URL(siteUrl) : undefined,
     manifest: "/manifest.webmanifest",
     appleWebApp: { capable: true, statusBarStyle: "default", title: t("title") },
-    icons: { apple: "/icons/icon-192.png" },
+    openGraph: {
+      type: "website",
+      // Open Graph's underscore form, derived from next-intl's
+      // hyphenated locale — see shared/lib/metadata/build-page-metadata.ts
+      // for the same derivation used by every screen below this layout.
+      locale: locale.replace("-", "_"),
+      siteName: t("title"),
+    },
   };
 };
 

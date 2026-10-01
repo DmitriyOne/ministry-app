@@ -24,6 +24,13 @@ export const env = createEnv({
           .map((origin) => origin.trim())
           .filter((origin) => origin.length > 0),
       ),
+    // Explicit override for the absolute base URL metadata needs
+    // (robots.txt's Sitemap: line, sitemap.xml's per-page url,
+    // metadataBase — ADR 0032). Optional and unset by default: the
+    // production domain hasn't been confirmed yet, so nothing is baked
+    // in here — see getSiteUrl() below for the fallback chain, used by
+    // every caller instead of this field directly.
+    SITE_URL: z.url().optional(),
   },
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.url(),
@@ -59,3 +66,34 @@ if (typeof window === "undefined" && env.DEV_MODE && process.env.NODE_ENV === "p
       "development only, alongside NODE_ENV=development).",
   );
 }
+
+// Absolute base URL for metadata fields that must be fully qualified —
+// robots.txt's Sitemap: line, sitemap.xml's per-page url, and
+// metadataBase in the root layout (see shared/lib/seo, ADR 0032).
+// SITE_URL is the explicit override, set once the production domain is
+// confirmed (envs/*.local.env or a Vercel project env var) — never
+// hardcoded here. VERCEL_PROJECT_PRODUCTION_URL is Vercel's own
+// platform-injected variable (present on every Vercel build without a
+// protocol, naming the project's confirmed production domain) used as a
+// fallback so nothing needs setting by hand once the project is linked.
+// Read directly from process.env, not through createEnv/zod — it's
+// supplied by the platform, not a value this project defines.
+// Neither present (local dev, or any build before the domain is
+// confirmed/linked) — undefined, and every caller degrades safely
+// rather than crashing (empty sitemap, a robots.txt with no Sitemap:
+// line, no metadataBase).
+//
+// A function, not a module-scope constant: env.SITE_URL is a
+// server-only key (same reasoning as the DEV_MODE guard above) — a
+// client bundle pulling in this module through the shared/config
+// barrel must never evaluate it.
+export const getSiteUrl = (): string | undefined => {
+  if (typeof window !== "undefined") return undefined;
+
+  return (
+    env.SITE_URL ??
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : undefined)
+  );
+};

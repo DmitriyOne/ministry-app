@@ -1,1 +1,1 @@
-export { DayPage as default } from "@/pages/day";
+export { DayPage as default, generateMetadata } from "@/pages/day";

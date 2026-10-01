@@ -86,7 +86,22 @@ ministry-app/
 │  │                             error.tsx/global-error.tsx — 404/500
 │  │                             (ADR 0018, штатные Next.js-конвенции, не
 │  │                             страницы по адресу); app/serwist/[path]/
-│  │                             route.ts — Route Handler сервис-воркера
+│  │                             route.ts — Route Handler сервис-воркера;
+│  │                             app/icon.svg + app/apple-icon.png —
+│  │                             файловые иконки (AppMark на плитке
+│  │                             --hero, путь скопирован из AppMarkIcon;
+│  │                             apple-icon.png 180×180 без альфа-канала,
+│  │                             сгенерирован из icon-512.png — ADR 0032),
+│  │                             заменили нетронутый плейсхолдер
+│  │                             favicon.ico от create-next-app (удалён);
+│  │                             app/robots.ts + app/sitemap.ts —
+│  │                             генерируемые по DEV_MODE/SITE_URL (пусто
+│  │                             и Disallow: / под DEV_MODE, иначе
+│  │                             /about+/privacy — ADR 0032; щит
+│  │                             User-Agent на /about и /privacy
+│  │                             по-прежнему в силе, так что реальная
+│  │                             индексация ждёт отдельного решения —
+│  │                             см. ADR 0032, раздел «оговорка»)
 │  ├─ pages/                     ПУСТАЯ (кроме README.md) — см.
 │  │                             docs/decisions/0004-*.md: без неё Next.js
 │  │                             принял бы src/pages за legacy Pages Router
@@ -160,7 +175,15 @@ ministry-app/
 │  │      │                      таблица cookies с пилюлей статуса, без
 │  │      │                      домена — ADR 0031)
 │  │      ├─ lib/access/          classifyAccess + тесты (vitest) — ADR 0016
-│  │      ├─ config/              env.ts — createEnv (@t3-oss/env-nextjs);
+│  │      ├─ lib/metadata/        buildPageMetadata — общий помощник
+│  │      │                       generateMetadata экранов (title/
+│  │      │                       description/openGraph/robots) — ADR 0032
+│  │      ├─ lib/seo/             buildRobots/buildSitemap — чистые
+│  │      │                       функции под app/robots.ts и
+│  │      │                       app/sitemap.ts, + тесты (vitest) — ADR 0032
+│  │      ├─ config/              env.ts — createEnv (@t3-oss/env-nextjs),
+│  │      │                       getSiteUrl() (SITE_URL с фолбэком на
+│  │      │                       VERCEL_PROJECT_PRODUCTION_URL — ADR 0032);
 │  │      │                       routes.ts — единственный источник
 │  │      │                       всех путей приложения (`/`, `/day`,
 │  │      │                       `/soon`, `/install`, `/about`,
@@ -168,7 +191,9 @@ ministry-app/
 │  │      │                       узкий тип `AppRoute` — ADR 0030/0031
 │  │      └─ api/supabase/        supabase клиенты (client.ts / server.ts) + database.types.ts
 │  └─ public/                    manifest.webmanifest (start_url — /day,
-│                                 ADR 0019), иконки, pwa/ios/*.png
+│                                 ADR 0019; icons — 192/512 "any" +
+│                                 icon-maskable-640.png "maskable", ADR
+│                                 0032), иконки, pwa/ios/*.png
 │                                 (плейсхолдеры экрана установки, ADR 0016)
 ├─ backend/
 │  ├─ supabase/                  Supabase CLI проект: config.toml, migrations/, functions/health, seed.sql
@@ -618,7 +643,7 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
 | `pnpm db:types` | Генерация TS-типов из локальной БД в `web/src/shared/api/supabase/database.types.ts` |
 | `pnpm lint` | ESLint + `steiger` (проверка границ FSD) в `web/` |
 | `pnpm typecheck` | `tsc --noEmit` в `web/` |
-| `pnpm test` | `vitest run` в `web/` — сейчас только `classifyAccess` (ADR 0016) |
+| `pnpm test` | `vitest run` в `web/` — `classifyAccess` (ADR 0016), `buildRobots`/`buildSitemap` (ADR 0032) |
 | `pnpm build` | `next build` (Turbopack) в `web/` (с env из `envs/web.local.env`) |
 | `pnpm db:login` / `db:link` / `db:push` / `functions:deploy` | Деплой в облачный Supabase — см. раздел ниже |
 
@@ -644,6 +669,20 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
   задан — ограничение просто отсутствует, сборка не падает. Личный
   IP-адрес не хардкодится и не коммитится — по тому же правилу, что и
   остальные env.
+- **Абсолютный базовый URL для метаданных** (`robots.txt`'s
+  `Sitemap:`, `sitemap.xml`, `metadataBase` — ADR 0032) — `SITE_URL`
+  (опциональный, `envs/web.local.env.example`) с фолбэком на
+  платформенную `VERCEL_PROJECT_PRODUCTION_URL` (читается напрямую из
+  `process.env`, не через `env.ts`/zod — её задаёт сама платформа
+  Vercel, не этот проект). Доступ — только через `getSiteUrl()`
+  (`shared/config`), не через `env.SITE_URL` напрямую: функция, не
+  константа, по той же причине, что `DEV_MODE`-проверка выше в
+  `env.ts`, — серверный ключ не должен читаться в клиентском бандле,
+  который тянет `shared/config` только ради `locale`. Ни одна из двух
+  переменных не задана — `robots.ts`/`sitemap.ts` деградируют
+  безопасно (пустой `sitemap.xml`, `robots.txt` без строки
+  `Sitemap:`), сборка не падает. Домен продакшена пока не подтверждён
+  пользователем — ничего не захардкожено.
 - **Браузерный и серверный Supabase-клиенты используют один и тот же
   `NEXT_PUBLIC_SUPABASE_URL`** — никакого отдельного "серверного" URL. Это
   важно не только для простоты, но и потому что имя auth-cookie
