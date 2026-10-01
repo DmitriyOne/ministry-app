@@ -13,6 +13,7 @@
     "db:start": "pnpm --filter backend run db:start",
     "db:stop": "pnpm --filter backend run db:stop",
     "db:reset": "pnpm --filter backend run db:reset",
+    "db:test": "pnpm --filter backend run db:test",
     "db:types": "pnpm --filter backend run db:types",
     "db:login": "pnpm --filter backend run db:login",
     "db:link": "pnpm --filter backend run db:link",

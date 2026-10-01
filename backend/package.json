@@ -6,6 +6,7 @@
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
     "db:types": "supabase gen types typescript --local > ../web/src/shared/api/supabase/database.types.ts",
     "db:login": "supabase login",
     "db:link": "sh -c 'supabase link --project-ref \"${SUPABASE_PROJECT_REF:?Set SUPABASE_PROJECT_REF, e.g. SUPABASE_PROJECT_REF=abcxyz pnpm db:link}\"'",
