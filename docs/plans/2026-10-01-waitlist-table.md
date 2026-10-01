@@ -605,7 +605,7 @@ EOF
 - Modify: `web/src/features/join-waitlist/api/join-waitlist-action.ts`
 
 **Interfaces:**
-- Consumes: `createServerSupabaseClient` from `@/shared/api/supabase`; `mapJoinWaitlistRow`, `JoinWaitlistRow` from Task 3.
+- Consumes: `createServerSupabaseClient` from `@/shared/api` — the public API of the whole `api` segment, **not** `@/shared/api/supabase`. `web/src/shared/api/index.ts` re-exports the slice (`export * from "./supabase"`), so reaching past it to the inner `index.ts` is a public-API sidestep and `steiger` rejects it with `fsd/no-public-api-sidestep`. Also `mapJoinWaitlistRow`, `JoinWaitlistRow` from Task 3.
 - Produces: `persistWaitlistSignup(email: string): Promise<JoinWaitlistRow | null>`; `joinWaitlist` keeps its existing `(previousState, values)` server-action signature and now returns `position`/`alreadyJoined` on success.
 
 - [ ] **Step 1: Write the persistence module**
@@ -615,7 +615,7 @@ Create `web/src/features/join-waitlist/api/persist-waitlist-signup.ts`:
 ```ts
 import "server-only";
 
-import { createServerSupabaseClient } from "@/shared/api/supabase";
+import { createServerSupabaseClient } from "@/shared/api";
 
 import type { JoinWaitlistRow } from "../model/map-join-waitlist-row";
 
@@ -710,7 +710,7 @@ Expected: `email` appears only as the parameter and the `p_email` argument in `p
 pnpm typecheck && pnpm lint
 ```
 
-Expected: clean. `steiger` must stay quiet — `features/join-waitlist` importing from `shared/api` is downward, which is allowed.
+Expected: clean. `steiger` must stay quiet. Downward imports from `features` into `shared` are allowed, but the path has to be the segment's public API — `@/shared/api`, never `@/shared/api/supabase`, or `fsd/no-public-api-sidestep` fires. Any later import of a `shared` slice follows the same rule.
 
 - [ ] **Step 5: Commit**
 
