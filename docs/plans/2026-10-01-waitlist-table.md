@@ -1144,13 +1144,15 @@ T=$(mktemp -d) && sed 's/^DEV_MODE=true/DEV_MODE=false/' envs/web.local.env > "$
   && (cd web && pnpm exec dotenv -e "$T/build.env" -- pnpm run build)
 ```
 
-Expected: a successful build. Also confirm no Russian has crept into the code or the dictionary:
+Expected: a successful build. Also confirm no Russian has crept into the code or the dictionary — but scoped to what this branch actually touched, because the repository-wide grep is not clean and never was:
 
 ```bash
-grep -rn '[А-Яа-яЁё]' web/src web/app || echo "clean"
+git diff develop --name-only -- web/src web/app | xargs -r grep -n '[А-Яа-яЁё]' || echo "clean"
 ```
 
 Expected: `clean`.
+
+The repository-wide form of this grep (`grep -rn '[А-Яа-яЁё]' web/src web/app`, as `CLAUDE.md` states it) returns four pre-existing hits on `develop` — `globals.css:312`, `globals.css:338`, `launch-noscript-fallback.tsx:13` and `use-launch-gate.ts:55`. All four are a Russian ADR section title (`"Обновление: state вместо CSS-оверлея"`) quoted inside an otherwise English comment, which is a citation rather than Russian prose. Do not "fix" them in this branch: they predate it, and whether a quoted ADR heading counts as a violation of that rule is the user's call, not a drive-by edit in a change about a database table.
 
 - [ ] **Step 5: Commit**
 
