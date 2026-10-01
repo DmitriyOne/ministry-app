@@ -92,8 +92,12 @@ ministry-app/
 │  │                             --hero, путь скопирован из AppMarkIcon;
 │  │                             apple-icon.png 180×180 без альфа-канала,
 │  │                             сгенерирован из icon-512.png — ADR 0032),
-│  │                             заменили нетронутый плейсхолдер
-│  │                             favicon.ico от create-next-app (удалён);
+│  │                             app/favicon.ico — 16/24/32/48/64,
+│  │                             со знаком, из icon.svg скриптом
+│  │                             web/scripts/generate-favicon.mjs (ADR
+│  │                             0032, обновление; плейсхолдер
+│  │                             create-next-app заменён, не просто
+│  │                             удалён — /favicon.ico запрашивают по пути);
 │  │                             app/robots.ts + app/sitemap.ts —
 │  │                             генерируемые по DEV_MODE/SITE_URL (пусто
 │  │                             и Disallow: / под DEV_MODE, иначе
