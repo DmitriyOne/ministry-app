@@ -27,7 +27,7 @@ export const ScreenHeader = ({
   const resolvedBackLabel = backLabel ?? t("back");
 
   return (
-    <header className={cn("flex items-center gap-3", className)}>
+    <header className={cn("flex items-center gap-3 px-5 pt-6 pb-3", className)}>
       <Button
         type="button"
         variant="plain"

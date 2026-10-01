@@ -100,7 +100,9 @@ type LinkButtonProps = Omit<LinkPrimitiveProps, "className"> &
 // internal paths ("/..."): next/link expects an app route, not an
 // arbitrary/external href, so anything else (mailto:, tel:, external
 // https://...) falls back to a plain <a> (react-aria-components' default).
-const isInternalHref = (href: LinkPrimitiveProps["href"]): href is string =>
+// Exported — shared/ui/text-link.tsx (ADR 0029) needs the exact same
+// internal-vs-external check for its own next/link render prop.
+export const isInternalHref = (href: LinkPrimitiveProps["href"]): href is string =>
   typeof href === "string" && href.startsWith("/");
 
 export const LinkButton = ({
