@@ -28,7 +28,24 @@ export const AboutScreen = async () => {
   const t = await getTranslations("screens.about");
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background text-ink">
+    // `flex-1`, not `min-h-dvh`: this screen now lives inside
+    // app/(with-footer) (ADR 0029, amendment), whose layout.tsx already
+    // reserves the full viewport height one level up
+    // (`flex min-h-dvh flex-col`) and appends <ScreenFooter /> after
+    // this div as a sibling. A second `min-h-dvh` here would claim the
+    // whole viewport for itself again and push the footer below the
+    // fold — the same bug ADR 0029 already fixed once for
+    // DayPage/InstallAppScreen/ComingSoonScreen via CenteredState's
+    // `fill` prop; this screen gets the same fix by hand, since it
+    // doesn't use CenteredState. `flex-1` grows to fill the layout
+    // column's remaining space on a short viewport (`bg-background`
+    // still covers the full page, no pale strip under the content), and
+    // — because a flex item's default `min-height: auto` means it can't
+    // shrink below its content's natural height — grows past that on
+    // this screen's actual long content, so the footer ends up after it
+    // at the bottom of the document, where a numbered/informational
+    // document's footer belongs.
+    <div className="flex flex-1 flex-col bg-background text-ink">
       {/* The DOCUMENT is the scroll container here (no overflow-y-auto
           on <main> below), so `sticky` on this header is real: it pins
           to the top of the viewport as the page scrolls underneath it,

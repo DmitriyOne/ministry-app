@@ -42,7 +42,15 @@ export const PrivacyScreen = async () => {
   ];
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background text-ink">
+    // `flex-1`, not `min-h-dvh`: this screen now lives inside
+    // app/(with-footer) (ADR 0031, amendment to ADR 0029's reasoning),
+    // whose layout.tsx already reserves the full viewport height one
+    // level up (`flex min-h-dvh flex-col`) and appends <ScreenFooter />
+    // after this div as a sibling. A second `min-h-dvh` here would claim
+    // the whole viewport for itself again and push the footer below the
+    // fold — see the matching comment in AboutScreen.tsx for the full
+    // reasoning (same fix, same two screens, kept identical).
+    <div className="flex flex-1 flex-col bg-background text-ink">
       {/* The DOCUMENT is the scroll container here (no overflow-y-auto
           on <main> below), so `sticky` on this header is real: it pins
           to the top of the viewport as the page scrolls underneath it,
