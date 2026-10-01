@@ -62,10 +62,16 @@ ministry-app/
 │  ├─ app/                       Next App Router — тонкие роуты,
 │  │                             реэкспортирующие экраны из src/pages:
 │  │                             /day (приложение), /soon (Coming soon),
-│  │                             /install (установка), /access/* —
+│  │                             /install (установка), /about (об
+│  │                             приложении — ADR 0029), /access/* —
 │  │                             заглушки устройства (служебные витрины
 │  │                             /styleguide и /components удалены — см.
-│  │                             ADR 0011/0012);
+│  │                             ADR 0011/0012); app/(with-footer)/ —
+│  │                             route group (адрес не меняется), общий
+│  │                             layout.tsx добавляет ScreenFooter
+│  │                             ("About") к /, /day, /soon, /install;
+│  │                             /access/* и /about — вне группы, без
+│  │                             футера (ADR 0029);
 │  │                             никакой логики доступа в layout нет —
 │  │                             всё решает proxy.ts; not-found.tsx/
 │  │                             error.tsx/global-error.tsx — 404/500
@@ -88,13 +94,22 @@ ministry-app/
 │  │  ├─ pages/                  FSD-слой "pages" (ADR 0016/0017/0018):
 │  │  │                          day, desktop-block, android-block,
 │  │  │                          ios-browser-required, install-app,
-│  │  │                          coming-soon, not-found, server-error
+│  │  │                          coming-soon, about (ADR 0029 — тонкий
+│  │  │                          экран, собирает ListRow/ListCard/
+│  │  │                          PaceCard/SectionLabel из shared/ui и
+│  │  │                          ScreenBackHeader из features/screen-back,
+│  │  │                          ADR 0030), not-found, server-error
 │  │  │                          (styleguide, components удалены —
 │  │  │                          ADR 0011/0012)
 │  │  ├─ widgets/                install-sheet (панель установки),
 │  │  │                          waitlist-form (форма вайтлиста) — ADR
-│  │  │                          0018. bottom-nav удалён в ADR 0016,
-│  │  │                          вернётся с реальными экранами навигации
+│  │  │                          0018; screen-footer (ScreenFooter —
+│  │  │                          рендерит ссылки из model/
+│  │  │                          footer-links.ts под /, /day, /soon,
+│  │  │                          /install; сейчас там одна ссылка,
+│  │  │                          "About" — ADR 0029/0030). bottom-nav
+│  │  │                          удалён в ADR 0016, вернётся с реальными
+│  │  │                          экранами навигации
 │  │  ├─ features/                launch-gate (сценарий "определить
 │  │  │                          способ запуска и решить, куда отправить
 │  │  │                          человека" — LaunchGate/LaunchLoading/
@@ -106,12 +121,29 @@ ministry-app/
 │  │  │                          панели), install-carousel (шаги
 │  │  │                          инструкции + их константы в model/),
 │  │  │                          join-waitlist (схема + react-hook-form
-│  │  │                          вайтлиста) — ADR 0018
+│  │  │                          вайтлиста) — ADR 0018, screen-back
+│  │  │                          (сценарий "вернуться по истории или
+│  │  │                          уйти на / " — useScreenBack/
+│  │  │                          ScreenBackHeader, Navigation API
+│  │  │                          `navigation.canGoBack`, не завязан на
+│  │  │                          конкретный экран — ADR 0029/0030)
 │  │  ├─ entities/                пока пусто (.gitkeep)
 │  │  └─ shared/
-│  │      ├─ ui/                 shadcn/ui компоненты
+│  │      ├─ ui/                 shadcn/ui компоненты, плюс TextLink
+│  │      │                      (тихая ссылка, клиентская навигация как
+│  │      │                      у LinkButton — ADR 0024/0029;
+│  │      │                      ScreenFooter, который её использует,
+│  │      │                      сам — в widgets/screen-footer, не
+│  │      │                      здесь) и ListRow/ListCard/PaceCard/
+│  │      │                      SectionLabel (глупая вёрстка списков
+│  │      │                      about-экрана, без домена — ADR 0029)
 │  │      ├─ lib/access/          classifyAccess + тесты (vitest) — ADR 0016
-│  │      ├─ config/              env.ts — createEnv (@t3-oss/env-nextjs)
+│  │      ├─ config/              env.ts — createEnv (@t3-oss/env-nextjs);
+│  │      │                       routes.ts — единственный источник
+│  │      │                       всех путей приложения (`/`, `/day`,
+│  │      │                       `/soon`, `/install`, `/about`,
+│  │      │                       `/access/*`), `as const` + узкий тип
+│  │      │                       `AppRoute` — ADR 0030
 │  │      └─ api/supabase/        supabase клиенты (client.ts / server.ts) + database.types.ts
 │  └─ public/                    manifest.webmanifest (start_url — /day,
 │                                 ADR 0019), иконки, pwa/ios/*.png
@@ -293,7 +325,7 @@ Aria `Link`'s `render`-проп) — не обычной перезагрузк�
 ## Доступ v1 — только iPhone в Safari, экраны — маршруты
 
 ADR 0016 (заменяет ADR 0015) + ADR 0017 (уточняет 0016 — экраны стали
-настоящими маршрутами вместо компонента в layout). Шесть состояний, у
+настоящими маршрутами вместо компонента в layout). Семь состояний, у
 каждого свой адрес:
 
 | Адрес | Экран | Кто видит |
@@ -301,10 +333,37 @@ ADR 0016 (заменяет ADR 0015) + ADR 0017 (уточняет 0016 — эк�
 | `/day` | приложение | установленное приложение, `LAUNCH_MODE === "app"` |
 | `/soon` | Coming soon | установленное приложение, `LAUNCH_MODE === "coming-soon"` |
 | `/install` | установка — bottom sheet с каруселью из 5 шагов | iPhone Safari, обычный браузер |
+| `/about` | об приложении — экраны и возможности (ADR 0029) | iPhone Safari, и с установленным приложением (ссылка из футера), и без него — через `APP_ROUTES` в `proxy.ts`, но НЕ через `LaunchGate` (не требует запуска со значка) |
 | `/access/ios-browser` | «Доступно только в Safari» (+ «Скопировать ссылку», если доступен Clipboard API) | iPhone, не Safari (Chrome/Firefox/Edge/Opera/Яндекс на iOS, встроенные браузеры мессенджеров) |
 | `/access/android` | «Приложение доступно только для iOS» | любой Android |
 | `/access/desktop` | «Доступно только с телефона» | десктоп, ноутбук, любой планшет (включая iPad, в т.ч. с UA macOS) |
 | `DEV_MODE=true` | всё открыто, все адреса выше — напрямую | — |
+
+Тихая ссылка «About» в футере (`ScreenFooter`, `widgets/screen-footer/`)
+ведёт на `/about` с `/`, `/day`, `/soon`, `/install` — добавлена общим
+`layout.tsx` route group `app/(with-footer)/` (адрес не меняется),
+отдельно от `/access/*` и самого `/about` (ADR 0029). `ScreenFooter`
+рендерит список ссылок из `widgets/screen-footer/model/
+footer-links.ts` (`href` — из `shared/config/routes`, ADR 0030), а не
+хардкодит один `<TextLink>` — вторая ссылка добавится правкой этого
+списка, без изменений в разметке (ADR 0029, обновление). Этот же
+`layout.tsx`, а не каждый экран по отдельности, резервирует
+`min-h-dvh`, чтобы футер помещался в первый экран вместе с содержимым
+без прокрутки — `CenteredState` (`shared/ui/`) на экранах внутри группы
+получает проп `fill`, растягиваясь только на место, оставшееся над
+футером (ADR 0029).
+
+Кнопка «назад» на `/about` (и на любом другом экране, который её
+подключит) — `ScreenBackHeader` из `features/screen-back` (ADR
+0029/0030): если `window.navigation?.canGoBack === true` (Navigation
+API — не iOS Safari до версии 26.2,
+https://caniuse.com/mdn-api_navigation_cangoback), `router.back()`
+(`next/navigation`) возвращает клиентски, без перезагрузки и без
+повторного прогона `LaunchGate`; иначе — запасной путь,
+`window.location.replace(routes.root)`, откуда `LaunchGate` сам решает
+`/day` это или `/install`. Никакого `sessionStorage`-флага для этого
+больше нет — был удалён в пользу прямой проверки истории браузера (ADR
+0029).
 
 Решение, какой адрес показать, принимает **только `web/proxy.ts`** —
 никакого компонента-переключателя в layout больше нет. Два разных
@@ -459,6 +518,7 @@ server-error` использует `useTranslations`, не `getTranslations`);
 | `/day` | экран приложения |
 | `/soon` | Coming soon |
 | `/install` | экран установки (bottom sheet) |
+| `/about` | экран «О приложении» (ADR 0029) |
 | `/access/desktop` | заглушка «только с телефона» |
 | `/access/android` | заглушка «только iOS» |
 | `/access/ios-browser` | заглушка «только Safari» |
@@ -468,7 +528,7 @@ server-error` использует `useTranslations`, не `getTranslations`);
 ошибки рендера) — проверяется временно брошенным исключением в коде
 экрана на время отладки, либо в проде — реальной ошибкой.
 
-`/day`/`/soon`/`/install`/`/access/*` при `DEV_MODE=false` продолжают
+`/day`/`/soon`/`/install`/`/about`/`/access/*` при `DEV_MODE=false` продолжают
 работать по правилам таблицы выше — только уже по-настоящему, через
 классификацию `User-Agent` и клиентскую проверку `display-mode`
 (`LaunchGate`). Эмуляции `display-mode` не умеет CDP/Chromium (см.
