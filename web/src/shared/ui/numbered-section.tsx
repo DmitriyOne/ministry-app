@@ -5,11 +5,18 @@ import type { ReactNode } from "react";
 // whatever body content the caller passes as children (paragraphs,
 // lists, a table — the mix differs per section, so this doesn't try to
 // impose one shape). `id` lets SectionIndex's anchor chips jump here.
-// `scroll-mt-4` is just a small breathing-room offset, not a fix for a
-// sticky header covering the heading: PrivacyScreen's ScreenBackHeader
-// sits OUTSIDE <main>, and <main> (not the document) is the scroll
-// container (flex-1 overflow-y-auto), so the sticky header never
-// overlaps scrolled content there — nothing needs clearing.
+// The scroll-margin-top below clears PrivacyScreen's sticky
+// ScreenBackHeader: the DOCUMENT is the scroll container there now
+// (ADR 0031's amendment
+// corrects the earlier record — a nested <main> scroll container used
+// to make `sticky` a no-op, which is why it never needed clearing
+// before), so a chip jump scrolls a heading right under the header
+// unless the anchor's landing position is pushed down past it. The
+// offset is the header's own rendered height — `pt-6` (24px) + the
+// 38px back-button control + `pb-3` (12px) = 74px, plus the iOS
+// safe-area inset the header itself adds on top (`env(safe-area-inset-
+// top)`, ADR 0020) — plus a little extra breathing room so the heading
+// doesn't land flush under the header's bottom edge.
 type NumberedSectionProps = {
   id: string;
   number: number;
@@ -18,7 +25,10 @@ type NumberedSectionProps = {
 };
 
 export const NumberedSection = ({ id, number, title, children }: NumberedSectionProps) => (
-  <section id={id} className="flex scroll-mt-4 flex-col gap-2">
+  <section
+    id={id}
+    className="flex scroll-mt-[calc(env(safe-area-inset-top)+92px)] flex-col gap-2"
+  >
     <h2 className="flex items-baseline gap-2 text-list-row font-600 tracking-list-row text-ink">
       <span aria-hidden="true" className="text-caption font-620 tabular-nums text-ink-faint">
         {number}
