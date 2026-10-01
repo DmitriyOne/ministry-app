@@ -8,6 +8,7 @@ import { FieldError, type FieldErrorItem } from "@/shared/ui/field";
 import { HoneypotField } from "@/shared/ui/honeypot-field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { Spinner } from "@/shared/ui/spinner";
 
 // Pill radius is the one deliberate exception to the 17–26 unification
 // (ADR 0012); PillForm is a standalone "pill" form, not a card.
@@ -37,6 +38,13 @@ type PillFormProps = {
   onSubmit?: (value: string, honeypotValue?: string) => void;
   errors?: FieldErrorItem[];
   isSubmitDisabled?: boolean;
+  // Submission in flight: the field stops accepting input and the button
+  // shows a spinner. `readOnly` rather than `disabled` on the input — a
+  // disabled input leaves the tab order and stops having its value read
+  // out, so someone using a screen reader loses what they just typed at
+  // the exact moment they are waiting to hear what happened. `readOnly`
+  // blocks typing and keeps both.
+  isPending?: boolean;
   // Optional bot decoy (shared/ui/honeypot-field.tsx) rendered inside this
   // same <form>. PillForm only renders it and, on submit, reads its
   // current value straight off the native <form> via FormData (no ref
@@ -61,6 +69,7 @@ export const PillForm = ({
   onSubmit,
   errors,
   isSubmitDisabled = false,
+  isPending = false,
   honeypot,
 }: PillFormProps) => {
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
@@ -76,6 +85,10 @@ export const PillForm = ({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    // A second submit while the first is still running would start a
+    // duplicate request — the button is disabled, but Enter in the field
+    // still fires the form.
+    if (isPending) return;
     const honeypotValue = honeypot
       ? (new FormData(event.currentTarget).get(honeypot.name)?.toString() ?? "")
       : undefined;
@@ -95,7 +108,12 @@ export const PillForm = ({
 
   return (
     <div className="flex w-full max-w-100 flex-col items-center gap-3.5">
-      <form onSubmit={handleSubmit} noValidate className="flex w-full flex-col gap-2.5">
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        aria-busy={isPending || undefined}
+        className="flex w-full flex-col gap-2.5"
+      >
         <Label htmlFor={id} className="sr-only">
           {label}
         </Label>
@@ -106,6 +124,7 @@ export const PillForm = ({
           value={value}
           onChange={(event) => handleChange(event.target.value)}
           onBlur={onBlur}
+          readOnly={isPending}
           placeholder={placeholder}
           aria-invalid={invalid || undefined}
           aria-describedby={invalid ? errorId : undefined}
@@ -120,6 +139,7 @@ export const PillForm = ({
           isDisabled={isSubmitDisabled}
           className="h-auto w-full rounded-full py-3.5"
         >
+          {isPending ? <Spinner className="size-5" /> : null}
           {cta}
         </Button>
       </form>

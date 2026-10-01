@@ -51,6 +51,7 @@ export const WaitlistForm = () => {
             onBlur={onBlur}
             errors={errors}
             isSubmitDisabled={hasErrors || isPending}
+            isPending={isPending}
             submitted={submitted}
             successText={successText}
             onSubmit={(_value, honeypotValue) => onSubmit(honeypotValue)}
