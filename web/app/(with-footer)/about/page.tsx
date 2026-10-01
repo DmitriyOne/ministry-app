@@ -1,1 +1,1 @@
-export { AboutScreen as default } from "@/pages/about";
+export { AboutScreen as default, generateMetadata } from "@/pages/about";

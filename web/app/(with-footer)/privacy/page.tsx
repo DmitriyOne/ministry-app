@@ -1,1 +1,1 @@
-export { PrivacyScreen as default } from "@/pages/privacy";
+export { PrivacyScreen as default, generateMetadata } from "@/pages/privacy";

@@ -1,1 +1,1 @@
-export { InstallAppScreen as default } from "@/pages/install-app";
+export { InstallAppScreen as default, generateMetadata } from "@/pages/install-app";
