@@ -63,15 +63,18 @@ ministry-app/
 │  │                             реэкспортирующие экраны из src/pages:
 │  │                             /day (приложение), /soon (Coming soon),
 │  │                             /install (установка), /about (об
-│  │                             приложении — ADR 0029), /access/* —
+│  │                             приложении — ADR 0029), /privacy
+│  │                             (уведомление о конфиденциальности и
+│  │                             cookies — ADR 0031), /access/* —
 │  │                             заглушки устройства (служебные витрины
 │  │                             /styleguide и /components удалены — см.
 │  │                             ADR 0011/0012); app/(with-footer)/ —
 │  │                             route group (адрес не меняется), общий
 │  │                             layout.tsx добавляет ScreenFooter
-│  │                             ("About") к /, /day, /soon, /install;
-│  │                             /access/* и /about — вне группы, без
-│  │                             футера (ADR 0029);
+│  │                             ("About", "Privacy & cookies") к /, /day,
+│  │                             /soon, /install;
+│  │                             /access/*, /about и /privacy — вне
+│  │                             группы, без футера (ADR 0029/0031);
 │  │                             никакой логики доступа в layout нет —
 │  │                             всё решает proxy.ts; not-found.tsx/
 │  │                             error.tsx/global-error.tsx — 404/500
@@ -98,18 +101,22 @@ ministry-app/
 │  │  │                          экран, собирает ListRow/ListCard/
 │  │  │                          PaceCard/SectionLabel из shared/ui и
 │  │  │                          ScreenBackHeader из features/screen-back,
-│  │  │                          ADR 0030), not-found, server-error
-│  │  │                          (styleguide, components удалены —
-│  │  │                          ADR 0011/0012)
+│  │  │                          ADR 0030), privacy (ADR 0031 — тот же
+│  │  │                          тонкий-экран приём, собирает новые
+│  │  │                          SectionIndex/NumberedSection/CookieTable
+│  │  │                          из shared/ui и тот же ScreenBackHeader),
+│  │  │                          not-found, server-error (styleguide,
+│  │  │                          components удалены — ADR 0011/0012)
 │  │  ├─ widgets/                install-sheet (панель установки),
 │  │  │                          waitlist-form (форма вайтлиста) — ADR
 │  │  │                          0018; screen-footer (ScreenFooter —
 │  │  │                          рендерит ссылки из model/
 │  │  │                          footer-links.ts под /, /day, /soon,
-│  │  │                          /install; сейчас там одна ссылка,
-│  │  │                          "About" — ADR 0029/0030). bottom-nav
-│  │  │                          удалён в ADR 0016, вернётся с реальными
-│  │  │                          экранами навигации
+│  │  │                          /install; сейчас там две ссылки —
+│  │  │                          "About" и "Privacy & cookies" — ADR
+│  │  │                          0029/0030/0031). bottom-nav удалён в ADR
+│  │  │                          0016, вернётся с реальными экранами
+│  │  │                          навигации
 │  │  ├─ features/                launch-gate (сценарий "определить
 │  │  │                          способ запуска и решить, куда отправить
 │  │  │                          человека" — LaunchGate/LaunchLoading/
@@ -134,16 +141,21 @@ ministry-app/
 │  │      │                      у LinkButton — ADR 0024/0029;
 │  │      │                      ScreenFooter, который её использует,
 │  │      │                      сам — в widgets/screen-footer, не
-│  │      │                      здесь) и ListRow/ListCard/PaceCard/
+│  │      │                      здесь), ListRow/ListCard/PaceCard/
 │  │      │                      SectionLabel (глупая вёрстка списков
-│  │      │                      about-экрана, без домена — ADR 0029)
+│  │      │                      about-экрана, без домена — ADR 0029) и
+│  │      │                      SectionIndex/NumberedSection/CookieTable
+│  │      │                      (вёрстка numbered-document экрана
+│  │      │                      privacy — чип-якоря, раздел с номером,
+│  │      │                      таблица cookies с пилюлей статуса, без
+│  │      │                      домена — ADR 0031)
 │  │      ├─ lib/access/          classifyAccess + тесты (vitest) — ADR 0016
 │  │      ├─ config/              env.ts — createEnv (@t3-oss/env-nextjs);
 │  │      │                       routes.ts — единственный источник
 │  │      │                       всех путей приложения (`/`, `/day`,
 │  │      │                       `/soon`, `/install`, `/about`,
-│  │      │                       `/access/*`), `as const` + узкий тип
-│  │      │                       `AppRoute` — ADR 0030
+│  │      │                       `/privacy`, `/access/*`), `as const` +
+│  │      │                       узкий тип `AppRoute` — ADR 0030/0031
 │  │      └─ api/supabase/        supabase клиенты (client.ts / server.ts) + database.types.ts
 │  └─ public/                    manifest.webmanifest (start_url — /day,
 │                                 ADR 0019), иконки, pwa/ios/*.png
@@ -325,7 +337,7 @@ Aria `Link`'s `render`-проп) — не обычной перезагрузк�
 ## Доступ v1 — только iPhone в Safari, экраны — маршруты
 
 ADR 0016 (заменяет ADR 0015) + ADR 0017 (уточняет 0016 — экраны стали
-настоящими маршрутами вместо компонента в layout). Семь состояний, у
+настоящими маршрутами вместо компонента в layout). Восемь состояний, у
 каждого свой адрес:
 
 | Адрес | Экран | Кто видит |
@@ -334,27 +346,29 @@ ADR 0016 (заменяет ADR 0015) + ADR 0017 (уточняет 0016 — эк�
 | `/soon` | Coming soon | установленное приложение, `LAUNCH_MODE === "coming-soon"` |
 | `/install` | установка — bottom sheet с каруселью из 5 шагов | iPhone Safari, обычный браузер |
 | `/about` | об приложении — экраны и возможности (ADR 0029) | iPhone Safari, и с установленным приложением (ссылка из футера), и без него — через `APP_ROUTES` в `proxy.ts`, но НЕ через `LaunchGate` (не требует запуска со значка) |
+| `/privacy` | уведомление о конфиденциальности и cookies (ADR 0031) | то же, что `/about` — iPhone Safari, и с установленным приложением (ссылка из футера), и без него — через `APP_ROUTES` в `proxy.ts`, но НЕ через `LaunchGate` |
 | `/access/ios-browser` | «Доступно только в Safari» (+ «Скопировать ссылку», если доступен Clipboard API) | iPhone, не Safari (Chrome/Firefox/Edge/Opera/Яндекс на iOS, встроенные браузеры мессенджеров) |
 | `/access/android` | «Приложение доступно только для iOS» | любой Android |
 | `/access/desktop` | «Доступно только с телефона» | десктоп, ноутбук, любой планшет (включая iPad, в т.ч. с UA macOS) |
 | `DEV_MODE=true` | всё открыто, все адреса выше — напрямую | — |
 
-Тихая ссылка «About» в футере (`ScreenFooter`, `widgets/screen-footer/`)
-ведёт на `/about` с `/`, `/day`, `/soon`, `/install` — добавлена общим
-`layout.tsx` route group `app/(with-footer)/` (адрес не меняется),
-отдельно от `/access/*` и самого `/about` (ADR 0029). `ScreenFooter`
-рендерит список ссылок из `widgets/screen-footer/model/
-footer-links.ts` (`href` — из `shared/config/routes`, ADR 0030), а не
-хардкодит один `<TextLink>` — вторая ссылка добавится правкой этого
-списка, без изменений в разметке (ADR 0029, обновление). Этот же
-`layout.tsx`, а не каждый экран по отдельности, резервирует
-`min-h-dvh`, чтобы футер помещался в первый экран вместе с содержимым
-без прокрутки — `CenteredState` (`shared/ui/`) на экранах внутри группы
-получает проп `fill`, растягиваясь только на место, оставшееся над
-футером (ADR 0029).
+Футер (`ScreenFooter`, `widgets/screen-footer/`) с `/`, `/day`, `/soon`,
+`/install` ведёт на `/about` и `/privacy` двумя тихими ссылками —
+добавлены общим `layout.tsx` route group `app/(with-footer)/` (адрес не
+меняется), отдельно от `/access/*`, самого `/about` и самого `/privacy`
+(ADR 0029/0031). `ScreenFooter` рендерит список ссылок из
+`widgets/screen-footer/model/footer-links.ts` (`href` — из
+`shared/config/routes`, ADR 0030), а не хардкодит `<TextLink>` под
+каждую ссылку — третья ссылка добавится правкой этого списка, без
+изменений в разметке (ADR 0029, обновление; ADR 0031 — пример второй
+такой правки). Этот же `layout.tsx`, а не каждый экран по отдельности,
+резервирует `min-h-dvh`, чтобы футер помещался в первый экран вместе с
+содержимым без прокрутки — `CenteredState` (`shared/ui/`) на экранах
+внутри группы получает проп `fill`, растягиваясь только на место,
+оставшееся над футером (ADR 0029).
 
-Кнопка «назад» на `/about` (и на любом другом экране, который её
-подключит) — `ScreenBackHeader` из `features/screen-back` (ADR
+Кнопка «назад» на `/about`, `/privacy` (и на любом другом экране,
+который её подключит) — `ScreenBackHeader` из `features/screen-back` (ADR
 0029/0030): если `window.navigation?.canGoBack === true` (Navigation
 API — не iOS Safari до версии 26.2,
 https://caniuse.com/mdn-api_navigation_cangoback), `router.back()`
@@ -519,6 +533,7 @@ server-error` использует `useTranslations`, не `getTranslations`);
 | `/soon` | Coming soon |
 | `/install` | экран установки (bottom sheet) |
 | `/about` | экран «О приложении» (ADR 0029) |
+| `/privacy` | экран уведомления о конфиденциальности и cookies (ADR 0031) |
 | `/access/desktop` | заглушка «только с телефона» |
 | `/access/android` | заглушка «только iOS» |
 | `/access/ios-browser` | заглушка «только Safari» |
@@ -528,7 +543,7 @@ server-error` использует `useTranslations`, не `getTranslations`);
 ошибки рендера) — проверяется временно брошенным исключением в коде
 экрана на время отладки, либо в проде — реальной ошибкой.
 
-`/day`/`/soon`/`/install`/`/about`/`/access/*` при `DEV_MODE=false` продолжают
+`/day`/`/soon`/`/install`/`/about`/`/privacy`/`/access/*` при `DEV_MODE=false` продолжают
 работать по правилам таблицы выше — только уже по-настоящему, через
 классификацию `User-Agent` и клиентскую проверку `display-mode`
 (`LaunchGate`). Эмуляции `display-mode` не умеет CDP/Chromium (см.

@@ -7,7 +7,8 @@
     "back": "Back",
     "loading": "Loading",
     "noscriptRequired": "MinistryApp needs JavaScript enabled to run.",
-    "aboutLink": "About"
+    "aboutLink": "About",
+    "privacyLink": "Privacy & cookies"
   },
   "a11y": {
     "sheet": {
@@ -152,6 +153,112 @@
         "yourData": {
           "title": "Your data",
           "text": "Encrypted in transit and at rest, and never passed to third parties. Only you and the super administrator can read it — not to check up on you, but so an entry can be corrected or deleted at your request."
+        }
+      }
+    },
+    "privacy": {
+      "eyebrow": "Privacy & cookies",
+      "title": "Privacy notice",
+      "updated": "Last updated 1 October 2026 · version 1.0",
+      "intro": "This notice explains what MinistryApp stores about you and why. It covers both your personal data and the cookies and storage the app uses on your phone.",
+      "placeholders": {
+        "supabaseRegion": "[SUPABASE_REGION]"
+      },
+      "toc": {
+        "whatWeStore": "1. What we store",
+        "why": "2. Why",
+        "cookies": "3. Cookies",
+        "whoCanSeeIt": "4. Who can see it",
+        "yourRights": "5. Your rights",
+        "contact": "6. Contact"
+      },
+      "sections": {
+        "whatWeStore": {
+          "heading": "What we store",
+          "intro": "MinistryApp is a private app for recording your own ministry activity. We only store what you enter yourself — nothing is collected automatically in the background.",
+          "items": {
+            "item1": "Your account email address",
+            "item2": "The ministry entries you add by hand: date, hours, visits and any notes you write",
+            "item3": "The monthly and yearly goals you set"
+          },
+          "retention": "We keep your entries for as long as you use your account. If you do not sign in for six months, we delete your account and your entries with it. Ask us to delete them sooner and we will erase them within one month."
+        },
+        "why": {
+          "heading": "Why we store it",
+          "intro": "We store this data so the app can show you your own records and goals, and so you can keep a running history of your ministry activity over time.",
+          "specialCategory": "Because records of time spent in religious ministry reveal something about your religious beliefs, the law treats this as a <b>special category of personal data</b>, not ordinary personal data. We handle it with extra care and only ever with your explicit consent.",
+          "legalBasis": "<b>Legal basis for processing (Article 6 UK GDPR):</b> your consent.",
+          "specialCategoryCondition": "<b>Special category condition (Article 9 UK GDPR):</b> your explicit consent to us processing data that reveals your religious beliefs.",
+          "withdraw": "You can withdraw this consent at any time, as easily as you gave it, by contacting us (see Section 6). If you withdraw consent, we will stop processing your ministry data and, if you ask us to, delete it.",
+          "noProfiling": "We do not use your data for advertising. We do not build a profile of you. We do not use analytics or tracking tools. We do not make automated decisions about you."
+        },
+        "cookies": {
+          "heading": "Cookies and local storage",
+          "intro": "MinistryApp uses one cookie, and a small amount of storage on your device to let the app work offline. Both are strictly necessary for the app to function — without them, you could not stay signed in or use the app without a network connection. Because they are strictly necessary, UK and EU cookie rules (PECR) do not require us to ask for your consent or show a cookie banner, and we do not show one.",
+          "table": {
+            "caption": "Cookies and storage MinistryApp uses",
+            "name": "Name",
+            "purpose": "Purpose",
+            "type": "Type",
+            "rows": {
+              "auth": {
+                "name": "sb-…-auth-token",
+                "purpose": "Keeps you signed in between visits, for around 12 months",
+                "type": "Strictly necessary cookie",
+                "statusLabel": "Necessary"
+              },
+              "offline": {
+                "name": "Offline app storage (service worker / local storage)",
+                "purpose": "Lets the installed app load and show its basic shell without a network connection",
+                "type": "Strictly necessary local storage",
+                "statusLabel": "Necessary"
+              },
+              "analytics": {
+                "name": "—",
+                "purpose": "We do not use any analytics, advertising, or third-party tracking cookies",
+                "type": "Not used",
+                "statusLabel": "None"
+              }
+            }
+          }
+        },
+        "whoCanSeeIt": {
+          "heading": "Who can see your data",
+          "intro": "Your data is visible to:",
+          "items": {
+            "you": "<b>You</b>, when you sign in to your own account.",
+            "superAdmin": "<b>One super administrator</b>, who can see account and ministry records in order to help set up accounts, correct a mistake, or delete data on request. This access is not used to monitor your activity."
+          },
+          "subProcessorsIntro": "Your data is stored and processed on our behalf by the following sub-processors:",
+          "subProcessors": {
+            "supabase": "<b>Supabase</b> — our database provider. Your data is stored on Supabase's managed PostgreSQL service, encrypted in transit (TLS) and at rest, in the <b>{region}</b> region.",
+            "vercel": "<b>Vercel</b> — our application hosting provider, which serves the app itself."
+          },
+          "transfers": "Where any of your data is stored or processed outside the UK or the European Economic Area, we only allow this where it is covered by adequacy regulations, or by appropriate safeguards such as the UK International Data Transfer Addendum (IDTA) or the EU Standard Contractual Clauses (SCCs)."
+        },
+        "yourRights": {
+          "heading": "Your rights",
+          "intro": "Under UK and EU GDPR, you have the right to:",
+          "items": {
+            "access": "<b>Access</b> the personal data we hold about you",
+            "correct": "<b>Correct</b> (rectify) inaccurate or incomplete data",
+            "erase": "<b>Erase</b> your data (\"right to be forgotten\")",
+            "restrict": "<b>Restrict</b> how we use your data",
+            "receiveCopy": "<b>Receive a copy</b> of your data in a portable format (data portability)",
+            "withdrawConsent": "<b>Withdraw your consent</b> at any time, as easily as you gave it, without affecting the lawfulness of processing before you withdrew it",
+            "complain": "<b>Complain to the Information Commissioner's Office (ICO)</b> at ico.org.uk if you believe we have not handled your data properly"
+          },
+          "contactLine": "To exercise any of these rights, contact us at <mail>admin@jw.fenko.dev</mail>. We will respond within one month of your request. If your request is complex, we may extend this by a further two months, and we will tell you within the first month if we need to do this and why."
+        },
+        "contact": {
+          "heading": "Contact",
+          "controllerLabel": "Data controller:",
+          "controllerName": "Dmitry Fenko",
+          "icoLabel": "ICO registration number:",
+          "icoValue": "ZC141876",
+          "emailLabel": "Email:",
+          "emailValue": "admin@jw.fenko.dev",
+          "noDpo": "We have not appointed a Data Protection Officer, as this is not required at our scale. The contact details above are the single point of contact for any privacy question or rights request."
         }
       }
     },

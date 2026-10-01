@@ -14,6 +14,10 @@ export type FooterLink = {
   labelKey: CommonMessageKey;
 };
 
-// The list ScreenFooter renders. Adding a second link (there's only one
-// today) means adding an entry here, not touching ui/ScreenFooter.tsx.
-export const footerLinks: FooterLink[] = [{ href: routes.about, labelKey: "aboutLink" }];
+// The list ScreenFooter renders. Adding a link means adding an entry
+// here, not touching ui/ScreenFooter.tsx (ADR 0029/0030; the privacy
+// entry added in ADR 0031).
+export const footerLinks: FooterLink[] = [
+  { href: routes.about, labelKey: "aboutLink" },
+  { href: routes.privacy, labelKey: "privacyLink" },
+];

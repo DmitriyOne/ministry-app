@@ -17,13 +17,21 @@ const BLOCKED_SCREEN_PATH: Record<"desktop" | "android" | "ios-not-safari", stri
 
 // Only these paths go through classification — otherwise non-existent
 // addresses would get a device placeholder instead of a real 404.
-// "/about" is in the list (device shield applies — desktop/Android still
-// get a placeholder) but deliberately NOT in LaunchGate's
-// APP_SCREEN_PATHS (features/launch-gate/model/use-launch-gate.ts): it
-// opens in an ordinary Safari tab, not only from the home-screen icon —
-// see ADR 0029. All six paths come from shared/config/routes.ts (ADR
-// 0030) — the single place these literals are written down.
-const APP_ROUTES: string[] = [routes.root, routes.day, routes.soon, routes.install, routes.about];
+// "/about" and "/privacy" are both in the list (device shield applies —
+// desktop/Android still get a placeholder) but deliberately NOT in
+// LaunchGate's APP_SCREEN_PATHS (features/launch-gate/model/
+// use-launch-gate.ts): both open in an ordinary Safari tab, not only
+// from the home-screen icon — see ADR 0029 (about) and ADR 0031
+// (privacy). All paths come from shared/config/routes.ts (ADR 0030) —
+// the single place these literals are written down.
+const APP_ROUTES: string[] = [
+  routes.root,
+  routes.day,
+  routes.soon,
+  routes.install,
+  routes.about,
+  routes.privacy,
+];
 
 // The server can't see display-mode (standalone/fullscreen) — that check
 // is done by ShellGate on the client (ADR 0017/0019). All that's left
