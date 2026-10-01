@@ -216,13 +216,15 @@
           "items": {
             "item1": "Your account email address",
             "item2": "The ministry entries you add by hand: date, hours, visits and any notes you write",
-            "item3": "The monthly and yearly goals you set"
+            "item3": "The monthly and yearly goals you set",
+            "item4": "Your email address, if you joined the waitlist before the app launched"
           },
           "retention": "We keep your entries for as long as you use your account. If you do not sign in for six months, we delete your account and your entries with it. Ask us to delete them sooner and we will erase them within one month."
         },
         "why": {
           "heading": "Why we store it",
           "intro": "We store this data so the app can show you your own records and goals, and so you can keep a running history of your ministry activity over time.",
+          "waitlist": "If you joined the waitlist before launch, we store that email address for one reason only: to tell you when the app is ready. We do not use it for anything else, and we delete it once the app has launched and everyone on the list has been told.",
           "specialCategory": "Because records of time spent in religious ministry reveal something about your religious beliefs, the law treats this as a <b>special category of personal data</b>, not ordinary personal data. We handle it with extra care and only ever with your explicit consent.",
           "legalBasis": "<b>Legal basis for processing (Article 6 UK GDPR):</b> your consent.",
           "specialCategoryCondition": "<b>Special category condition (Article 9 UK GDPR):</b> your explicit consent to us processing data that reveals your religious beliefs.",

@@ -86,12 +86,14 @@ export const PrivacyScreen = async () => {
             <li className={listItemClassName}>{t("sections.whatWeStore.items.item1")}</li>
             <li className={listItemClassName}>{t("sections.whatWeStore.items.item2")}</li>
             <li className={listItemClassName}>{t("sections.whatWeStore.items.item3")}</li>
+            <li className={listItemClassName}>{t("sections.whatWeStore.items.item4")}</li>
           </ul>
           <p className={paragraphClassName}>{t("sections.whatWeStore.retention")}</p>
         </NumberedSection>
 
         <NumberedSection id="why" number={2} title={t("sections.why.heading")}>
           <p className={paragraphClassName}>{t("sections.why.intro")}</p>
+          <p className={paragraphClassName}>{t("sections.why.waitlist")}</p>
           <p className={paragraphClassName}>{t.rich("sections.why.specialCategory", { b: bold })}</p>
           <ul className="flex list-disc flex-col gap-1.5 pl-5">
             <li className={listItemClassName}>{t.rich("sections.why.legalBasis", { b: bold })}</li>
