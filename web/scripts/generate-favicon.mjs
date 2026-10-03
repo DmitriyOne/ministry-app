@@ -66,7 +66,7 @@ const buildFrameSvg = (paths, frame) => {
     const y = (size - MARK_HEIGHT * scale) / 2;
     const tinted = paths
       .join("")
-      .replaceAll('fill-opacity="0.5"', `fill-opacity="${sideOpacity}"`);
+      .replaceAll("fill-opacity=\"0.5\"", `fill-opacity="${sideOpacity}"`);
     body = `<g transform="translate(${x} ${y}) scale(${scale})">${tinted}</g>`;
   }
   return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">

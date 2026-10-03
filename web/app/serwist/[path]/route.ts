@@ -12,8 +12,8 @@ import { createSerwistRoute } from "@serwist/turbopack";
 // failed at evaluation (`next start`, verified live for ADR 0015's PWA
 // install flow). Found only now because `next dev` disables the SW
 // (ADR 0015), so this had never actually run before.
-export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
-  createSerwistRoute({
+export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET }
+  = createSerwistRoute({
     swSrc: "src/app/sw.ts",
     useNativeEsbuild: true,
   });

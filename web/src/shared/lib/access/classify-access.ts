@@ -49,8 +49,8 @@ export type AccessClass = "desktop" | "android" | "ios-not-safari" | "ios-safari
 // false positive — Telegram/Slack/Discord/Reddit open links this way,
 // which is why /install carries a "make sure this is Safari" hint (ADR
 // 0016) rather than trying to detect that case here.
-const IOS_SAFARI_UA_PATTERN =
-  /^Mozilla\/5\.0 \(iPhone; CPU iPhone OS \d+_\d+(?:_\d+)? like Mac OS X\) AppleWebKit\/\d+\.\d+(?:\.\d+)? \(KHTML, like Gecko\) Version\/\d+(?:\.\d+)* Mobile\/[A-Za-z0-9]+ Safari\/604\.1$/;
+const IOS_SAFARI_UA_PATTERN
+  = /^Mozilla\/5\.0 \(iPhone; CPU iPhone OS \d+_\d+(?:_\d+)? like Mac OS X\) AppleWebKit\/\d+\.\d+(?:\.\d+)? \(KHTML, like Gecko\) Version\/\d+(?:\.\d+)* Mobile\/[A-Za-z0-9]+ Safari\/604\.1$/;
 
 // Classifies the User-Agent for the v1 "iPhone Safari only" gate (ADR
 // 0016). A pure function with no side effects — used in web/proxy.ts and

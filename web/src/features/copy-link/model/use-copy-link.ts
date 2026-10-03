@@ -22,10 +22,10 @@ type UseCopyLinkResult = {
 // only reacting to the throw, is what lets the call site choose a
 // working fallback instead of just reporting failure.
 const canUseClipboardApi = () =>
-  typeof window !== "undefined" &&
-  window.isSecureContext &&
-  typeof navigator !== "undefined" &&
-  typeof navigator.clipboard?.writeText === "function";
+  typeof window !== "undefined"
+  && window.isSecureContext
+  && typeof navigator !== "undefined"
+  && typeof navigator.clipboard?.writeText === "function";
 
 // `document.execCommand("copy")` is deprecated (MDN: "avoid using this
 // feature in new projects") and inconsistently implemented — some

@@ -14,14 +14,14 @@ export const IosBrowserRequiredScreen = async () => {
   return (
     <CenteredState
       glyph={<AppMark size={44} tone="solid" />}
-      actions={
+      actions={(
         <CopyLinkButton
           label={t("copyLinkButton")}
           copiedLabel={t("linkCopied")}
           errorLabel={t("copyLinkError")}
           addressLabel={t("addressLabel")}
         />
-      }
+      )}
     >
       <TextBlock align="center" title={t("title")} text={t("text")} titleSize="compact" />
     </CenteredState>
