@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs/config";
 import { withSerwist } from "@serwist/turbopack";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -40,4 +41,22 @@ const nextConfig: NextConfig = {
 // env.ts above (next.config.ts sits outside the bundler's module graph).
 const withNextIntl = createNextIntlPlugin("./src/shared/config/i18n/request.ts");
 
-export default withNextIntl(withSerwist(nextConfig));
+// Sentry is the outermost wrapper (ADR 0041). Organisation, project and
+// token are read straight from process.env, like VERCEL_GIT_COMMIT_SHA
+// above: they are build-time values, not runtime configuration.
+export default withSentryConfig(withNextIntl(withSerwist(nextConfig)), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  // A fixed string, not `true`. Sentry's docs warn that with Turbopack the
+  // auto-generated route breaks client delivery if middleware intercepts
+  // it, and this project builds with Turbopack and has a proxy.ts.
+  // The route is excluded in proxy.ts and never cached in sw.ts.
+  tunnelRoute: "/monitoring",
+  silent: !process.env.CI,
+  // Drops Sentry's debug logger from the client bundle. SDK v11 replaced
+  // the old top-level `disableLogger` with this webpack-scoped option; it
+  // has no effect under Turbopack, so it only matters if the project ever
+  // builds with webpack.
+  webpack: { treeshake: { removeDebugLogging: true } },
+});

@@ -18,6 +18,11 @@ declare const self: ServiceWorkerGlobalScope;
 // constants: that import has already proved unreliable in the worker build.
 const HEALTH_PATH = "/api/v1/health";
 
+// Sentry's tunnel route (next.config.ts, ADR 0041). Serwist only caches GET
+// and the tunnel accepts POST, so this entry is mostly declarative, but it
+// makes the intent explicit: error reports must never be served from cache.
+const SENTRY_TUNNEL_PATH = "/monitoring";
+
 // The query parameter Next.js adds to static asset URLs when a deployment
 // id is set. Named here so the two places that have to ignore it below
 // cannot drift apart.
@@ -93,7 +98,7 @@ const serwist = new Serwist({
   runtimeCaching: [
     {
       matcher: ({ sameOrigin, url }) =>
-        sameOrigin && url.pathname === HEALTH_PATH,
+        sameOrigin && (url.pathname === HEALTH_PATH || url.pathname === SENTRY_TUNNEL_PATH),
       handler: new NetworkOnly(),
     },
     ...defaultCache.map(ignoringDeploymentId),

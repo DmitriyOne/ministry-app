@@ -253,7 +253,7 @@
           "legalBasis": "<b>Legal basis for processing (Article 6 UK GDPR):</b> your consent.",
           "specialCategoryCondition": "<b>Special category condition (Article 9 UK GDPR):</b> your explicit consent to us processing data that reveals your religious beliefs.",
           "withdraw": "You can withdraw this consent at any time, as easily as you gave it, by contacting us (see Section 6). If you withdraw consent, we will stop processing your ministry data and, if you ask us to, delete it.",
-          "noProfiling": "We do not use your data for advertising. We do not build a profile of you. We do not use analytics or tracking tools. We do not make automated decisions about you."
+          "noProfiling": "We do not use your data for advertising. We do not build a profile of you. We do not use analytics or tracking tools. We do use error monitoring, which shows us what broke; it does not follow what you do or build a profile of you. We do not make automated decisions about you."
         },
         "cookies": {
           "heading": "Cookies and local storage",
@@ -295,9 +295,10 @@
           "subProcessorsIntro": "Your data is stored and processed on our behalf by the following sub-processors:",
           "subProcessors": {
             "supabase": "<b>Supabase</b> — our database provider. Your data is stored on Supabase's managed PostgreSQL service, encrypted in transit (TLS) and at rest, in the United Kingdom (London, eu-west-2).",
-            "vercel": "<b>Vercel</b> — our application hosting provider, which serves the app itself."
+            "vercel": "<b>Vercel</b> — our application hosting provider, which serves the app itself.",
+            "sentry": "<b>Sentry</b> — our error-monitoring provider. When the app breaks, a technical report is sent to Sentry's servers in the EU (Frankfurt, Germany): the address of the page, your browser version and the error message itself. The report does not contain your name, your email address or any ministry record, and we have switched off the collection of IP addresses."
           },
-          "dataStaysInUk": "Your data is stored in the United Kingdom and is not transferred outside it."
+          "dataStaysInUk": "Your personal data and ministry records are stored in the United Kingdom and are not transferred outside it. The only thing that leaves is the technical error reports described above, which are processed in the EU (Frankfurt)."
         },
         "yourRights": {
           "heading": "Your rights",
@@ -323,6 +324,48 @@
           "emailValue": "admin@jw.fenko.dev",
           "noDpo": "We have not appointed a Data Protection Officer, as this is not required at our scale. The contact details above are the single point of contact for any privacy question or rights request."
         }
+      }
+    },
+    "sentryExampleError": {
+      "metadata": {
+        "title": "Sentry test",
+        "description": "Debug page for checking that errors reach Sentry."
+      },
+      "title": "Sentry test",
+      "intro": "Each button below causes one kind of error on purpose. Open Sentry afterwards and search for {prefix} to find them. You can mute that text there once you are done.",
+      "explicit": {
+        "title": "1. Send an event",
+        "hint": "Sends a handled error straight to Sentry and breaks nothing. If this one never arrives, the DSN or the tunnel route is wrong. Tagged debug_probe: true.",
+        "button": "Send test event",
+        "done": "Sent. It should appear in Sentry within a minute."
+      },
+      "handler": {
+        "title": "2. Unhandled error in a handler",
+        "hint": "Throws inside a click handler. The global handler reports it and the page keeps working.",
+        "button": "Throw in handler",
+        "done": "Thrown. Look for an unhandled error in Sentry."
+      },
+      "scrub": {
+        "title": "3. Personal data scrubbing",
+        "hint": "Sends an error whose text contains {email}. In Sentry the message should show [redacted] where the address was. If you can read the address, scrubbing is broken.",
+        "button": "Send error with an email",
+        "done": "Sent. Check that the address is replaced by [redacted]."
+      },
+      "render": {
+        "title": "4. Render error",
+        "hint": "Throws while this screen renders. You will land on the error screen, which is the app's error boundary. Reload the page to come back.",
+        "button": "Break the render"
+      },
+      "action": {
+        "title": "5. Server Action error",
+        "hint": "Calls a Server Action that throws on the server. It should arrive in Sentry through the server request error hook.",
+        "button": "Call failing Server Action",
+        "done": "Called. Look for a server-side error in Sentry."
+      },
+      "serverRender": {
+        "title": "6. Server Component error",
+        "hint": "Opens a page that throws while it renders on the server. You will see the error screen, and Sentry should receive a server-side error.",
+        "button": "Open failing page"
       }
     },
     "globalError": {

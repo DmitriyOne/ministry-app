@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 
@@ -27,6 +28,7 @@ export const ServerErrorScreen = ({ error, reset }: ServerErrorScreenProps) => {
 
   useEffect(() => {
     console.error("[server-error]", error);
+    Sentry.captureException(error);
   }, [error]);
 
   const date = useMemo(() => new Intl.DateTimeFormat(locale).format(new Date()), []);
