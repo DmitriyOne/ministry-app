@@ -3,21 +3,42 @@ import { describe, expect, it } from "vitest";
 import { mapJoinWaitlistRow } from "./map-join-waitlist-row";
 
 const SUBMIT_ERROR = "Couldn't join the waitlist. Please try again.";
+const TOKEN = "4a69fc14-3a48-4cee-bb43-1f6dffac9f5a";
 
 describe("mapJoinWaitlistRow", () => {
-  it("reports a fresh signup with its place in the list", () => {
-    expect(mapJoinWaitlistRow({ already_joined: false, list_position: 12 }, SUBMIT_ERROR)).toEqual({
+  it("reports a fresh signup with its position and push enrollment token", () => {
+    expect(
+      mapJoinWaitlistRow(
+        {
+          already_joined: false,
+          list_position: 12,
+          push_enrollment_token: TOKEN,
+        },
+        SUBMIT_ERROR,
+      ),
+    ).toEqual({
       status: "success",
       position: 12,
       alreadyJoined: false,
+      pushEnrollmentToken: TOKEN,
     });
   });
 
-  it("reports an address that was already there, at the position it already has", () => {
-    expect(mapJoinWaitlistRow({ already_joined: true, list_position: 12 }, SUBMIT_ERROR)).toEqual({
+  it("never exposes a push enrollment token for an existing signup", () => {
+    expect(
+      mapJoinWaitlistRow(
+        {
+          already_joined: true,
+          list_position: 12,
+          push_enrollment_token: null,
+        },
+        SUBMIT_ERROR,
+      ),
+    ).toEqual({
       status: "success",
       position: 12,
       alreadyJoined: true,
+      pushEnrollmentToken: undefined,
     });
   });
 
@@ -33,16 +54,22 @@ describe("mapJoinWaitlistRow", () => {
     });
   });
 
-  // A counted position always includes the row the function just found or
-  // inserted, so the smallest honest value is 1. Anything else means the
-  // contract broke, and showing a wrong number is worse than asking the
-  // person to try again.
-  it.each([0, -1, 1.5, Number.NaN])("falls back to the submit error for position %s", (position) => {
-    expect(mapJoinWaitlistRow({ already_joined: false, list_position: position }, SUBMIT_ERROR)).toEqual(
-      {
+  it.each([0, -1, 1.5, Number.NaN])(
+    "falls back to the submit error for position %s",
+    (position) => {
+      expect(
+        mapJoinWaitlistRow(
+          {
+            already_joined: false,
+            list_position: position,
+            push_enrollment_token: TOKEN,
+          },
+          SUBMIT_ERROR,
+        ),
+      ).toEqual({
         status: "error",
         formError: SUBMIT_ERROR,
-      },
-    );
-  });
+      });
+    },
+  );
 });

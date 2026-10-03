@@ -34,21 +34,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: number
+          p256dh: string
+          updated_at: string
+          waitlist_signup_id: number
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: never
+          p256dh: string
+          updated_at?: string
+          waitlist_signup_id: number
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: never
+          p256dh?: string
+          updated_at?: string
+          waitlist_signup_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_waitlist_signup_id_fkey"
+            columns: ["waitlist_signup_id"]
+            isOneToOne: false
+            referencedRelation: "waitlist_signups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       waitlist_signups: {
         Row: {
           created_at: string
           email: string
           id: number
+          push_enrollment_token: string | null
+          push_enrollment_token_created_at: string | null
         }
         Insert: {
           created_at?: string
           email: string
           id?: never
+          push_enrollment_token?: string | null
+          push_enrollment_token_created_at?: string | null
         }
         Update: {
           created_at?: string
           email?: string
           id?: never
+          push_enrollment_token?: string | null
+          push_enrollment_token_created_at?: string | null
         }
         Relationships: []
       }
@@ -62,7 +106,17 @@ export type Database = {
         Returns: {
           already_joined: boolean
           list_position: number
+          push_enrollment_token: string
         }[]
+      }
+      register_waitlist_push_subscription: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_p256dh: string
+          p_token: string
+        }
+        Returns: boolean
       }
     }
     Enums: {

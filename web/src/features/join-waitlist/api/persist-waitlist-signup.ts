@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createServerSupabaseClient } from "@/shared/api";
+import { createAdminSupabaseClient } from "@/shared/api";
 
 import type { JoinWaitlistRow } from "../model/map-join-waitlist-row";
 
@@ -10,8 +10,13 @@ import type { JoinWaitlistRow } from "../model/map-join-waitlist-row";
 // can reach directly. The signature is deliberately the same shape ADR
 // 0022 anticipated: the caller hands over an address and gets back a
 // result, and knows nothing about Supabase.
+//
+// Called with the secret key (ADR 0037): anon can no longer execute the
+// function at all. The rate limiter in the calling server action is
+// therefore the only thing standing between the public and this write; the
+// database no longer rate-limits anything itself.
 export const persistWaitlistSignup = async (email: string): Promise<JoinWaitlistRow | null> => {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createAdminSupabaseClient();
 
   const { data, error } = await supabase.rpc("join_waitlist", { p_email: email }).single();
 

@@ -68,6 +68,8 @@ export const useJoinWaitlist = () => {
     // widget needs a wording that works without one.
     position: state.status === "success" ? state.position : undefined,
     alreadyJoined: state.status === "success" && state.alreadyJoined === true,
+    pushEnrollmentToken:
+      state.status === "success" ? state.pushEnrollmentToken : undefined,
     formError: state.status === "error" ? state.formError : undefined,
   };
 };

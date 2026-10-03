@@ -31,16 +31,32 @@ export const env = createEnv({
     // in here — see getSiteUrl() below for the fallback chain, used by
     // every caller instead of this field directly.
     SITE_URL: z.url().optional(),
+    // Web Push VAPID private material. Server-only: never expose it through
+    // NEXT_PUBLIC_* or send it to the browser.
+    WEB_PUSH_VAPID_PRIVATE_KEY: z.string().min(1),
+    // Supabase secret key (sb_secret_...): bypasses RLS. Used only by the
+    // server-only admin client (shared/api/supabase/admin.ts, ADR 0037).
+    // Must never become NEXT_PUBLIC_*, or it would ship in the browser bundle.
+    SUPABASE_SECRET_KEY: z.string().min(1),
+    WEB_PUSH_VAPID_SUBJECT: z.string().refine(
+      (value) => value.startsWith("mailto:") || value.startsWith("https://"),
+      "WEB_PUSH_VAPID_SUBJECT must be a mailto: address or https:// URL",
+    ),
   },
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.url(),
     // Publishable key — replaces the legacy anon key, see docs/decisions/0006-*.md.
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
+    // Public half of the VAPID key pair; safe and required in the browser
+    // when PushManager.subscribe() creates the subscription.
+    NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY: z.string().min(1),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY:
+      process.env.NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY,
   },
   emptyStringAsUndefined: true,
 });
@@ -60,10 +76,10 @@ export const env = createEnv({
 // the throw that would follow it.
 if (typeof window === "undefined" && env.DEV_MODE && process.env.NODE_ENV === "production") {
   throw new Error(
-    "[env] DEV_MODE=true together with NODE_ENV=production disables the " +
-      "\"phones only\" shield for ALL visitors — refusing to start. Remove " +
-      "DEV_MODE from the Production environment on Vercel (it's for local " +
-      "development only, alongside NODE_ENV=development).",
+    "[env] DEV_MODE=true together with NODE_ENV=production disables the "
+    + "\"phones only\" shield for ALL visitors — refusing to start. Remove "
+    + "DEV_MODE from the Production environment on Vercel (it's for local "
+    + "development only, alongside NODE_ENV=development).",
   );
 }
 
@@ -91,8 +107,8 @@ export const getSiteUrl = (): string | undefined => {
   if (typeof window !== "undefined") return undefined;
 
   return (
-    env.SITE_URL ??
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    env.SITE_URL
+    ?? (process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : undefined)
   );
