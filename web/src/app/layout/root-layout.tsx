@@ -10,6 +10,7 @@ import { buildSocialMetadata } from "@/shared/lib/metadata";
 import { Providers } from "./providers";
 
 import "../styles/globals.css";
+import { NetworkGate } from "./network-gate";
 
 // No next/font/google — the font is set in styles/globals.css, see ADR 0011.
 
@@ -86,16 +87,37 @@ export const RootLayout = ({ children }: RootLayoutProps) => (
   <html lang={locale} className="h-full antialiased" suppressHydrationWarning>
     <body className="min-h-full flex flex-col">
       <LaunchNoscriptFallback />
-      <SerwistProvider swUrl="/serwist/sw.js" disable={process.env.NODE_ENV === "development"}>
-        {env.DEV_MODE ? (
-          <Providers>
-            <div className="flex min-h-full flex-1 flex-col">{children}</div>
-          </Providers>
-        ) : (
-          <LaunchGate loading={<LaunchLoading />}>
-            <Providers>{children}</Providers>
-          </LaunchGate>
-        )}
+      <SerwistProvider
+        swUrl="/serwist/sw.js"
+        disable={process.env.NODE_ENV === "development"}
+        // Serwist defaults this to true, and the effect that registers it is
+        // NOT behind `disable`: every `online` event would reload the whole
+        // document. That would race NetworkGate's own reconnect handling,
+        // make the "connection restored" toast impossible to ever see, and —
+        // worst of it — wipe client state on every blip, including the
+        // one-time push enrolment token on the waitlist success card, which
+        // join_waitlist never issues twice.
+        reloadOnOnline={false}
+      >
+        {env.DEV_MODE
+          ? (
+              <Providers>
+                <NetworkGate checking={<LaunchLoading />}>
+                  <div className="flex min-h-full flex-1 flex-col">
+                    {children}
+                  </div>
+                </NetworkGate>
+              </Providers>
+            )
+          : (
+              <LaunchGate loading={<LaunchLoading />}>
+                <Providers>
+                  <NetworkGate checking={<LaunchLoading />}>
+                    {children}
+                  </NetworkGate>
+                </Providers>
+              </LaunchGate>
+            )}
       </SerwistProvider>
     </body>
   </html>

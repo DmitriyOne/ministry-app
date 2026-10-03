@@ -87,6 +87,7 @@ export const PrivacyScreen = async () => {
             <li className={listItemClassName}>{t("sections.whatWeStore.items.item2")}</li>
             <li className={listItemClassName}>{t("sections.whatWeStore.items.item3")}</li>
             <li className={listItemClassName}>{t("sections.whatWeStore.items.item4")}</li>
+            <li className={listItemClassName}>{t("sections.whatWeStore.items.item5")}</li>
           </ul>
           <p className={paragraphClassName}>{t("sections.whatWeStore.retention")}</p>
         </NumberedSection>
@@ -94,6 +95,7 @@ export const PrivacyScreen = async () => {
         <NumberedSection id="why" number={2} title={t("sections.why.heading")}>
           <p className={paragraphClassName}>{t("sections.why.intro")}</p>
           <p className={paragraphClassName}>{t("sections.why.waitlist")}</p>
+          <p className={paragraphClassName}>{t("sections.why.pushNotifications")}</p>
           <p className={paragraphClassName}>{t.rich("sections.why.specialCategory", { b: bold })}</p>
           <ul className="flex list-disc flex-col gap-1.5 pl-5">
             <li className={listItemClassName}>{t.rich("sections.why.legalBasis", { b: bold })}</li>
@@ -185,15 +187,18 @@ export const PrivacyScreen = async () => {
 
         <NumberedSection id="contact" number={6} title={t("sections.contact.heading")}>
           <p className={paragraphClassName}>
-            <span className="font-600 text-ink">{t("sections.contact.controllerLabel")}</span>{" "}
+            <span className="font-600 text-ink">{t("sections.contact.controllerLabel")}</span>
+            {" "}
             {t("sections.contact.controllerName")}
           </p>
           <p className={paragraphClassName}>
-            <span className="font-600 text-ink">{t("sections.contact.icoLabel")}</span>{" "}
+            <span className="font-600 text-ink">{t("sections.contact.icoLabel")}</span>
+            {" "}
             {t("sections.contact.icoValue")}
           </p>
           <p className={paragraphClassName}>
-            <span className="font-600 text-ink">{t("sections.contact.emailLabel")}</span>{" "}
+            <span className="font-600 text-ink">{t("sections.contact.emailLabel")}</span>
+            {" "}
             {t("sections.contact.emailValue")}
           </p>
           {/* No postal address — email-only contact is a deliberate

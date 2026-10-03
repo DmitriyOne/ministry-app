@@ -9,7 +9,22 @@
     "loading": "Loading",
     "noscriptRequired": "MinistryApp needs JavaScript enabled to run.",
     "aboutLink": "About",
-    "privacyLink": "Privacy & cookies"
+    "privacyLink": "Privacy & cookies",
+    "connectionRestored": "You're back online"
+  },
+  "notifications": {
+    "waitlist": {
+      "enable": "Notify me at launch",
+      "enabling": "Enabling…",
+      "enabled": "Launch notifications are enabled.",
+      "denied": "Notifications are blocked. You can enable them in system settings.",
+      "unsupported": "Push notifications aren't available here.",
+      "error": "Couldn't enable notifications. Please try again.",
+      "confirmation": {
+        "title": "You're on the list",
+        "body": "We'll let you know the moment the app is ready."
+      }
+    }
   },
   "a11y": {
     "sheet": {
@@ -83,7 +98,7 @@
         "description": "Add MinistryApp to your iPhone's home screen for one-tap access to your ministry report, with no browser address bar in the way."
       },
       "installButton": "How to install",
-      "inAppBrowserHint": "Opened this from Telegram, WhatsApp or another app? Open it in Safari first — installing won’t work from inside the app.",
+      "inAppBrowserHint": "Opened this from Telegram, WhatsApp or another app? Open it in Safari first — installation only works there.",
       "sheet": {
         "title": "Install on iPhone",
         "prevLabel": "Back",
@@ -126,12 +141,14 @@
       "submitButton": "Join the waitlist",
       "submitButtonPending": "Joining…",
       "hint": "Leave your email to join the waitlist",
-      "successText": "Thanks! We'll email you as soon as it's ready.",
-      "successTextNumbered": "You're #{position} on the list. We'll email you as soon as it's ready.",
-      "alreadyJoinedText": "You're already #{position} on the list. We'll email you as soon as it's ready.",
+      "successTitle": "You're on the list",
+      "successTitleNumbered": "You're #{position} on the list",
+      "alreadyJoinedTitle": "You're already #{position} on the list",
+      "successText": "We'll email you as soon as it's ready.",
       "emailRequired": "Enter your email",
       "emailInvalid": "Enter a valid email address",
       "emailTooLong": "That email address is too long",
+      "emailDisposable": "That looks like a temporary address. Please use an inbox you'll actually read.",
       "submitError": "Couldn't join the waitlist. Please try again.",
       "tooManyRequests": "Too many attempts. Please wait a few minutes and try again."
     },
@@ -144,6 +161,11 @@
       "hero": {
         "title": "MinistryApp",
         "text": "A personal record of your ministry: hours, Bible studies, and goals for the month and the service year."
+      },
+      "installLabel": "Installing",
+      "install": {
+        "title": "Safari, then your home screen",
+        "text": "There is nothing to download and no App Store. Open MinistryApp in Safari on your iPhone and add it to your home screen — an icon appears beside your other apps and the report opens in one tap, with no address bar in the way. Adding it only works in Safari itself, not in the browser built into Telegram, WhatsApp or another app."
       },
       "screensLabel": "Screens",
       "screens": {
@@ -217,7 +239,8 @@
             "item1": "Your account email address",
             "item2": "The ministry entries you add by hand: date, hours, visits and any notes you write",
             "item3": "The monthly and yearly goals you set",
-            "item4": "Your email address, if you joined the waitlist before the app launched"
+            "item4": "Your email address, if you joined the waitlist before the app launched",
+            "item5": "The notification subscription your browser creates, if you chose to be told when the app launches"
           },
           "retention": "We keep your entries for as long as you use your account. If you do not sign in for six months, we delete your account and your entries with it. Ask us to delete them sooner and we will erase them within one month."
         },
@@ -225,6 +248,7 @@
           "heading": "Why we store it",
           "intro": "We store this data so the app can show you your own records and goals, and so you can keep a running history of your ministry activity over time.",
           "waitlist": "If you joined the waitlist before launch, we store that email address for one reason only: to tell you when the app is ready. We do not use it for anything else, and we delete it once the app has launched and everyone on the list has been told.",
+          "pushNotifications": "If you chose to be told when the app launches, your browser creates a subscription: an address only it can deliver to, and two keys that encrypt what we send. We store those three values and use them for that one announcement. They let us send a notification to that browser and nothing else — we cannot read anything on your device with them. They are deleted together with your waitlist entry, and you can switch notifications off in your device settings at any time.",
           "specialCategory": "Because records of time spent in religious ministry reveal something about your religious beliefs, the law treats this as a <b>special category of personal data</b>, not ordinary personal data. We handle it with extra care and only ever with your explicit consent.",
           "legalBasis": "<b>Legal basis for processing (Article 6 UK GDPR):</b> your consent.",
           "specialCategoryCondition": "<b>Special category condition (Article 9 UK GDPR):</b> your explicit consent to us processing data that reveals your religious beliefs.",
@@ -306,6 +330,12 @@
       "title": "Server not responding",
       "text": "Please refresh the page in a minute.",
       "retryButton": "Try again"
+    },
+    "offline": {
+      "title": "You’re offline",
+      "text": "Check your Wi-Fi or mobile data, then try again.",
+      "retryButton": "Try again",
+      "retryingButton": "Checking…"
     }
   }
 }

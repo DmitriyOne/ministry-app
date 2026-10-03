@@ -53,8 +53,8 @@ export const cn = createCn({
     classGroups: {
       "font-size": [{ text: [...FONT_SIZE_NAMES] }],
       "font-weight": [{ font: [...FONT_WEIGHT_NAMES] }],
-      rounded: [{ rounded: [...RADIUS_NAMES] }],
-      shadow: [{ shadow: [...SHADOW_NAMES] }],
+      "rounded": [{ rounded: [...RADIUS_NAMES] }],
+      "shadow": [{ shadow: [...SHADOW_NAMES] }],
     },
   },
 });

@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { env } from "@/shared/config";
+import { env, SB_API_ROUTES } from "@/shared/config";
 import { BodyText } from "@/shared/ui/body-text";
 import { CenteredState } from "@/shared/ui/centered-state";
 import { Title } from "@/shared/ui/title";
@@ -9,7 +9,7 @@ import { Title } from "@/shared/ui/title";
 const getSupabaseStatus = async (): Promise<"ok" | "unreachable"> => {
   try {
     const response = await fetch(
-      `${env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/health`,
+      `${env.NEXT_PUBLIC_SUPABASE_URL}${SB_API_ROUTES.functions.health}`,
       {
         cache: "no-store",
         headers: {
@@ -24,8 +24,8 @@ const getSupabaseStatus = async (): Promise<"ok" | "unreachable"> => {
     }
 
     const body: unknown = await response.json();
-    const status =
-      typeof body === "object" && body !== null && "status" in body
+    const status
+      = typeof body === "object" && body !== null && "status" in body
         ? (body as { status?: unknown }).status
         : undefined;
 
@@ -45,7 +45,8 @@ export const DayPage = async () => {
     <CenteredState fill>
       <Title size="compact">{t("title")}</Title>
       <BodyText>
-        {t("supabaseStatusLabel")}{" "}
+        {t("supabaseStatusLabel")}
+        {" "}
         {/* No dedicated "connected/disconnected" pair in the palette
             (ADR 0011) — --positive-hero (mint) is restricted to the
             --hero/deep-green background only, so it can't be reused here.

@@ -18,8 +18,22 @@
 `.ts`/`.tsx`/`.mjs`/`.css` — см. ADR 0023 (обоснование смены языка с
 русского на английский) и ADR 0014 (структура словаря, механика
 next-intl). Новый комментарий или строка словаря по-русски — регрессия,
-которую надо поймать до коммита (`grep -rn '[А-Яа-яЁё]' web/src web/app`
-должен не находить ничего в коде/словаре).
+которую надо поймать до коммита.
+
+Проверка — `grep -rnP '[А-Яа-яЁё]' web/src web/app`, но она **не обязана
+быть пустой**. Запрещена русская проза в коде и словаре; цитата
+заголовка русского ADR внутри английского комментария — это ссылка, а не
+проза, и разрешена. Сегодня совпадений четыре строки в трёх файлах, и все
+они — цитаты заголовков ADR 0019 («Обновление: state вместо
+CSS-оверлея» и раздела «Ловушка: `@layer` и специфичность»):
+`web/src/app/styles/globals.css` (две строки),
+`web/src/features/launch-gate/ui/launch-noscript-fallback.tsx` и
+`web/src/features/launch-gate/model/use-launch-gate.ts`. Пятая такая
+цитата — в `web/proxy.ts` («Обновление: redirect вместо rewrite для
+/access/*», заголовок ADR 0017); этот файл лежит вне `web/src`/`web/app`,
+поэтому указанная команда его не видит. Перед тем как разбираться в новом
+совпадении, сверьтесь с этим списком: всё, чего в нём нет, — настоящая
+регрессия.
 
 **ADR (`docs/decisions/`) и сам этот файл (`CLAUDE.md`) — по-русски.**
 Это рабочие записи пользователя о решениях по проекту, не часть продукта
@@ -87,6 +101,12 @@ ministry-app/
 │  │                             (ADR 0018, штатные Next.js-конвенции, не
 │  │                             страницы по адресу); app/serwist/[path]/
 │  │                             route.ts — Route Handler сервис-воркера;
+│  │                             app/api/v1/health/route.ts — ответ 204
+│  │                             без тела, `Cache-Control: no-store`, не
+│  │                             трогает ни Supabase, ни auth: им
+│  │                             features/network-status проверяет,
+│  │                             достижим ли сам origin (путь —
+│  │                             WEB_API_ROUTES.health);
 │  │                             app/icon.svg + app/apple-icon.png —
 │  │                             файловые иконки (AppMark на плитке
 │  │                             --hero, путь скопирован из AppMarkIcon;
@@ -116,7 +136,15 @@ ministry-app/
 │  │  │                          подключает LaunchGate из features/,
 │  │  │                          сам никакой логики доступа не несёт),
 │  │  │                          config/launch-mode.ts, глобальные стили,
-│  │  │                          sw.ts (логика воркера). Определение
+│  │  │                          layout/network-gate.tsx (NetworkGate — клиентская
+│  │  │                          обёртка: пока идёт первая проверка связи, показывает
+│  │  │                          переданный `checking` (LaunchLoading), при отсутствии
+│  │  │                          связи — OfflineScreen из pages/offline, иначе children;
+│  │  │                          рядом рисует NetworkReconnectFeedback — тост «связь
+│  │  │                          вернулась»; подключён в обеих ветках root-layout, в том
+│  │  │                          числе под DEV_MODE), sw.ts (логика воркера: кэш, fallback
+│  │  │                          документов на /offline.html, обработчики push и
+│  │  │                          notificationclick). Определение
 │  │  │                          "запущено со значка или нет" уехало в
 │  │  │                          features/launch-gate — ADR 0028
 │  │  ├─ pages/                  FSD-слой "pages" (ADR 0016/0017/0018):
@@ -130,7 +158,10 @@ ministry-app/
 │  │  │                          тонкий-экран приём, собирает новые
 │  │  │                          SectionIndex/NumberedSection/CookieTable
 │  │  │                          из shared/ui и тот же ScreenBackHeader),
-│  │  │                          not-found, server-error (styleguide,
+│  │  │                          offline (экран «нет связи», ему отдаёт управление
+│  │  │                          NetworkGate; ui/ — только вёрстка, повтор проверки
+│  │  │                          приходит пропом `onRetry`), not-found, server-error
+│  │  │                          (styleguide,
 │  │  │                          components удалены — ADR 0011/0012)
 │  │  ├─ widgets/                install-sheet (панель установки),
 │  │  │                          waitlist-form (форма вайтлиста) — ADR
@@ -162,7 +193,19 @@ ministry-app/
 │  │  │                          уйти на / " — useScreenBack/
 │  │  │                          ScreenBackHeader, Navigation API
 │  │  │                          `navigation.canGoBack`, не завязан на
-│  │  │                          конкретный экран — ADR 0029/0030)
+│  │  │                          конкретный экран — ADR 0029/0030), network-status
+│  │  │                          (сценарий «есть ли связь с origin» — api/
+│  │  │                          check-connectivity.ts опрашивает /api/v1/health и
+│  │  │                          принимает только 2xx, model/use-network-status.ts и
+│  │  │                          use-reconnect-feedback.ts, ui/ — NetworkReconnectFeedback
+│  │  │                          и ConnectionRestoredToast, config/network-config.ts —
+│  │  │                          таймаут 5 с, повтор раз в 10 с, тост 3 с; публичный API —
+│  │  │                          useNetworkStatus и NetworkReconnectFeedback), push-
+│  │  │                          notifications (подписка на Web Push после записи в
+│  │  │                          вайтлист: ui/EnableWaitlistNotifications, lib/
+│  │  │                          subscribe-to-push.ts, Server Action
+│  │  │                          api/register-push-subscription-action.ts со своим
+│  │  │                          лимитером; зависимость `web-push`)
 │  │  ├─ entities/                пока пусто (.gitkeep)
 │  │  └─ shared/
 │  │      ├─ ui/                 shadcn/ui компоненты, плюс TextLink
@@ -185,6 +228,18 @@ ministry-app/
 │  │      │                       buildSocialMetadata (openGraph + twitter с
 │  │      │                       og-image.jpg, единственное место
 │  │      │                       объявления) — ADR 0032
+│  │      ├─ lib/display-mode/    isStandaloneDisplayMode — запущена ли
+│  │      │                       страница со значка (matchMedia standalone/
+│  │      │                       fullscreen + navigator.standalone), только на
+│  │      │                       клиенте; им пользуются LaunchGate и
+│  │      │                       features/push-notifications
+│  │      ├─ lib/email/           isDisposableEmail — проверка домена на
+│  │      │                       одноразовую почту/зарезервированные домены (список
+│  │      │                       в disposable-email-domains.ts), используется схемой
+│  │      │                       вайтлиста + тест (vitest)
+│  │      ├─ lib/rate-limit/      createSlidingWindowLimiter (в памяти
+│  │      │                       процесса, ADR 0026) и getClientIp (Vercel-заголовки,
+│  │      │                       server-only); числа и ключи — в features
 │  │      ├─ lib/seo/             buildRobots/buildSitemap — чистые
 │  │      │                       функции под app/robots.ts и
 │  │      │                       app/sitemap.ts, + тесты (vitest) — ADR 0032
@@ -195,13 +250,33 @@ ministry-app/
 │  │      │                       всех путей приложения (`/`, `/day`,
 │  │      │                       `/soon`, `/install`, `/about`,
 │  │      │                       `/privacy`, `/access/*`), `as const` +
-│  │      │                       узкий тип `AppRoute` — ADR 0030/0031
-│  │      └─ api/supabase/        supabase клиенты (client.ts / server.ts) + database.types.ts
+│  │      │                       узкий тип `AppRoute` — ADR 0030/0031;
+│  │      │                       api-routes.ts — пути HTTP-эндпоинтов
+│  │      │                       (WEB_API_ROUTES — собственные Route
+│  │      │                       Handler'ы, SB_API_ROUTES — Edge
+│  │      │                       Functions); здесь, а не в shared/api,
+│  │      │                       потому что у констант нет среды
+│  │      │                       выполнения — ADR 0034
+│  │      └─ api/supabase/        supabase клиенты: client.ts (браузер),
+│  │                              server.ts (@supabase/ssr, cookies),
+│  │                              admin.ts (секретный ключ, обходит RLS,
+│  │                              ТОЛЬКО на сервере — ADR 0037; два
+│  │                              последних с `import "server-only"`) +
+│  │                              database.types.ts; баррель отдаёт все
+│  │                              три — осознанная ловушка, ADR 0034
+│  │                              (обновление)
 │  └─ public/                    manifest.webmanifest (start_url — /day,
 │                                 ADR 0019; icons — 192/512 "any" +
 │                                 icon-maskable-640.png "maskable", ADR
 │                                 0032), иконки, pwa/ios/*.png
-│                                 (плейсхолдеры экрана установки, ADR 0016)
+│                                 (плейсхолдеры экрана установки, ADR 0016),
+│                                 offline.html — самодостаточная страница
+│                                 «нет связи» без внешних CSS/JS/шрифтов,
+│                                 её отдаёт сервис-воркер как fallback для
+│                                 документов, когда нет ни сети, ни кэша
+│                                 (значения цветов держать в согласии с
+│                                 globals.css вручную — токены оттуда не
+│                                 подтянуть)
 ├─ backend/
 │  ├─ supabase/                  Supabase CLI проект: config.toml,
 │  │                             migrations/ (waitlist_signups + функция
@@ -521,8 +596,14 @@ div'а, переключаемых атрибутом, а то, что `LaunchGa
 ADR 0019.
 
 При `DEV_MODE=true` `LaunchGate` вообще не подключается — `root-layout.tsx`
-рендерит `children` напрямую (решение на сервере, `env.DEV_MODE`,
-`shared/config`) — ни щита, ни экрана загрузки, ни задержки. При
+(решение на сервере, `env.DEV_MODE`, `shared/config`) оборачивает
+`children` только в `Providers` и `NetworkGate`: ни щита по
+`display-mode`, ни экрана загрузки `LaunchGate`, ни его задержки.
+`NetworkGate` же подключён **в обеих ветках**, в том числе под
+`DEV_MODE`: на время первой проверки связи он показывает `LaunchLoading`
+(проп `checking`), а если связи нет — `OfflineScreen` (см. «Сеть и
+офлайн» ниже). Так что и при `DEV_MODE=true` короткий экран загрузки
+возможен, пока `/api/v1/health` не ответил. При
 `DEV_MODE=false` `LaunchGate` подключён всегда, логика выше отрабатывает
 на каждой странице заново (полная навигация между `/day`/`/install`
 гарантирует это). **Отказ эффекта не оставляет приложение
@@ -584,16 +665,72 @@ layout-компонента к маршрутам и (позже) от `rewrite`
 — штатные Next.js-конвенции, не страницы по произвольному адресу.
 `app/not-found.tsx` рендерится для любого несовпавшего маршрута;
 `app/error.tsx` — для необработанного исключения при рендере сегмента
-(должен быть Client Component по контракту Next.js — `screens/
+(должен быть Client Component по контракту Next.js — `pages/
 server-error` использует `useTranslations`, не `getTranslations`);
 `app/global-error.tsx` — только если падает сам корневой `layout.tsx`
 (единственный файл в проекте с текстом не из словаря — осознанное
 исключение, см. ADR 0018, `NextIntlClientProvider` мог быть причиной
 падения). Заблокированные устройства (десктоп/Android/iPhone не-Safari)
-эти экраны практически не видят: `proxy.ts` переписывает **любой** путь,
-не только известные, на `/access/*` раньше, чем Next.js резолвит
-маршрут — 404/500 доступны только iPhone Safari и (для локальной
-отладки) при `DEV_MODE=true`.
+эти экраны видят только там, где `proxy.ts` их не трогает: он
+классифицирует и уводит на `/access/*` (redirect 307, не rewrite)
+**только** пути из `APP_ROUTES` — `/`, `/day`, `/soon`, `/install`,
+`/about`, `/privacy` — а остальные пропускает как есть. Поэтому
+несуществующий адрес (`/qwerty`) на любом устройстве даёт настоящий 404,
+а не заглушку устройства; так сделано намеренно (комментарий в
+`proxy.ts`: иначе несуществующие адреса получали бы заглушку устройства
+вместо настоящего 404).
+
+### Сеть, офлайн, пуши, email
+
+Короткие записи о частях, у которых пока нет собственного ADR (кроме
+отмеченных); подробности — в коде, комментарии там поясняют причины.
+
+- **Проверка связи и офлайн-экран.** `NetworkGate`
+  (`web/src/app/layout/network-gate.tsx`) оборачивает приложение в обеих
+  ветках `root-layout.tsx`. Состояние берёт у `useNetworkStatus`
+  (`features/network-status`): `checking` → `online`/`offline`. Проба —
+  `fetch` на `/api/v1/health` (`app/api/v1/health/route.ts`, ответ 204);
+  годится только ответ 2xx — `fetch` разрешается и на 500, и на 404, и на
+  «captive portal» с 200, и сам по себе ничего не доказывает. Таймаут 5 с,
+  повтор в офлайне раз в 10 с, тост «связь восстановлена» 3 с
+  (`NETWORK_CONFIG`). Офлайн-экран — `pages/offline`. Отдельно от него
+  `public/offline.html` — статичная страница, которую сервис-воркер
+  (`app/sw.ts`) отдаёт вместо документа, когда нет ни сети, ни кэша; на
+  `/api/v1/health` воркер кэш не применяет (`NetworkOnly`).
+  `SerwistProvider` в `root-layout.tsx` создан с `reloadOnOnline={false}`:
+  по умолчанию Serwist перезагружает документ при каждом событии
+  `online`, что гонялось бы с `NetworkGate` и стирало клиентское
+  состояние, в том числе одноразовый токен подписки на пуши.
+- **Пуш-уведомления вайтлиста.** `features/push-notifications` и
+  зависимость `web-push` (`web/package.json`; она же — в
+  `backend/package.json` для рассылочного скрипта). После записи в
+  вайтлист `join_waitlist` выдаёт одноразовый токен (`push_enrollment_
+  token`), `EnableWaitlistNotifications` на экране успеха предлагает
+  включить уведомления **только в установленном приложении**
+  (`isStandaloneDisplayMode`), `registerPushSubscription` (Server Action)
+  меняет токен на запись в `push_subscriptions` через
+  `register_waitlist_push_subscription` и секретный ключ (ADR 0037).
+  Токен живёт 30 минут и гасится при первом обращении после этого
+  (ADR 0033, обновление). Пара VAPID-ключей — `NEXT_PUBLIC_WEB_PUSH_VAPID_
+  PUBLIC_KEY`, `WEB_PUSH_VAPID_PRIVATE_KEY`, `WEB_PUSH_VAPID_SUBJECT` в
+  `envs/web.local.env`; для рассылки те же значения — в
+  `envs/backend.local.env`. Отдельного ADR на сам выбор Web Push пока нет.
+- **Разовая рассылка о запуске** — `backend/scripts/send-waitlist-launch-
+  push.mjs`, `pnpm push:launch`. **Содержит известные дефекты и
+  намеренно не исправлен до запуска** (не листает больше 1000
+  подписчиков и молча сообщает об успехе, не идемпотентен, нет
+  dry-run) — условия, при которых её можно запускать, перечислены в ADR
+  `docs/decisions/0038-launch-push-delivery-limits.md`. Не запускать на
+  настоящей аудитории, пока они не выполнены.
+- **Email.** `shared/lib/email` — `isDisposableEmail`, используется
+  схемой вайтлиста (`features/join-waitlist/model/schema.ts`): отсекает
+  одноразовые провайдеры и зарезервированные домены (`example.com`,
+  `.test` и т.п.). Не бросает: адрес без домена считается «не
+  одноразовым», формат проверяет сама схема. Список доменов — вручную
+  поддерживаемый файл, а не сервис, и неполон по природе.
+- **Лимиты частоты.** `shared/lib/rate-limit` (скользящее окно в памяти
+  процесса, ADR 0026) используют `features/join-waitlist` и
+  `features/push-notifications` со своими числами.
 
 ### Как посмотреть каждый экран локально
 
@@ -661,9 +798,10 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
 | `pnpm db:types` | Генерация TS-типов из локальной БД в `web/src/shared/api/supabase/database.types.ts` |
 | `pnpm lint` | ESLint + `steiger` (проверка границ FSD) в `web/` |
 | `pnpm typecheck` | `tsc --noEmit` в `web/` |
-| `pnpm test` | `vitest run` в `web/` — `classifyAccess` (ADR 0016), `buildRobots`/`buildSitemap` (ADR 0032), `mapJoinWaitlistRow` (ADR 0033) |
+| `pnpm test` | `vitest run` в `web/` — `classifyAccess` (ADR 0016), `buildRobots`/`buildSitemap` (ADR 0032), `mapJoinWaitlistRow` (ADR 0033), `isDisposableEmail` (`shared/lib/email`) — пять файлов `*.test.ts` в `web/src` |
 | `pnpm build` | `next build` (Turbopack) в `web/` (с env из `envs/web.local.env`) |
 | `pnpm db:login` / `db:link` / `db:push` / `functions:deploy` | Деплой в облачный Supabase — см. раздел ниже |
+| `pnpm push:launch` | Рассылает уведомление о запуске всем подписчикам из `push_subscriptions`. Запускать только из корня: env лежит в `envs/backend.local.env`, а скрипт — в `backend/`, и связать их может лишь корневой `package.json` (как `wait:supabase`). Пара ключей VAPID в `envs/web.local.env` и `envs/backend.local.env` должна быть **одной и той же**, иначе push-служба отвергнет отправку |
 
 ## Договорённости
 
@@ -674,8 +812,10 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
   функцией.** RLS включён, политик нет, `revoke all ... from anon,
   authenticated` выполнен в той же миграции (grants выдаются новой
   таблице автоматически и политиками не отбираются), а наружу выдаётся
-  `execute` на `security definer`-функцию с `set search_path = ''` —
-  образец задан ADR 0033 на `waitlist_signups`/`join_waitlist`. Отступление
+  `execute` на функцию с `set search_path = ''`. Исходный образец ADR
+  0033 (`security definer` + `execute` для `anon`) заменён ADR 0037: для
+  записей из доверенного сервера функции — `security invoker`, `execute`
+  только у `service_role`, `anon` до них не дотягивается. Отступление
   от него — отдельное решение с отдельным ADR, не правка миграции
   «заодно». Модель доступа проверяется pgTAP-тестами
   (`backend/supabase/tests/`, `pnpm db:test`), а не на глаз.
@@ -718,8 +858,16 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
   cookie и не увидят сессию друг друга (было и снова не актуально — см.
   `docs/decisions/0009-*.md`).
 - Ключи Supabase — **publishable** (`sb_publishable_...`), не легаси
-  `anon`. Секретный (`service_role`/`sb_secret_...`) ключ в `web` не
-  используется вообще (см. `docs/decisions/0006-*.md`).
+  `anon`. Секретный (`sb_secret_...`) ключ не должен попадать в браузер
+  или в любой клиентский бандл — никогда не `NEXT_PUBLIC_*` (ADR 0006,
+  сужено ADR 0037). Его использует ровно один серверный модуль,
+  `web/src/shared/api/supabase/admin.ts` (`import "server-only"`,
+  `createAdminSupabaseClient`, `SUPABASE_SECRET_KEY` в серверном блоке
+  `env.ts`): он обходит RLS, поэтому его нельзя реэкспортировать туда,
+  куда дотянется Client Component, и любой вызов через него сам отвечает
+  за авторизацию. Через него Server Actions вызывают
+  `join_waitlist`/`register_waitlist_push_subscription` — у `anon` на эти
+  функции `execute` отозван (ADR 0037).
 
 ## Деплой миграций в облачный Supabase
 

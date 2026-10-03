@@ -3,15 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { routes } from "@/shared/config";
-
-// iOS Safari/WKWebView's non-standard signal for a standalone (home-screen)
-// launch — no lib.dom.d.ts type covers it. `interface` here, not `type`,
-// per the project's rule for augmenting a third-party global (see sw.ts).
-declare global {
-  interface Navigator {
-    standalone?: boolean;
-  }
-}
+import { isStandaloneDisplayMode } from "@/shared/lib/display-mode";
 
 // Require launching from a home-screen icon (ADR 0017), otherwise → /install.
 // Paths come from shared/config/routes.ts (ADR 0030) — the single place
@@ -82,10 +74,7 @@ export const useLaunchGate = (): UseLaunchGateResult => {
     // still resolves within the same task, well before the next paint.
     queueMicrotask(() => {
       try {
-        const standalone =
-          window.matchMedia("(display-mode: standalone)").matches ||
-          window.matchMedia("(display-mode: fullscreen)").matches ||
-          window.navigator.standalone === true;
+        const standalone = isStandaloneDisplayMode();
         const path = window.location.pathname;
 
         // A full document navigation (window.location.replace), not

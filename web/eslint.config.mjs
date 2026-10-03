@@ -1,3 +1,4 @@
+import stylistic from "@stylistic/eslint-plugin";
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
@@ -6,6 +7,30 @@ import i18next from "eslint-plugin-i18next";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  // Formatting as lint rules rather than a separate formatter: one tool,
+  // one command, `eslint --fix` does the work. customize() generates the
+  // whole rule set from these few answers instead of us listing twenty
+  // rules by hand and letting them drift apart.
+  //
+  // The values are not preferences invented here — they are what the
+  // codebase already does, measured before the rules were added: two
+  // spaces, no tabs anywhere, double quotes, semicolons, trailing commas
+  // in multi-line literals.
+  //
+  // Deliberately NO line-length rule. Note what that means: these rules
+  // never re-wrap a line, they only correct an existing one, so code
+  // hand-wrapped at an unusual width stays that way until someone
+  // rewrites it. A formatter like Prettier would reflow it; this will
+  // not. That was the trade accepted when choosing this over Prettier.
+  stylistic.configs.customize({
+    indent: 2,
+    quotes: "double",
+    semi: true,
+    jsx: true,
+    arrowParens: true,
+    braceStyle: "1tbs",
+    commaDangle: "always-multiline",
+  }),
   {
     // Not a single string — neither visible JSX text nor aria-label/title/
     // alt/placeholder — bypasses the dictionary (ADR 0014). Scope is
@@ -24,7 +49,7 @@ const eslintConfig = defineConfig([
       "i18next/no-literal-string": [
         "error",
         {
-          mode: "jsx-only",
+          "mode": "jsx-only",
           "jsx-attributes": {
             include: ["aria-label", "aria-labelledby", "alt", "title", "placeholder"],
           },
@@ -32,7 +57,7 @@ const eslintConfig = defineConfig([
           // — the key argument here is also a dictionary reference, not a
           // UI text literal, same as a plain t("key") call (already
           // excluded by default).
-          callees: { exclude: ["i18n(ext)?", "t", "t\\.rich"] },
+          "callees": { exclude: ["i18n(ext)?", "t", "t\\.rich"] },
         },
       ],
     },

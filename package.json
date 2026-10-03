@@ -19,10 +19,12 @@
     "db:link": "pnpm --filter backend run db:link",
     "db:push": "pnpm --filter backend run db:push",
     "functions:deploy": "pnpm --filter backend run functions:deploy",
+    "push:launch": "dotenv -e envs/backend.local.env -- pnpm --filter backend run push:launch",
     "lint": "pnpm --filter web run lint",
     "typecheck": "pnpm --filter web run typecheck",
     "test": "pnpm --filter web run test",
-    "build": "dotenv -e envs/web.local.env -- pnpm --filter web run build"
+    "build": "dotenv -e envs/web.local.env -- pnpm --filter web run build",
+    "start": "dotenv -e envs/web.local.env -- pnpm --filter web run start"
   },
   "devDependencies": {
     "dotenv-cli": "11.0.0",

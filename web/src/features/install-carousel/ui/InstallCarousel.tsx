@@ -55,7 +55,7 @@ export const InstallCarousel = () => {
         <p className="w-full px-10 min-h-11 text-center text-body font-500 text-ink">{t(`steps.${stepKey}.text`)}</p>
 
         <div className="flex items-center">
-          
+
           {STEP_KEYS.map((key, index) => (
             <button
               key={key}

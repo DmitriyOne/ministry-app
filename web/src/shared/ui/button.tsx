@@ -42,12 +42,12 @@ const buttonVariants = cva(
           "rounded-button bg-white/10 text-hero-foreground pressable [--press-scale:0.98]",
       },
       size: {
-        default:
+        "default":
           "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        icon: "size-8",
+        "xs": "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
+        "sm": "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
+        "lg": "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+        "icon": "size-8",
         "icon-xs":
           "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
         "icon-sm":
@@ -56,7 +56,7 @@ const buttonVariants = cva(
         // State-button height/typography (48–54 in the catalogue, reduced
         // to two steps: role — standard (50), role-lg — large (54,
         // login screen).
-        role: "h-[50px] gap-2 px-6 text-base font-580",
+        "role": "h-[50px] gap-2 px-6 text-base font-580",
         "role-lg": "h-[54px] gap-2 px-6 text-list-row font-580",
       },
     },
@@ -67,9 +67,9 @@ const buttonVariants = cva(
   },
 );
 
-type ButtonProps = Omit<ButtonPrimitiveProps, "className"> &
-  RefAttributes<HTMLButtonElement> &
-  VariantProps<typeof buttonVariants> & {
+type ButtonProps = Omit<ButtonPrimitiveProps, "className">
+  & RefAttributes<HTMLButtonElement>
+  & VariantProps<typeof buttonVariants> & {
     className?: string;
   };
 
@@ -88,8 +88,8 @@ export const Button = ({
   />
 );
 
-type LinkButtonProps = Omit<LinkPrimitiveProps, "className"> &
-  VariantProps<typeof buttonVariants> & {
+type LinkButtonProps = Omit<LinkPrimitiveProps, "className">
+  & VariantProps<typeof buttonVariants> & {
     className?: string;
   };
 
@@ -119,11 +119,14 @@ export const LinkButton = ({
     href={href}
     className={cn(buttonVariants({ variant, size, className }))}
     render={
+      // react-aria-components' Link can render as a plain <span> when
+      // there's no href (onPress-only links) — "href" in linkProps is its
+      // own documented way to narrow which case this is.
       isInternalHref(href)
-        ? // react-aria-components' Link can render as a plain <span> when
-          // there's no href (onPress-only links) — "href" in linkProps is
-          // its own documented way to narrow which case this is.
-          (linkProps) => ("href" in linkProps ? <NextLink {...linkProps} href={href} /> : <span {...linkProps} />)
+        ? (linkProps) =>
+            "href" in linkProps
+              ? <NextLink {...linkProps} href={href} />
+              : <span {...linkProps} />
         : undefined
     }
     {...props}

@@ -9,8 +9,24 @@ import createNextIntlPlugin from "next-intl/plugin";
 // tsconfig path alias isn't resolved here.
 import { env } from "./src/shared/config/env";
 
+// Version-skew protection (ADR 0036). After a deploy, a browser that still
+// has the previous build open carries its own id; when the server sees a
+// different one it answers with a full page reload instead of letting the
+// request fail. Without this the stale page's Server Action id no longer
+// exists on the server and the submission fails for good — the person
+// retries, it keeps failing, and their email is lost until they relaunch
+// the app.
+//
+// The value is the commit the build came from: it changes with every
+// deploy, is identical across all instances of that deploy, and Vercel
+// supplies it without any configuration. Trimmed to 12 characters because
+// a deployment id may be at most 32. Unset off Vercel (local builds), and
+// then Next.js falls back to its own generated build id.
+const deploymentId = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12);
+
 const nextConfig: NextConfig = {
   /* config options here */
+  ...(deploymentId ? { deploymentId } : {}),
   // A developer's own LAN IP(s) (envs/*.local.env, DEV_ALLOWED_ORIGIN,
   // comma-separated for more than one network) so the dev server can be
   // opened from a phone on the same network. Left unset in git — see
