@@ -14,6 +14,9 @@ export const routes = {
   install: "/install",
   about: "/about",
   privacy: "/privacy",
+  // Debug pages, served outside production only (isDebugPageEnabled).
+  sentryExampleError: "/sentry-example-error",
+  sentryExampleErrorServer: "/sentry-example-error/server",
   accessDesktop: "/access/desktop",
   accessAndroid: "/access/android",
   accessIosBrowser: "/access/ios-browser",
