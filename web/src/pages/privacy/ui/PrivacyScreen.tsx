@@ -161,6 +161,9 @@ export const PrivacyScreen = async () => {
             <li className={listItemClassName}>
               {t.rich("sections.whoCanSeeIt.subProcessors.vercel", { b: bold })}
             </li>
+            <li className={listItemClassName}>
+              {t.rich("sections.whoCanSeeIt.subProcessors.sentry", { b: bold })}
+            </li>
           </ul>
           <p className={paragraphClassName}>{t("sections.whoCanSeeIt.dataStaysInUk")}</p>
         </NumberedSection>

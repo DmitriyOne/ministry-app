@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
 import messages from "@/shared/config/i18n/messages/en-GB.json";
@@ -21,6 +22,7 @@ const t = messages.screens.globalError;
 const GlobalError = ({ error, reset }: GlobalErrorProps) => {
   useEffect(() => {
     console.error("[global-error]", error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (

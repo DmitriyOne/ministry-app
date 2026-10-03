@@ -38,6 +38,10 @@ export const env = createEnv({
     // server-only admin client (shared/api/supabase/admin.ts, ADR 0037).
     // Must never become NEXT_PUBLIC_*, or it would ship in the browser bundle.
     SUPABASE_SECRET_KEY: z.string().min(1),
+    // Sentry auth token for uploading source maps during the build
+    // (next.config.ts). Build-time only and optional: without it the build
+    // simply skips the upload. Never NEXT_PUBLIC_*.
+    SENTRY_AUTH_TOKEN: z.string().optional(),
     WEB_PUSH_VAPID_SUBJECT: z.string().refine(
       (value) => value.startsWith("mailto:") || value.startsWith("https://"),
       "WEB_PUSH_VAPID_SUBJECT must be a mailto: address or https:// URL",
@@ -50,6 +54,9 @@ export const env = createEnv({
     // Public half of the VAPID key pair; safe and required in the browser
     // when PushManager.subscribe() creates the subscription.
     NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY: z.string().min(1),
+    // Sentry DSN (EU region, ADR 0041). Optional: unset means error
+    // monitoring is simply off, which is the normal state locally.
+    NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -57,6 +64,7 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY:
       process.env.NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
   },
   emptyStringAsUndefined: true,
 });

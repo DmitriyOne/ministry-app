@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
+    "@sentry/nextjs": "^11.3.0",
     "@serwist/turbopack": "9.5.12",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.116.0",

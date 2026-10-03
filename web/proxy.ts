@@ -65,10 +65,13 @@ export const proxy = (request: NextRequest) => {
   return NextResponse.rewrite(url);
 };
 
+// "monitoring" is Sentry's tunnel route (next.config.ts). The proxy already
+// ignores every path outside APP_ROUTES, but that is a side effect; Sentry's
+// docs require excluding the route explicitly when building with Turbopack.
 // Assets don't need classification — running them through proxy would
 // only slow down serving them.
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|serwist|favicon.ico|manifest.webmanifest|icons|pwa).*)",
+    "/((?!_next/static|_next/image|serwist|favicon.ico|manifest.webmanifest|icons|pwa|monitoring).*)",
   ],
 };
