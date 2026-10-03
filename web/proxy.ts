@@ -7,11 +7,11 @@ import { env, routes } from "@/shared/config";
 
 // redirect, not rewrite — the address bar DOES change (ADR 0017's
 // "Обновление: redirect вместо rewrite для /access/*" explains why a
-// silent rewrite broke ShellGate, which decides purely off
+// silent rewrite broke LaunchGate, which decides purely off
 // window.location.pathname).
 const BLOCKED_SCREEN_PATH: Record<"desktop" | "android" | "ios-not-safari", string> = {
-  desktop: routes.accessDesktop,
-  android: routes.accessAndroid,
+  "desktop": routes.accessDesktop,
+  "android": routes.accessAndroid,
   "ios-not-safari": routes.accessIosBrowser,
 };
 
@@ -34,7 +34,7 @@ const APP_ROUTES: string[] = [
 ];
 
 // The server can't see display-mode (standalone/fullscreen) — that check
-// is done by ShellGate on the client (ADR 0017/0019). All that's left
+// is done by LaunchGate on the client (ADR 0017/0019/0028). All that's left
 // here is the server-side /day → /soon switch driven by LAUNCH_MODE.
 export const proxy = (request: NextRequest) => {
   if (env.DEV_MODE) return NextResponse.next();

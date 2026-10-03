@@ -1,3 +1,5 @@
+import "server-only";
+
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -6,7 +8,7 @@ import { env } from "@/shared/config";
 import type { Database } from "./database.types";
 
 // Must be created per-request — do not cache/reuse across requests.
-export const createClient = async () => {
+export const createServerSupabaseClient = async () => {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
