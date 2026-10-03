@@ -5,6 +5,7 @@ import { AppMark } from "@/shared/ui/app-mark";
 import {
   CalendarIcon,
   ChartArrowIcon,
+  CompassIcon,
   LockClosedIcon,
   LockOpenIcon,
   MonthIcon,
@@ -76,6 +77,16 @@ export const AboutScreen = async () => {
             text={t("hero.text")}
           />
         </div>
+
+        <SectionLabel>{t("installLabel")}</SectionLabel>
+        <ListCard>
+          <ListRow
+            divided={false}
+            icon={<CompassIcon size={18} />}
+            title={t("install.title")}
+            text={t("install.text")}
+          />
+        </ListCard>
 
         <SectionLabel>{t("screensLabel")}</SectionLabel>
         <ListCard>

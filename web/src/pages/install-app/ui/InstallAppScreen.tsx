@@ -2,9 +2,9 @@ import { getTranslations } from "next-intl/server";
 
 import { InstallSheet } from "@/widgets/install-sheet";
 import { AppMark } from "@/shared/ui/app-mark";
-import { Caption } from "@/shared/ui/caption";
 import { CenteredState } from "@/shared/ui/centered-state";
 import { TextBlock } from "@/shared/ui/text-block";
+import { InstallBrowserHint } from "./InstallBrowserHint";
 
 // The /install page: iPhone, Safari, opened in a tab rather than from the
 // home screen. LaunchGate sends people here when display-mode isn't
@@ -27,7 +27,7 @@ export const InstallAppScreen = async () => {
       fill
       glyph={<AppMark size={88} tone="solid" elevated />}
       actions={<InstallSheet />}
-      footnote={<Caption className="max-w-65">{t("inAppBrowserHint")}</Caption>}
+      footnote={<InstallBrowserHint>{t("inAppBrowserHint")}</InstallBrowserHint>}
     >
       <TextBlock align="center" eyebrow={t("eyebrow")} title={t("title")} text={t("text")} />
     </CenteredState>

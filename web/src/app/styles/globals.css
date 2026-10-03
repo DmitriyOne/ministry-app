@@ -78,6 +78,9 @@
   --color-ink-a07: var(--ink-a07);
   --color-ink-a05: var(--ink-a05);
 
+  --color-hint: var(--hint);
+  --color-hint-surface: var(--hint-surface);
+
   /* Shadow: the prototype's only shadow (cards). */
   --shadow-card: var(--shadow-card);
 
@@ -117,6 +120,12 @@
   --text-title--line-height: 1.1;
   --text-body: 15px;
   --text-body--line-height: 1.45;
+  /*
+    * Form controls stay at 16px to prevent iOS Safari from zooming the
+    * visual viewport when an input receives focus.
+  */
+  --text-control: 16px;
+  --text-control--line-height: 1.45;
   --text-status: 34px;
   --text-status--line-height: 1;
 
@@ -177,6 +186,8 @@
      via opacity: it's lighter and warmer there. */
   --palette-terracotta-tint: #e9b49c;
   --palette-white: #ffffff;
+  --palette-amber: #b87912;
+  --palette-amber-soft: #fff8e8;
 
   /* Prototype's radii as raw values (use via --radius-xs…4xl above). */
   --radius-12: 12px;
@@ -272,6 +283,9 @@
   --sidebar-accent-foreground: var(--palette-ink);
   --sidebar-border: var(--ink-a09);
   --sidebar-ring: var(--palette-muted-green);
+
+  --hint: var(--palette-amber);
+  --hint-surface: var(--palette-amber-soft);
 }
 
 /*

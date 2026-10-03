@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isDisposableEmail } from "@/shared/lib/email";
+
 // The same factory call is used on both the client
 // (use-join-waitlist.ts, useTranslations) and the server
 // (api/join-waitlist-action.ts, getTranslations) — one schema, no
@@ -34,12 +36,16 @@ export type JoinWaitlistActionState = {
   // True when the address was already on the list, so the screen can say
   // so instead of implying a second signup was made.
   alreadyJoined?: boolean;
+  // Present only for a genuinely new signup. It is a short-lived, one-time
+  // capability used to attach this browser's PushSubscription without
+  // exposing waitlist rows or accepting a client-provided "is new" flag.
+  pushEnrollmentToken?: string;
 };
 
 export const joinWaitlistInitialState: JoinWaitlistActionState = { status: "idle" };
 
 type JoinWaitlistTranslator = (
-  key: "emailRequired" | "emailInvalid" | "emailTooLong",
+  key: "emailRequired" | "emailInvalid" | "emailTooLong" | "emailDisposable",
 ) => string;
 
 export const createJoinWaitlistSchema = (t: JoinWaitlistTranslator) =>
@@ -53,5 +59,6 @@ export const createJoinWaitlistSchema = (t: JoinWaitlistTranslator) =>
       .string()
       .min(1, t("emailRequired"))
       .max(254, t("emailTooLong"))
-      .pipe(z.email(t("emailInvalid"))),
+      .pipe(z.email(t("emailInvalid")))
+      .refine((email) => !isDisposableEmail(email), t("emailDisposable")),
   });
