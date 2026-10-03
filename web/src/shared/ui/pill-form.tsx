@@ -29,8 +29,6 @@ type PillFormProps = {
   label?: string;
   hint?: string;
   name?: string;
-  submitted?: boolean;
-  successText?: string;
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
@@ -60,8 +58,6 @@ export const PillForm = ({
   label = placeholder,
   hint,
   name,
-  submitted = false,
-  successText,
   value: valueProp,
   defaultValue = "",
   onValueChange,
@@ -95,17 +91,6 @@ export const PillForm = ({
     onSubmit?.(value, honeypotValue);
   };
 
-  if (submitted) {
-    return (
-      <div
-        role="status"
-        className="w-full max-w-100 rounded-2xl bg-card px-5 py-4 text-list-row font-500 text-hero shadow-card"
-      >
-        {successText}
-      </div>
-    );
-  }
-
   return (
     <div className="flex w-full max-w-100 flex-col items-center gap-3.5">
       <form
@@ -128,7 +113,7 @@ export const PillForm = ({
           placeholder={placeholder}
           aria-invalid={invalid || undefined}
           aria-describedby={invalid ? errorId : undefined}
-          className="h-auto w-full rounded-full border-hero/15 bg-card px-4.5 py-3.5 text-body text-hero placeholder:text-hero/75 focus-visible:border-hero"
+          className="h-auto w-full rounded-full border-hero/15 bg-card px-4.5 py-3.5 text-control text-hero placeholder:text-hero/75 focus-visible:border-hero"
         />
         <FieldError id={errorId} errors={errors} className="text-left text-caption" />
         {honeypot ? <HoneypotField name={honeypot.name} label={honeypot.label} /> : null}
