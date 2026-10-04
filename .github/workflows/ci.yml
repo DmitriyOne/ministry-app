@@ -1,0 +1,62 @@
+# Fast checks on every pull request and every push to the long-lived branches:
+# lint (ESLint + steiger FSD boundaries), type check and unit tests (vitest).
+#
+# Deliberately NOT here: `pnpm build`. The root script is
+# `dotenv -e envs/web.local.env -- ...`, and that file is git-ignored, so it
+# does not exist on a runner; `web/src/shared/config/env.ts` also fails fast
+# when required variables are missing. Vercel builds the project on every push
+# and catches the same class of errors, so the build stays with Vercel until a
+# decision is made on how to feed an env file to CI.
+#
+# No secrets or variables are needed.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [develop, master]
+
+# Least privilege: the checks only read the repository.
+permissions:
+  contents: read
+
+# A newer push makes the older run for the same ref obsolete; cancelling it
+# saves runner minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, types, tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Order matters: setup-node with `cache: pnpm` runs `pnpm store path`,
+      # so pnpm must already be on PATH or the step fails with "Unable to
+      # locate executable file: pnpm". Corepack reads the exact version
+      # from package.json#packageManager, so it is not duplicated here and no
+      # third-party pnpm/action-setup is required.
+      - name: Enable Corepack (provides pnpm)
+        run: corepack enable
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (ESLint + steiger)
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
