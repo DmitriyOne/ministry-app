@@ -1,0 +1,85 @@
+# Runs the pgTAP suite (`supabase test db`) against a local Supabase stack
+# started inside the runner. These tests guard the data access model: RLS
+# enabled without policies, grants revoked, `execute` only for service_role
+# (ADR 0033, 0037, 0039). It has already caught one mistake before it reached
+# a database.
+#
+# The same stack also verifies that the generated TypeScript types committed
+# under web/ still match the schema the migrations produce, which is why that
+# file is in the path filter below as well.
+#
+# It is a separate workflow, not a job in ci.yml, because it is much slower
+# than the other checks and pointless for front-end-only changes; the path
+# filter below avoids conditional logic inside a job. supabase-deploy.yml
+# repeats the same steps as a gate before touching production.
+#
+# No secrets or variables are needed: everything runs locally on the runner
+# (ubuntu-latest already ships Docker).
+name: Database tests
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      # A hand-edited types file must be checked against the schema too.
+      - "web/src/shared/api/supabase/database.types.ts"
+      # The workflow itself, so that editing it is also tested.
+      - ".github/workflows/db-test.yml"
+  push:
+    branches: [develop, master]
+    paths:
+      - "backend/**"
+      - "web/src/shared/api/supabase/database.types.ts"
+      - ".github/workflows/db-test.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pgtap:
+    name: pgTAP and generated types
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          # Keep in step with backend/package.json (devDependencies.supabase).
+          version: 2.117.0
+
+      # The Supabase project (config.toml, migrations, tests) lives in backend/.
+      - name: Start local Supabase
+        working-directory: backend
+        run: supabase db start
+
+      - name: Run pgTAP tests
+        working-directory: backend
+        run: supabase test db
+
+      # Catches the mistake of adding a migration and forgetting
+      # `pnpm db:types`: the front end would then be typed against a schema
+      # that no longer exists, and `pnpm typecheck` would still pass, because
+      # it checks the code against the stale file, not against the database.
+      #
+      # The CLI is invoked directly rather than through `pnpm db:types`, so
+      # this needs neither Node nor a pnpm install; the redirection target is
+      # the same path that script writes to.
+      - name: Regenerate the database types
+        working-directory: backend
+        run: supabase gen types typescript --local > ../web/src/shared/api/supabase/database.types.ts
+
+      # --exit-code fails on any difference; the diff itself is printed into
+      # the log, so the fix is visible without reproducing it locally.
+      - name: Check the committed types are up to date
+        run: |
+          if ! git diff --exit-code -- web/src/shared/api/supabase/database.types.ts; then
+            echo "::error file=web/src/shared/api/supabase/database.types.ts::Generated types are out of date. Run 'pnpm db:types' and commit the result."
+            exit 1
+          fi
