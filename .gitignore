@@ -1,0 +1,47 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js
+.next/
+out/
+
+# production builds
+build/
+dist/
+
+# env files — real local env values are never committed, only *.example files
+.env
+.env.*
+envs/*.local.env
+!envs/*.example
+
+# misc
+.DS_Store
+*.pem
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# supabase local runtime state (never commit generated/temp files)
+backend/supabase/.branches
+backend/supabase/.temp
+
+# editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# ai agents (local settings, worktrees, browser automation output)
+.claude/
+.playwright-mcp/
+
+# vercel
+.vercel

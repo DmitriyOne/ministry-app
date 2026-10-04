@@ -1,0 +1,3 @@
+-- Local seed data for `supabase db reset`.
+-- Intentionally empty at this stage of the project (no schema/tables yet).
+-- Populate once migrations introduce tables that need seed data.

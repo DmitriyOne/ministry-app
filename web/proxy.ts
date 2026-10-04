@@ -1,0 +1,77 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+import { LAUNCH_MODE } from "@/app/config/launch-mode";
+import { classifyAccess } from "@/shared/lib/access";
+import { env, routes } from "@/shared/config";
+
+// redirect, not rewrite — the address bar DOES change (ADR 0017's
+// "Обновление: redirect вместо rewrite для /access/*" explains why a
+// silent rewrite broke LaunchGate, which decides purely off
+// window.location.pathname).
+const BLOCKED_SCREEN_PATH: Record<"desktop" | "android" | "ios-not-safari", string> = {
+  "desktop": routes.accessDesktop,
+  "android": routes.accessAndroid,
+  "ios-not-safari": routes.accessIosBrowser,
+};
+
+// Only these paths go through classification — otherwise non-existent
+// addresses would get a device placeholder instead of a real 404.
+// "/about" and "/privacy" are both in the list (device shield applies —
+// desktop/Android still get a placeholder) but deliberately NOT in
+// LaunchGate's APP_SCREEN_PATHS (features/launch-gate/model/
+// use-launch-gate.ts): both open in an ordinary Safari tab, not only
+// from the home-screen icon — see ADR 0029 (about) and ADR 0031
+// (privacy). All paths come from shared/config/routes.ts (ADR 0030) —
+// the single place these literals are written down.
+const APP_ROUTES: string[] = [
+  routes.root,
+  routes.day,
+  routes.soon,
+  routes.install,
+  routes.about,
+  routes.privacy,
+];
+
+// The server can't see display-mode (standalone/fullscreen) — that check
+// is done by LaunchGate on the client (ADR 0017/0019/0028). All that's left
+// here is the server-side /day → /soon switch driven by LAUNCH_MODE.
+export const proxy = (request: NextRequest) => {
+  if (env.DEV_MODE) return NextResponse.next();
+
+  const { pathname } = request.nextUrl;
+  if (!APP_ROUTES.includes(pathname)) return NextResponse.next();
+
+  const access = classifyAccess(request.headers.get("user-agent") ?? "");
+  if (access !== "ios-safari") {
+    const url = request.nextUrl.clone();
+    url.pathname = BLOCKED_SCREEN_PATH[access];
+    // 307 Temporary Redirect, not 308/permanent: the device class is
+    // derived from the User-Agent header on THIS request, not a durable
+    // property of the URL — the same person can open /day from a
+    // computer today and an iPhone tomorrow. A permanent redirect
+    // invites browsers/shared caches to remember "/day → /access/desktop"
+    // and keep applying it regardless of who asks next, which would lock
+    // that visitor out of the app on a phone too. 307 also preserves the
+    // request method (unlike 302's historically inconsistent handling),
+    // though every request through this proxy is a GET in practice.
+    return NextResponse.redirect(url, 307);
+  }
+
+  if (pathname !== routes.day || LAUNCH_MODE === "app") return NextResponse.next();
+
+  const url = request.nextUrl.clone();
+  url.pathname = routes.soon;
+  return NextResponse.rewrite(url);
+};
+
+// "monitoring" is Sentry's tunnel route (next.config.ts). The proxy already
+// ignores every path outside APP_ROUTES, but that is a side effect; Sentry's
+// docs require excluding the route explicitly when building with Turbopack.
+// Assets don't need classification — running them through proxy would
+// only slow down serving them.
+export const config = {
+  matcher: [
+    "/((?!_next/static|_next/image|serwist|favicon.ico|manifest.webmanifest|icons|pwa|monitoring).*)",
+  ],
+};

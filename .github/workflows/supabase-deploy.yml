@@ -1,0 +1,142 @@
+# Manual deployment of migrations and Edge Functions to the PRODUCTION
+# Supabase project. Trigger: workflow_dispatch ONLY, never on push. Writing to
+# production stays a deliberate human action, but it runs reproducibly from a
+# clean environment and behind a pgTAP gate. Run it from the GitHub UI
+# (Run workflow) or with `gh workflow run supabase-deploy.yml`.
+#
+# WARNING: `supabase db reset --linked` (and any `db reset` against a remote
+# project) DESTROYS the data in the cloud database. That command must never
+# appear in this workflow in any form: not as a step, not in a commented-out
+# block, not as an input value.
+#
+# Secrets live in the "production" environment. Enable "Required reviewers"
+# on that environment so that a run waits for explicit approval in the UI even
+# when the owner started it.
+#
+# Needs (environment "production"): SUPABASE_ACCESS_TOKEN,
+# SUPABASE_PROJECT_REF, SUPABASE_DB_PASSWORD.
+name: Supabase deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: What to deploy
+        type: choice
+        required: true
+        default: migrations
+        options:
+          - migrations
+          - functions
+          - both
+      confirm:
+        description: I understand this writes to the production database
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+# Never cancel a deployment: an interrupted `db push` is worse than one that
+# is allowed to finish. A second run queues behind the first.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  # Stands before everything else so an unconfirmed run stops in seconds.
+  # Putting this check inside `deploy` would mean waiting out the pgTAP gate
+  # and answering the production environment's approval prompt first, only to
+  # be told the box was never ticked.
+  guard:
+    name: Confirmation
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      # An unconfirmed run must FAIL visibly rather than finish green having
+      # done nothing: a green tick would read as "the deploy went out".
+      - name: Refuse to run without confirmation
+        if: ${{ !inputs.confirm }}
+        run: |
+          echo "::error::Deployment not confirmed. Re-run the workflow with the 'confirm' box ticked."
+          exit 1
+
+      - name: Confirmed
+        run: echo "Deploying target '${{ inputs.target }}' to production."
+
+  # Same four steps as .github/workflows/db-test.yml. Duplicating them is fine
+  # while it stays at four steps; if this grows, extract a reusable workflow
+  # (on: workflow_call) and call it from both files.
+  db-test:
+    name: pgTAP gate
+    needs: guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          # Keep in step with backend/package.json (devDependencies.supabase).
+          version: 2.117.0
+
+      - name: Start local Supabase
+        working-directory: backend
+        run: supabase db start
+
+      - name: Run pgTAP tests
+        working-directory: backend
+        run: supabase test db
+
+  deploy:
+    name: Deploy to production
+    needs: db-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.117.0
+
+      - name: Link the production project
+        working-directory: backend
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${SUPABASE_ACCESS_TOKEN:?Secret SUPABASE_ACCESS_TOKEN is not set}"
+          : "${SUPABASE_PROJECT_REF:?Secret SUPABASE_PROJECT_REF is not set}"
+          : "${SUPABASE_DB_PASSWORD:?Secret SUPABASE_DB_PASSWORD is not set}"
+          supabase link --project-ref "${SUPABASE_PROJECT_REF}"
+
+      - name: Push migrations
+        if: ${{ (inputs.target == 'migrations' || inputs.target == 'both') }}
+        working-directory: backend
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${SUPABASE_ACCESS_TOKEN:?Secret SUPABASE_ACCESS_TOKEN is not set}"
+          : "${SUPABASE_DB_PASSWORD:?Secret SUPABASE_DB_PASSWORD is not set}"
+          supabase db push
+
+      - name: Deploy Edge Functions
+        if: ${{ (inputs.target == 'functions' || inputs.target == 'both') }}
+        working-directory: backend
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          : "${SUPABASE_ACCESS_TOKEN:?Secret SUPABASE_ACCESS_TOKEN is not set}"
+          supabase functions deploy

@@ -1,0 +1,384 @@
+{
+  "metadata": {
+    "title": "MinistryApp",
+    "description": "Track ministry hours for pioneers and publishers",
+    "ogImageAlt": "MinistryApp logo beside the headline \"Slow and steady, or racing ahead — you set the pace.\" above a pace scale running from a turtle on the left to a rabbit on the right."
+  },
+  "common": {
+    "back": "Back",
+    "loading": "Loading",
+    "noscriptRequired": "MinistryApp needs JavaScript enabled to run.",
+    "aboutLink": "About",
+    "privacyLink": "Privacy & cookies",
+    "connectionRestored": "You're back online"
+  },
+  "notifications": {
+    "waitlist": {
+      "enable": "Notify me at launch",
+      "enabling": "Enabling…",
+      "enabled": "Launch notifications are enabled.",
+      "denied": "Notifications are blocked. You can enable them in system settings.",
+      "unsupported": "Push notifications aren't available here.",
+      "error": "Couldn't enable notifications. Please try again.",
+      "confirmation": {
+        "title": "You're on the list",
+        "body": "We'll let you know the moment the app is ready."
+      }
+    }
+  },
+  "a11y": {
+    "sheet": {
+      "close": "Close"
+    },
+    "honeypotLabel": "Leave this field blank"
+  },
+  "screens": {
+    "day": {
+      "title": "Day",
+      "supabaseStatusLabel": "Supabase:",
+      "metadata": {
+        "title": "Day",
+        "description": "Record today's ministry hours and Bible studies in a few taps, and see how you're tracking against your monthly and yearly goal."
+      }
+    },
+    "access": {
+      "desktop": {
+        "title": "Phones only, for now",
+        "text": "Open MinistryApp on your phone. All your records are already there.",
+        "metadata": {
+          "title": "Phones only, for now",
+          "description": "MinistryApp is available on iPhone only, for now. Open this page on your own phone to sign in and see your ministry report."
+        }
+      },
+      "android": {
+        "title": "iOS only, for now",
+        "text": "We're working on an Android version. MinistryApp only opens on iPhone for now.",
+        "metadata": {
+          "title": "iOS only, for now",
+          "description": "MinistryApp currently supports iPhone only. An Android version is on its way — check back soon, or open this page on an iPhone."
+        }
+      },
+      "iosBrowser": {
+        "title": "Safari only, for now",
+        "text": "Open this page in Safari on your iPhone.",
+        "copyLinkButton": "Copy link",
+        "linkCopied": "Link copied",
+        "copyLinkError": "Couldn't copy the link automatically. Select the address below and copy it manually.",
+        "addressLabel": "Address",
+        "metadata": {
+          "title": "Safari only, for now",
+          "description": "MinistryApp only opens in Safari on iPhone. Open this page in Safari instead, or copy the link to open it there yourself."
+        }
+      }
+    },
+    "notFound": {
+      "code": "404",
+      "title": "Page not found",
+      "text": "This page doesn't exist or has moved. Check the link or go back to MinistryApp.",
+      "homeButton": "Go to home screen",
+      "metadata": {
+        "title": "Page not found",
+        "description": "This page doesn't exist or has moved. Check the address, or go back to MinistryApp to continue tracking your ministry hours."
+      }
+    },
+    "serverError": {
+      "code": "500",
+      "title": "Server not responding",
+      "text": "We couldn't load your data. Check your connection and try again.",
+      "retryButton": "Try again",
+      "homeButton": "Go to home screen",
+      "errorCode": "Error code: {code} · {date}"
+    },
+    "installApp": {
+      "eyebrow": "MinistryApp",
+      "title": "Install the app on your phone",
+      "text": "An icon will appear on your home screen. Your report will open in one tap, with no browser address bar.",
+      "metadata": {
+        "title": "Install the app",
+        "description": "Add MinistryApp to your iPhone's home screen for one-tap access to your ministry report, with no browser address bar in the way."
+      },
+      "installButton": "How to install",
+      "inAppBrowserHint": "Opened this from Telegram, WhatsApp or another app? Open it in Safari first — installation only works there.",
+      "sheet": {
+        "title": "Install on iPhone",
+        "prevLabel": "Back",
+        "nextLabel": "Next",
+        "okButton": "OK",
+        "stepLabel": "Step {step} of {total}",
+        "steps": {
+          "step1": {
+            "text": "Tap the ‘…’ button to the right of the Safari address bar.",
+            "imageAlt": "Safari address bar with the ‘…’ button on the right, circled in red"
+          },
+          "step2": {
+            "text": "In the menu that opens, tap Share.",
+            "imageAlt": "Safari menu with the Share option highlighted by a red box and arrow"
+          },
+          "step3": {
+            "text": "Scroll down and tap Add to Home Screen.",
+            "imageAlt": "Share menu scrolled down, with Add to Home Screen circled in red"
+          },
+          "step4": {
+            "text": "Check the name and address, then tap Add in the top-right corner.",
+            "imageAlt": "Add to Home Screen dialog showing the name MinistryApp, the address jw.fenko.dev, and the Add button"
+          },
+          "step5": {
+            "text": "Done. The icon is now on your home screen. Open the app from there.",
+            "imageAlt": "iPhone home screen with the MinistryApp icon circled in red"
+          }
+        }
+      }
+    },
+    "comingSoon": {
+      "eyebrow": "Coming soon",
+      "title": "MinistryApp",
+      "text": "The app for tracking ministry hours is on its way. We'll let you know as soon as it's ready.",
+      "metadata": {
+        "title": "Coming soon",
+        "description": "MinistryApp is on its way: a simple way to track ministry hours, Bible studies, and goals. Join the waitlist to hear when it's ready."
+      },
+      "emailPlaceholder": "Your email",
+      "submitButton": "Join the waitlist",
+      "submitButtonPending": "Joining…",
+      "hint": "Leave your email to join the waitlist",
+      "successTitle": "You're on the list",
+      "successTitleNumbered": "You're #{position} on the list",
+      "alreadyJoinedTitle": "You're already #{position} on the list",
+      "successText": "We'll email you as soon as it's ready.",
+      "emailRequired": "Enter your email",
+      "emailInvalid": "Enter a valid email address",
+      "emailTooLong": "That email address is too long",
+      "emailDisposable": "That looks like a temporary address. Please use an inbox you'll actually read.",
+      "submitError": "Couldn't join the waitlist. Please try again.",
+      "tooManyRequests": "Too many attempts. Please wait a few minutes and try again."
+    },
+    "about": {
+      "eyebrow": "About",
+      "metadata": {
+        "title": "About",
+        "description": "What MinistryApp does: daily and monthly reports, pace against your goal, personal targets, and how your data is kept private."
+      },
+      "hero": {
+        "title": "MinistryApp",
+        "text": "A personal record of your ministry: hours, Bible studies, and goals for the month and the service year."
+      },
+      "installLabel": "Installing",
+      "install": {
+        "title": "Safari, then your home screen",
+        "text": "There is nothing to download and no App Store. Open MinistryApp in Safari on your iPhone and add it to your home screen — an icon appears beside your other apps and the report opens in one tap, with no address bar in the way. Adding it only works in Safari itself, not in the browser built into Telegram, WhatsApp or another app."
+      },
+      "screensLabel": "Screens",
+      "screens": {
+        "day": {
+          "title": "Day",
+          "text": "Log ministry hours and Bible studies for a chosen day, in 15-minute steps. Shows progress for the month and the service year."
+        },
+        "calendar": {
+          "title": "Calendar",
+          "text": "A month grid marking the days you reported. Pick a day to open its hours and studies."
+        },
+        "month": {
+          "title": "Month",
+          "text": "A day-by-day summary for the month: hours and studies in a list, compared against the goal, with the month closed off into the year."
+        },
+        "year": {
+          "title": "Year",
+          "text": "The service year (September to August), month by month: hours, deviation from the goal, and switching between years."
+        },
+        "profile": {
+          "title": "Profile",
+          "text": "Your type of service and goal, personal monthly and yearly targets, pace status, and access to the beyond-the-goal screen."
+        }
+      },
+      "featuresLabel": "Features",
+      "features": {
+        "paceDeviation": {
+          "title": "Pace deviation",
+          "text": "Every day and month is measured against the share of the goal expected by that date — green when you are ahead, terracotta when you are behind."
+        },
+        "personalGoals": {
+          "title": "Personal goals",
+          "text": "The standard hours come from your type of service; you can set your own monthly and yearly goal instead, from a preset or by hand."
+        },
+        "beyondGoal": {
+          "title": "Beyond the goal",
+          "text": "Once the year's goal is met, a separate screen shows how many hours you are over, and in which months."
+        },
+        "accountSignIn": {
+          "title": "Account sign-in",
+          "text": "Accounts are issued by the administrator — write to <mail>admin@jw.fenko.dev</mail> if you need one. No registration required; your report syncs across devices."
+        },
+        "yourData": {
+          "title": "Your data",
+          "text": "Encrypted in transit and at rest, and never passed to third parties. Only you and the super administrator can read it — not to check up on you, but so an entry can be corrected or deleted at your request."
+        }
+      }
+    },
+    "privacy": {
+      "eyebrow": "Privacy & cookies",
+      "metadata": {
+        "title": "Privacy & cookies",
+        "description": "What MinistryApp stores about you, why it's stored, which cookies it uses, and how to access, correct, or erase your data."
+      },
+      "title": "Privacy notice",
+      "updated": "Last updated 1 October 2026 · version 1.0",
+      "intro": "This notice explains what MinistryApp stores about you and why. It covers both your personal data and the cookies and storage the app uses on your phone.",
+      "toc": {
+        "whatWeStore": "1. What we store",
+        "why": "2. Why",
+        "cookies": "3. Cookies",
+        "whoCanSeeIt": "4. Who can see it",
+        "yourRights": "5. Your rights",
+        "contact": "6. Contact"
+      },
+      "sections": {
+        "whatWeStore": {
+          "heading": "What we store",
+          "intro": "MinistryApp is a private app for recording your own ministry activity. We only store what you enter yourself — nothing is collected automatically in the background.",
+          "items": {
+            "item1": "Your account email address",
+            "item2": "The ministry entries you add by hand: date, hours, visits and any notes you write",
+            "item3": "The monthly and yearly goals you set",
+            "item4": "Your email address, if you joined the waitlist before the app launched",
+            "item5": "The notification subscription your browser creates, if you chose to be told when the app launches"
+          },
+          "retention": "We keep your entries for as long as you use your account. If you do not sign in for six months, we delete your account and your entries with it. Ask us to delete them sooner and we will erase them within one month."
+        },
+        "why": {
+          "heading": "Why we store it",
+          "intro": "We store this data so the app can show you your own records and goals, and so you can keep a running history of your ministry activity over time.",
+          "waitlist": "If you joined the waitlist before launch, we store that email address for one reason only: to tell you when the app is ready. We do not use it for anything else, and we delete it once the app has launched and everyone on the list has been told.",
+          "pushNotifications": "If you chose to be told when the app launches, your browser creates a subscription: an address only it can deliver to, and two keys that encrypt what we send. We store those three values and use them for that one announcement. They let us send a notification to that browser and nothing else — we cannot read anything on your device with them. They are deleted together with your waitlist entry, and you can switch notifications off in your device settings at any time.",
+          "specialCategory": "Because records of time spent in religious ministry reveal something about your religious beliefs, the law treats this as a <b>special category of personal data</b>, not ordinary personal data. We handle it with extra care and only ever with your explicit consent.",
+          "legalBasis": "<b>Legal basis for processing (Article 6 UK GDPR):</b> your consent.",
+          "specialCategoryCondition": "<b>Special category condition (Article 9 UK GDPR):</b> your explicit consent to us processing data that reveals your religious beliefs.",
+          "withdraw": "You can withdraw this consent at any time, as easily as you gave it, by contacting us (see Section 6). If you withdraw consent, we will stop processing your ministry data and, if you ask us to, delete it.",
+          "noProfiling": "We do not use your data for advertising. We do not build a profile of you. We do not use analytics or tracking tools. We do use error monitoring, which shows us what broke; it does not follow what you do or build a profile of you. We do not make automated decisions about you."
+        },
+        "cookies": {
+          "heading": "Cookies and local storage",
+          "intro": "MinistryApp uses one cookie, and a small amount of storage on your device to let the app work offline. Both are strictly necessary for the app to function — without them, you could not stay signed in or use the app without a network connection. Because they are strictly necessary, UK and EU cookie rules (PECR) do not require us to ask for your consent or show a cookie banner, and we do not show one.",
+          "table": {
+            "caption": "Cookies and storage MinistryApp uses",
+            "name": "Name",
+            "purpose": "Purpose",
+            "type": "Type",
+            "rows": {
+              "auth": {
+                "name": "sb-…-auth-token",
+                "purpose": "Keeps you signed in between visits, for around 12 months",
+                "type": "Strictly necessary cookie",
+                "statusLabel": "Necessary"
+              },
+              "offline": {
+                "name": "Offline app storage (service worker / local storage)",
+                "purpose": "Lets the installed app load and show its basic shell without a network connection",
+                "type": "Strictly necessary local storage",
+                "statusLabel": "Necessary"
+              },
+              "analytics": {
+                "name": "—",
+                "purpose": "We do not use any analytics, advertising, or third-party tracking cookies",
+                "type": "Not used",
+                "statusLabel": "None"
+              }
+            }
+          }
+        },
+        "whoCanSeeIt": {
+          "heading": "Who can see your data",
+          "intro": "Your data is visible to:",
+          "items": {
+            "you": "<b>You</b>, when you sign in to your own account.",
+            "superAdmin": "<b>One super administrator</b>, who can see account and ministry records in order to help set up accounts, correct a mistake, or delete data on request. This access is not used to monitor your activity."
+          },
+          "subProcessorsIntro": "Your data is stored and processed on our behalf by the following sub-processors:",
+          "subProcessors": {
+            "supabase": "<b>Supabase</b> — our database provider. Your data is stored on Supabase's managed PostgreSQL service, encrypted in transit (TLS) and at rest, in the United Kingdom (London, eu-west-2).",
+            "vercel": "<b>Vercel</b> — our application hosting provider, which serves the app itself.",
+            "sentry": "<b>Sentry</b> — our error-monitoring provider. When the app breaks, a technical report is sent to Sentry's servers in the EU (Frankfurt, Germany): the address of the page, your browser version and the error message itself. The report does not contain your name, your email address or any ministry record, and we have switched off the collection of IP addresses."
+          },
+          "dataStaysInUk": "Your personal data and ministry records are stored in the United Kingdom and are not transferred outside it. The only thing that leaves is the technical error reports described above, which are processed in the EU (Frankfurt)."
+        },
+        "yourRights": {
+          "heading": "Your rights",
+          "intro": "Under UK and EU GDPR, you have the right to:",
+          "items": {
+            "access": "<b>Access</b> the personal data we hold about you",
+            "correct": "<b>Correct</b> (rectify) inaccurate or incomplete data",
+            "erase": "<b>Erase</b> your data (\"right to be forgotten\")",
+            "restrict": "<b>Restrict</b> how we use your data",
+            "receiveCopy": "<b>Receive a copy</b> of your data in a portable format (data portability)",
+            "withdrawConsent": "<b>Withdraw your consent</b> at any time, as easily as you gave it, without affecting the lawfulness of processing before you withdrew it",
+            "complain": "<b>Complain to the Information Commissioner's Office (ICO)</b> at ico.org.uk if you believe we have not handled your data properly"
+          },
+          "contactLine": "To exercise any of these rights, contact us at <mail>admin@jw.fenko.dev</mail>. We will respond within one month of your request. If your request is complex, we may extend this by a further two months, and we will tell you within the first month if we need to do this and why."
+        },
+        "contact": {
+          "heading": "Contact",
+          "controllerLabel": "Data controller:",
+          "controllerName": "Dmitry Fenko",
+          "icoLabel": "ICO registration number:",
+          "icoValue": "ZC141876",
+          "emailLabel": "Email:",
+          "emailValue": "admin@jw.fenko.dev",
+          "noDpo": "We have not appointed a Data Protection Officer, as this is not required at our scale. The contact details above are the single point of contact for any privacy question or rights request."
+        }
+      }
+    },
+    "sentryExampleError": {
+      "metadata": {
+        "title": "Sentry test",
+        "description": "Debug page for checking that errors reach Sentry."
+      },
+      "title": "Sentry test",
+      "intro": "Each button below causes one kind of error on purpose. Open Sentry afterwards and search for {prefix} to find them. You can mute that text there once you are done.",
+      "explicit": {
+        "title": "1. Send an event",
+        "hint": "Sends a handled error straight to Sentry and breaks nothing. If this one never arrives, the DSN or the tunnel route is wrong. Tagged debug_probe: true.",
+        "button": "Send test event",
+        "done": "Sent. It should appear in Sentry within a minute."
+      },
+      "handler": {
+        "title": "2. Unhandled error in a handler",
+        "hint": "Throws inside a click handler. The global handler reports it and the page keeps working.",
+        "button": "Throw in handler",
+        "done": "Thrown. Look for an unhandled error in Sentry."
+      },
+      "scrub": {
+        "title": "3. Personal data scrubbing",
+        "hint": "Sends an error whose text contains {email}. In Sentry the message should show [redacted] where the address was. If you can read the address, scrubbing is broken.",
+        "button": "Send error with an email",
+        "done": "Sent. Check that the address is replaced by [redacted]."
+      },
+      "render": {
+        "title": "4. Render error",
+        "hint": "Throws while this screen renders. You will land on the error screen, which is the app's error boundary. Reload the page to come back.",
+        "button": "Break the render"
+      },
+      "action": {
+        "title": "5. Server Action error",
+        "hint": "Calls a Server Action that throws on the server. It should arrive in Sentry through the server request error hook.",
+        "button": "Call failing Server Action",
+        "done": "Called. Look for a server-side error in Sentry."
+      },
+      "serverRender": {
+        "title": "6. Server Component error",
+        "hint": "Opens a page that throws while it renders on the server. You will see the error screen, and Sentry should receive a server-side error.",
+        "button": "Open failing page"
+      }
+    },
+    "globalError": {
+      "code": "500",
+      "title": "Server not responding",
+      "text": "Please refresh the page in a minute.",
+      "retryButton": "Try again"
+    },
+    "offline": {
+      "title": "You’re offline",
+      "text": "Check your Wi-Fi or mobile data, then try again.",
+      "retryButton": "Try again",
+      "retryingButton": "Checking…"
+    }
+  }
+}
