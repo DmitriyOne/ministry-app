@@ -64,7 +64,7 @@ Vercel нет. Класс ошибок, который важнее всего (
 | `db-test.yml` | то же + фильтр `backend/**` | нет |
 | `health-ping.yml` | `schedule` раз в 3 дня, `workflow_dispatch` | 1 |
 | `supabase-backup.yml` | `schedule` раз в сутки, `workflow_dispatch` | 1 |
-| `supabase-deploy.yml` | **только** `workflow_dispatch` | 3, в окружении |
+| `supabase-deploy.yml` | **только** `workflow_dispatch` | 1 в окружении + 1 общий |
 
 ### Сторонние actions — по полному SHA коммита, не по тегу
 
@@ -127,6 +127,35 @@ auth — им проверяется достижимость собственн
 `supabase db reset` не встречается в этом файле ни в каком виде, и шапка
 говорит об этом прямо: на привязанном проекте он уничтожает данные в облаке.
 
+### `supabase link` не используется — токен получает одно разрешение
+
+Документация Supabase по scoped personal access tokens перечисляет, что
+`supabase link` требует **Project Settings**, **API Keys** и **API Key
+Secrets**, все с правом Read. Последнее — это право читать секретный ключ
+проекта (`sb_secret_…`), то есть токен в CI оказался бы не слабее самого
+ключа, обходящего RLS. Платить этим за одну команду незачем: и `db push`, и
+`functions deploy` умеют принимать цель напрямую.
+
+```
+supabase db push --db-url "$SUPABASE_DB_URL"
+supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF" --use-api
+```
+
+Токену остаётся **Edge Functions: read & write** и ничего больше. Миграции от
+токена не зависят вовсе: та же документация прямо говорит, что команды,
+аутентифицированные паролем базы, правами токена не ограничены. `--use-api`
+собирает функции на стороне Supabase, поэтому Docker на раннере не нужен.
+
+Строка подключения должна быть percent-encoded — если в пароле есть `@`, `:`,
+`/` или `?`, кодировать надо в самом значении секрета, иначе URL разберётся не
+на те части.
+
+Честная оговорка: `SUPABASE_DB_URL` — секрет уровня репозитория, общий с
+бэкапом, а не секрет окружения `production`. Запереть его в окружении ради
+деплоя смысла нет: тот же бэкап уже ходит с ним в базу через `psql` и может
+выполнить там что угодно. Настоящая граница здесь другая — кто может добавить
+workflow, тот уже может всё.
+
 ## Последствия
 
 - Проверки начинают работать сразу после мержа, без единого секрета.
@@ -150,12 +179,30 @@ auth — им проверяется достижимость собственн
 
 ## Что нужно добавить в GitHub
 
-Переменная (`Settings → Secrets and variables → Actions → Variables`):
-`SUPABASE_URL`. Секреты репозитория: `SUPABASE_SECRET_KEY` (keep-alive),
-`SUPABASE_DB_URL` (бэкап; брать строку Session pooler — прямое подключение к
-Supabase с раннеров GitHub по IPv4 не всегда доступно). Окружение
-`production` с секретами `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`,
-`SUPABASE_DB_PASSWORD`.
+`Settings → Secrets and variables → Actions`, вкладка **Variables**:
+
+| Имя | Значение |
+|---|---|
+| `SUPABASE_URL` | `https://<ref>.supabase.co` |
+| `SUPABASE_PROJECT_REF` | `<ref>` |
+
+Обе — переменные, не секреты: и адрес, и ref проекта публичны.
+
+Вкладка **Secrets** (уровень репозитория):
+
+| Имя | Для чего |
+|---|---|
+| `SUPABASE_SECRET_KEY` | keep-alive |
+| `SUPABASE_DB_URL` | бэкап и `db push` |
+
+Для `SUPABASE_DB_URL` брать строку **Session pooler**: прямое подключение к
+Supabase с раннеров GitHub по IPv4 не всегда доступно, у них только IPv6.
+
+`Settings → Environments → production`, секрет окружения:
+
+| Имя | Разрешения токена |
+|---|---|
+| `SUPABASE_ACCESS_TOKEN` | только **Edge Functions: read & write** |
 
 ## Открытые вопросы
 
