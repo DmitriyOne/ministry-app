@@ -27,11 +27,11 @@ permissions:
   contents: read
 
 env:
-  # !!! VERIFY BEFORE THE FIRST RUN !!!
-  # Must equal the major Postgres version of the CLOUD project (Supabase
-  # dashboard -> Settings -> Infrastructure). pg_dump refuses to dump a
-  # server newer than itself. 17 is only a starting point, not a verified
-  # value for this project.
+  # The major Postgres version of the CLOUD project, verified on 2026-10-04
+  # against the project itself: PostgreSQL 17.11 on x86_64-pc-linux-gnu.
+  # pg_dump refuses to dump a server newer than itself, so this must be
+  # raised whenever Supabase upgrades the project's major version
+  # (dashboard -> Settings -> Infrastructure).
   PG_MAJOR: "17"
 
 jobs:
