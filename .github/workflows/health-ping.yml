@@ -1,0 +1,58 @@
+# Keeps the free-tier Supabase project from being paused. Free projects are
+# paused after 7 days of inactivity, so every 3 days this workflow performs a
+# real query against the database.
+#
+# Why the ping goes straight to the Supabase REST API and not to
+# /api/v1/health: that route returns 204 and deliberately touches neither
+# Supabase nor auth (it only probes reachability of our own origin), and the
+# Edge Function backend/supabase/functions/health returns a static JSON
+# without a database call. Pinging either would NOT reset the inactivity timer.
+#
+# Why HEAD and not GET: PostgREST still executes the query, but returns no
+# body, so no e-mail address from the waitlist can ever land in the CI logs.
+#
+# Why the secret key and not the publishable one: the tables are closed to
+# anon completely (RLS without policies plus revoked grants), so the
+# publishable key cannot make a single successful request to them.
+# service_role has `select` on public.waitlist_signups (migration
+# 20261002230000_grant_tables_to_service_role.sql). With -f, an expired or
+# revoked key makes the job fail loudly instead of silently doing nothing.
+#
+# Schedule notes:
+#  - "*/3" in the day-of-month field fires on the 1st, 4th, 7th ... 31st, so
+#    the interval resets at a month boundary (31 Jan -> 1 Feb is one day).
+#    Against a 7-day timer that is harmless: the longest gap stays 3 days.
+#  - Minute 27 keeps the run away from the busy top of the hour.
+#  - GitHub may delay scheduled runs by 15+ minutes under load and disables
+#    schedules after 60 days without repository activity.
+#
+# Needs: variable SUPABASE_URL (not a secret), secret SUPABASE_SECRET_KEY.
+name: Supabase health ping
+
+on:
+  schedule:
+    - cron: "27 6 */3 * *"
+  # Lets the ping be triggered by hand.
+  workflow_dispatch:
+
+# No checkout, the repository is never read: the token gets no permissions.
+permissions: {}
+
+jobs:
+  ping:
+    name: Query Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Query waitlist_signups through PostgREST
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          : "${SUPABASE_URL:?Repository variable SUPABASE_URL is not set}"
+          : "${SUPABASE_SECRET_KEY:?Secret SUPABASE_SECRET_KEY is not set}"
+          curl -fsS --head --max-time 15 \
+            -H "apikey: ${SUPABASE_SECRET_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SECRET_KEY}" \
+            "${SUPABASE_URL}/rest/v1/waitlist_signups?select=id&limit=1"
