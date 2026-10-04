@@ -9,12 +9,23 @@
 # appear in this workflow in any form: not as a step, not in a commented-out
 # block, not as an input value.
 #
-# Secrets live in the "production" environment. Enable "Required reviewers"
-# on that environment so that a run waits for explicit approval in the UI even
-# when the owner started it.
+# `supabase link` is deliberately NOT used. It needs an access token with
+# Project Settings, API Keys and API Key Secrets all readable, which means the
+# CI token could read the project's secret key and would then be no weaker
+# than that key itself. Both commands below accept the target directly
+# instead, so the token needs one permission: Edge Functions read & write.
+# Migrations do not involve the token at all — `db push --db-url` connects to
+# Postgres directly, and the docs state that database commands authenticated
+# by the database password are not limited by a token's permissions.
 #
-# Needs (environment "production"): SUPABASE_ACCESS_TOKEN,
-# SUPABASE_PROJECT_REF, SUPABASE_DB_PASSWORD.
+# Enable "Required reviewers" on the "production" environment so that a run
+# waits for explicit approval in the UI even when the owner started it.
+#
+# Needs: environment secrets SUPABASE_ACCESS_TOKEN (scoped to Edge Functions
+# read & write) and SUPABASE_PROJECT_REF; repository secret SUPABASE_DB_URL,
+# the same connection string the backup uses. A project ref is not actually
+# sensitive — it is the host of the project's API URL — but keeping it beside
+# the token means one place to configure rather than two.
 name: Supabase deploy
 
 on:
@@ -106,37 +117,40 @@ jobs:
         with:
           version: 2.117.0
 
-      - name: Link the production project
-        working-directory: backend
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: |
-          set -euo pipefail
-          : "${SUPABASE_ACCESS_TOKEN:?Secret SUPABASE_ACCESS_TOKEN is not set}"
-          : "${SUPABASE_PROJECT_REF:?Secret SUPABASE_PROJECT_REF is not set}"
-          : "${SUPABASE_DB_PASSWORD:?Secret SUPABASE_DB_PASSWORD is not set}"
-          supabase link --project-ref "${SUPABASE_PROJECT_REF}"
-
+      # No access token here: the connection string carries its own
+      # credentials. The CLI still reads the migration history table on the
+      # server, so an already-applied migration is not applied twice.
+      #
+      # It must be a SESSION POOLER string, not a direct connection: after
+      # `supabase link` the CLI dials db.<ref>.supabase.co, which resolves
+      # over IPv6 only, and GitHub runners have IPv4 only — that combination
+      # fails with "IPv6 is not supported on your current network". The
+      # pooler listens on IPv4. This is also why `link` is not used here.
+      #
+      # The string must be percent-encoded (`--db-url` says so): if the
+      # database password contains a character such as @ : / ? or a non-ASCII
+      # one, encode it in the secret's value, or the URL parses into the
+      # wrong parts. Simplest is an alphanumeric password.
       - name: Push migrations
         if: ${{ (inputs.target == 'migrations' || inputs.target == 'both') }}
         working-directory: backend
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -euo pipefail
-          : "${SUPABASE_ACCESS_TOKEN:?Secret SUPABASE_ACCESS_TOKEN is not set}"
-          : "${SUPABASE_DB_PASSWORD:?Secret SUPABASE_DB_PASSWORD is not set}"
-          supabase db push
+          : "${SUPABASE_DB_URL:?Secret SUPABASE_DB_URL is not set}"
+          supabase db push --db-url "${SUPABASE_DB_URL}"
 
+      # --use-api bundles the functions server-side, so the runner needs no
+      # Docker for this step. --project-ref replaces `supabase link`.
       - name: Deploy Edge Functions
         if: ${{ (inputs.target == 'functions' || inputs.target == 'both') }}
         working-directory: backend
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           set -euo pipefail
           : "${SUPABASE_ACCESS_TOKEN:?Secret SUPABASE_ACCESS_TOKEN is not set}"
-          supabase functions deploy
+          : "${SUPABASE_PROJECT_REF:?Secret SUPABASE_PROJECT_REF is not set}"
+          supabase functions deploy --project-ref "${SUPABASE_PROJECT_REF}" --use-api
