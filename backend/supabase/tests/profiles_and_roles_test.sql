@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(24);
+select plan(30);
 
 -- The enum, not text: a typo in a role must fail on insert rather than
 -- surface later as a failed permission check.
@@ -179,6 +179,50 @@ select is(
     where id = '11111111-1111-1111-1111-111111111111'),
   now(),
   'the trigger sets updated_at to the current transaction timestamp'
+);
+
+-- The hook itself. Runs as the owner (after reset role above).
+-- supabase_auth_admin is the only role that may run it: it returns
+-- another person's role when asked, so execute for anon or authenticated
+-- would be a way to read user_roles around its own missing policies.
+select has_function('public', 'custom_access_token_hook', 'the hook exists');
+select ok(
+  has_function_privilege(
+    'supabase_auth_admin', 'public.custom_access_token_hook(jsonb)', 'execute'),
+  'supabase_auth_admin can execute the hook'
+);
+select ok(
+  not has_function_privilege(
+    'anon', 'public.custom_access_token_hook(jsonb)', 'execute'),
+  'anon cannot execute the hook'
+);
+select ok(
+  not has_function_privilege(
+    'authenticated', 'public.custom_access_token_hook(jsonb)', 'execute'),
+  'authenticated cannot execute the hook'
+);
+
+select is(
+  public.custom_access_token_hook(jsonb_build_object(
+    'user_id', '11111111-1111-1111-1111-111111111111',
+    'claims', jsonb_build_object('sub', '11111111-1111-1111-1111-111111111111')
+  )) -> 'claims' ->> 'user_role',
+  'user',
+  'the hook puts the role into the claims'
+);
+
+-- A person whose user_roles row was removed by hand must still be able
+-- to sign in: the hook returns the claims untouched rather than failing,
+-- and the front end falls back to the default role (Review Focus 2).
+delete from public.user_roles
+  where user_id = '22222222-2222-2222-2222-222222222222';
+select is(
+  public.custom_access_token_hook(jsonb_build_object(
+    'user_id', '22222222-2222-2222-2222-222222222222',
+    'claims', jsonb_build_object('sub', '22222222-2222-2222-2222-222222222222')
+  )) -> 'claims' ->> 'user_role',
+  null,
+  'a person with no role row gets claims without user_role, not an error'
 );
 
 select * from finish();
