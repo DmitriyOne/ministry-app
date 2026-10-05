@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(18);
+select plan(24);
 
 -- The enum, not text: a typo in a role must fail on insert rather than
 -- surface later as a failed permission check.
@@ -16,6 +16,8 @@ select is(
 
 select has_table('public', 'profiles', 'profiles exists');
 select has_table('public', 'user_roles', 'user_roles exists');
+select has_function(
+  'public', 'set_updated_at', 'the shared updated_at trigger function exists');
 
 select ok(
   (select relrowsecurity from pg_class where oid = 'public.profiles'::regclass),
@@ -121,6 +123,30 @@ select throws_ok(
   'a person cannot move their profile row onto someone else''s id'
 );
 
+-- A policy limits rows, not columns. Without the column grant a person
+-- could rewrite their own created_at, which is how this was found.
+select throws_ok(
+  $$update public.profiles set created_at = '1970-01-01Z'
+      where id = '11111111-1111-1111-1111-111111111111'$$,
+  '42501',
+  null,
+  'a person cannot rewrite created_at on their own profile'
+);
+select throws_ok(
+  $$update public.profiles set updated_at = '1970-01-01Z'
+      where id = '11111111-1111-1111-1111-111111111111'$$,
+  '42501',
+  null,
+  'a person cannot forge updated_at; only the trigger sets it'
+);
+
+-- The one field a person may actually change.
+select lives_ok(
+  $$update public.profiles set display_name = 'Ruth B'
+      where id = '11111111-1111-1111-1111-111111111111'$$,
+  'a person can change their own display name'
+);
+
 -- user_roles keeps the v1 model: no policy and no grant, so the table is
 -- unreachable rather than merely empty from this side.
 select throws_ok(
@@ -130,7 +156,30 @@ select throws_ok(
   'authenticated has no access to user_roles at all'
 );
 
+-- The rest needs the owner's rights, so the role goes back here and the
+-- assertions below are no longer about what a person may do.
 reset role;
+
+-- Checked by value, not by the clock: now() is the transaction's start
+-- time, so within this single transaction updated_at can never come out
+-- greater than created_at. What is observable — and what actually
+-- matters — is that the trigger overrides whatever the writer supplied,
+-- even a writer holding full rights on the column.
+update public.profiles
+  set display_name = 'Ruth C', updated_at = '1970-01-01Z'
+  where id = '11111111-1111-1111-1111-111111111111';
+select isnt(
+  (select updated_at from public.profiles
+    where id = '11111111-1111-1111-1111-111111111111'),
+  '1970-01-01Z'::timestamptz,
+  'the trigger overrides an updated_at supplied by the writer'
+);
+select is(
+  (select updated_at from public.profiles
+    where id = '11111111-1111-1111-1111-111111111111'),
+  now(),
+  'the trigger sets updated_at to the current transaction timestamp'
+);
 
 select * from finish();
 rollback;

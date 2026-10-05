@@ -16,7 +16,8 @@ create type public.app_role as enum ('user', 'admin');
 create table public.profiles (
   id uuid primary key references auth.users on delete cascade,
   display_name text not null check (length(trim(display_name)) > 0),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create table public.user_roles (
@@ -33,7 +34,13 @@ alter table public.user_roles enable row level security;
 revoke all on table public.profiles from anon, authenticated;
 revoke all on table public.user_roles from anon, authenticated;
 
-grant select, update on table public.profiles to authenticated;
+-- A column grant, not a table grant. A policy restricts which ROWS may
+-- be changed and says nothing about which COLUMNS: with `grant update on
+-- table`, a client could run `update profiles set created_at = ...` and
+-- rewrite its own timestamps. display_name is the only field a person
+-- may change, so it is the only one granted.
+grant select on table public.profiles to authenticated;
+grant update (display_name) on table public.profiles to authenticated;
 grant select, insert, update, delete on table public.profiles to service_role;
 grant select, insert, update, delete on table public.user_roles to service_role;
 
@@ -49,6 +56,33 @@ create policy "update own profile" on public.profiles
 -- No insert and no delete policy on purpose: accounts are issued by the
 -- owner, so a person can neither create a profile for themselves nor
 -- remove one.
+
+-- Table-agnostic on purpose: every table that gets an updated_at column
+-- reuses this one trigger function. security invoker, unlike
+-- handle_new_user below — it only assigns to NEW and needs no rights the
+-- caller has not got. now() resolves under an empty search_path because
+-- pg_catalog is always searched implicitly; anything outside it would
+-- have to be written out in full.
+--
+-- profiles is the first table here a client updates directly rather than
+-- through an RPC, which is what makes the trigger necessary: there is no
+-- single write path that could set updated_at itself, and the column
+-- grant above deliberately denies the client any way to set it by hand.
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+create trigger profiles_set_updated_at
+  before update on public.profiles
+  for each row execute function public.set_updated_at();
 
 -- security definer with an empty search_path: the function needs rights
 -- on public tables that the caller (the auth schema's insert) has not

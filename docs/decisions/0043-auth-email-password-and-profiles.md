@@ -108,7 +108,8 @@ create type public.app_role as enum ('user', 'admin');
 create table public.profiles (
   id uuid primary key references auth.users on delete cascade,
   display_name text not null check (length(trim(display_name)) > 0),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create table public.user_roles (
@@ -123,6 +124,8 @@ create table public.user_roles (
   оставлять висящие строки.
 - **`check` на `display_name`** — последняя линия обороны против пустого
   имени, по тому же принципу, что `check`-ограничения в ADR 0033.
+- **`updated_at`** — потому что `display_name` правит сам человек, и
+  поддерживает поле триггер (ниже).
 - Больше никаких колонок — YAGNI. Телефон, собрание, часовой пояс
   появятся вместе с экранами, которым они понадобятся.
 
@@ -131,7 +134,8 @@ create table public.user_roles (
 ```sql
 revoke all on table public.profiles   from anon, authenticated;
 revoke all on table public.user_roles from anon, authenticated;
-grant select, update on table public.profiles to authenticated;
+grant select on table public.profiles to authenticated;
+grant update (display_name) on table public.profiles to authenticated;
 
 create policy "read own profile" on public.profiles
   for select to authenticated using ((select auth.uid()) = id);
@@ -159,9 +163,62 @@ create policy "update own profile" on public.profiles
   строку можно отдать другому человеку. Это неверно, и проверка
   мутацией (политика пересоздана без `with check`, попытка угона
   повторена) это показала.
+- **Grant на `update` — колоночный, а не табличный.** Политика
+  ограничивает, какие **строки** можно менять, и ничего не говорит про
+  **колонки**. Первая редакция миграции выдавала
+  `grant select, update on table`, и этого хватило, чтобы клиент выполнил
+  `update profiles set created_at = '1970-01-01'` и переписал свою
+  отметку времени — проверено на живой базе, именно так дефект и был
+  найден. `display_name` — единственное поле, которое человек вправе
+  менять, поэтому grant выдан только на него, а проверка мутацией
+  (возврат табличного grant → угон `created_at` снова проходит)
+  подтвердила, что pgTAP-тест на это не пустой.
 - **`insert` и `delete` политик не получают.** Учётные записи выдаёт
   владелец: человек не может ни создать себе профиль, ни удалить его.
   Отсутствие политики — это запрет, а не недоработка.
+
+### `updated_at` поддерживает общий триггер
+
+```sql
+create or replace function public.set_updated_at()
+returns trigger language plpgsql security invoker set search_path = '' as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+create trigger profiles_set_updated_at
+  before update on public.profiles
+  for each row execute function public.set_updated_at();
+```
+
+Триггер `updated_at` часто добавляют по инерции; здесь у него есть
+конкретное основание. `profiles` — **первая таблица в проекте, которую
+клиент правит напрямую**, а не через RPC. У остальных единственная дверь
+— функция, и она сама пишет `updated_at` (так и сделано в
+`push_subscriptions`: `updated_at = now()` руками в трёх местах
+миграций). У `profiles` такой двери нет, а колоночный grant выше
+намеренно не даёт клиенту писать это поле — значит выставить его может
+только триггер.
+
+Функция **не привязана к таблице**: любая следующая таблица с
+`updated_at` переиспользует её же. `security invoker`, в отличие от
+`handle_new_user` ниже, — она только присваивает `new` и чужих прав не
+требует. `now()` разрешается при пустом `search_path`, потому что
+`pg_catalog` просматривается всегда неявно; что-либо вне него пришлось
+бы писать полным именем.
+
+Оговорка, которую поймал pgTAP-тест: `now()` — время **начала
+транзакции**, поэтому внутри одной транзакции `updated_at` никогда не
+окажется больше `created_at`. Проверять «время выросло» бессмысленно;
+тест проверяет наблюдаемое и действительно важное — что триггер
+перебивает значение, подсунутое писателем, даже обладающим полными
+правами на колонку.
+
+`push_subscriptions` на этот триггер **не переводится** в рамках v2: там
+`updated_at` уже пишется внутри RPC, и переделка — отдельная задача со
+своей проверкой, а не правка «заодно».
 
 ### Профиль и роль создаёт триггер
 

@@ -57,7 +57,8 @@ create type public.app_role as enum ('user', 'admin');
 create table public.profiles (
   id uuid primary key references auth.users on delete cascade,
   display_name text not null,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()  -- общий триггер set_updated_at
 );
 
 create table public.user_roles (
@@ -85,6 +86,13 @@ create policy "update own profile" on public.profiles
   for update to authenticated using ((select auth.uid()) = id)
   with check ((select auth.uid()) = id);
 ```
+
+Grant на `update` — **колоночный** (`grant update (display_name)`), не
+табличный: политика ограничивает строки, а не колонки, и при табличном
+grant клиент может переписать свой `created_at`. `updated_at`
+поддерживает общий триггер `public.set_updated_at()` — `profiles` первая
+таблица, которую клиент правит напрямую, а не через RPC, поэтому у поля
+нет другого места, где его можно выставить, не доверяя клиенту.
 
 `insert` и `delete` на `profiles` политик не получают: аккаунты создаёт
 владелец, человек не может ни создать себе профиль, ни удалить его.
