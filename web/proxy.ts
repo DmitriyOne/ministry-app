@@ -1,7 +1,12 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+// Imported by its own path, not through the shared/api barrel: that
+// barrel also re-exports admin.ts, the client that holds the secret key
+// and bypasses RLS (ADR 0037 keeps its use to a single module, and ADR
+// 0034 calls the mixed-runtime barrel a deliberate trap). The proxy has
+// no business carrying that client, so it takes only the factory.
+import { createSupabaseServerClient } from "@/shared/api/supabase/create-server-client";
 import { classifyAccess } from "@/shared/lib/access";
 import { resolveGate } from "@/shared/lib/auth";
 import { env, routes } from "@/shared/config";
@@ -78,27 +83,23 @@ export const proxy = async (request: NextRequest) => {
   // rest of this render sees them) and onto the response.
   let supabaseResponse = NextResponse.next({ request });
 
-  const supabase = createServerClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-    {
-      cookies: {
-        getAll: () => request.cookies.getAll(),
-        setAll: (cookiesToSet, headers) => {
-          for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
-          supabaseResponse = NextResponse.next({ request });
-          for (const { name, value, options } of cookiesToSet) {
-            supabaseResponse.cookies.set(name, value, options);
-          }
-          // Cache headers that stop a CDN from caching a response that
-          // carries Set-Cookie.
-          for (const [key, value] of Object.entries(headers)) {
-            supabaseResponse.headers.set(key, value);
-          }
-        },
-      },
+  const supabase = createSupabaseServerClient({
+    getAll: () => request.cookies.getAll(),
+    setAll: (cookiesToSet, headers) => {
+      for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
+      supabaseResponse = NextResponse.next({ request });
+      for (const { name, value, options } of cookiesToSet) {
+        supabaseResponse.cookies.set(name, value, options);
+      }
+      // The second argument is part of the documented setAll contract:
+      // Cache-Control, Expires and Pragma, which must be applied so a CDN
+      // or reverse proxy never caches a response carrying Set-Cookie —
+      // otherwise one person's session token can be served to another.
+      for (const [key, value] of Object.entries(headers)) {
+        supabaseResponse.headers.set(key, value);
+      }
     },
-  );
+  });
 
   // getClaims(), not getUser() (ADR 0044): local signature and expiry
   // check. Any failure counts as "no session" — the gate would send the
