@@ -7,7 +7,8 @@ import type { Database } from "./database.types";
 
 // One place for the URL, the publishable key and the Database generic, so
 // the two server-side call sites cannot drift apart. They differ only in
-// where cookies come from, which is why each passes its own adapter:
+// where the session cookies live, which is what the name says and what
+// each caller passes in:
 //
 //   server.ts  — cookies from next/headers, for Server Components,
 //                Server Actions and Route Handlers;
@@ -25,7 +26,7 @@ import type { Database } from "./database.types";
 // this module, and proxy runs in its own server context rather than the
 // RSC one that `server-only` is written for. The guard stays where the
 // risk is — admin.ts (the secret key) and server.ts (next/headers).
-export const createSupabaseServerClient = (cookies: CookieMethodsServer) =>
+export const createSupabaseClientWithCookies = (cookies: CookieMethodsServer) =>
   createServerClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,

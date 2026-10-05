@@ -2,13 +2,13 @@ import "server-only";
 
 import { cookies } from "next/headers";
 
-import { createSupabaseServerClient } from "./create-server-client";
+import { createSupabaseClientWithCookies } from "./create-client-with-cookies";
 
 // Must be created per-request — do not cache/reuse across requests.
 export const createServerSupabaseClient = async () => {
   const cookieStore = await cookies();
 
-  return createSupabaseServerClient({
+  return createSupabaseClientWithCookies({
     getAll: () => cookieStore.getAll(),
     setAll: (cookiesToSet) => {
       try {

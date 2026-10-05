@@ -6,7 +6,7 @@ import type { NextRequest } from "next/server";
 // and bypasses RLS (ADR 0037 keeps its use to a single module, and ADR
 // 0034 calls the mixed-runtime barrel a deliberate trap). The proxy has
 // no business carrying that client, so it takes only the factory.
-import { createSupabaseServerClient } from "@/shared/api/supabase/create-server-client";
+import { createSupabaseClientWithCookies } from "@/shared/api/supabase/create-client-with-cookies";
 import { classifyAccess } from "@/shared/lib/access";
 import { resolveGate } from "@/shared/lib/auth";
 import { env, routes } from "@/shared/config";
@@ -83,7 +83,7 @@ export const proxy = async (request: NextRequest) => {
   // rest of this render sees them) and onto the response.
   let supabaseResponse = NextResponse.next({ request });
 
-  const supabase = createSupabaseServerClient({
+  const supabase = createSupabaseClientWithCookies({
     getAll: () => request.cookies.getAll(),
     setAll: (cookiesToSet, headers) => {
       for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
