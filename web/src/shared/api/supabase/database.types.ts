@@ -37,18 +37,21 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          deleted_at: string | null
           display_name: string
           id: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           display_name: string
           id: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           display_name?: string
           id?: string
           updated_at?: string
@@ -59,6 +62,7 @@ export type Database = {
         Row: {
           auth: string
           created_at: string
+          deleted_at: string | null
           endpoint: string
           id: number
           p256dh: string
@@ -68,6 +72,7 @@ export type Database = {
         Insert: {
           auth: string
           created_at?: string
+          deleted_at?: string | null
           endpoint: string
           id?: never
           p256dh: string
@@ -77,6 +82,7 @@ export type Database = {
         Update: {
           auth?: string
           created_at?: string
+          deleted_at?: string | null
           endpoint?: string
           id?: never
           p256dh?: string
@@ -95,14 +101,17 @@ export type Database = {
       }
       user_roles: {
         Row: {
+          deleted_at: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
+          deleted_at?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
+          deleted_at?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
@@ -111,6 +120,7 @@ export type Database = {
       waitlist_signups: {
         Row: {
           created_at: string
+          deleted_at: string | null
           email: string
           id: number
           push_enrollment_token: string | null
@@ -118,6 +128,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           email: string
           id?: never
           push_enrollment_token?: string | null
@@ -125,6 +136,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           email?: string
           id?: never
           push_enrollment_token?: string | null
