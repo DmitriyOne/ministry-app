@@ -88,6 +88,74 @@ supabase_auth_admin`, как в примере Supabase. **Хуку он не н
 Вернётся вместе с первыми таблицами служения — и тогда у решения будет
 обоснование из настоящих политик, а не из примера в документации.
 
+### Форма будущего помощника для политик — решена заранее
+
+Вопрос «не сделать ли `authorize()`/`is_admin()`, чтобы не проверять
+claim в каждой политике» разобран сейчас, пока контекст свежий, хотя
+**код не пишется**: в проекте нет ни одной политики, смотрящей на роль
+(`profiles` — по `auth.uid() = id`, `user_roles` — без политик), так что
+у помощника было бы нуль вызывающих.
+
+Когда появится первая таблица служения с ролевой политикой, помощник
+делается так — по странице Supabase «RLS performance and best
+practices»:
+
+```sql
+create schema if not exists private;
+
+create or replace function private.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.user_roles
+    where user_id = (select auth.uid()) and role = 'admin'
+  );
+$$;
+
+revoke execute on function private.is_admin() from public, anon;
+grant usage on schema private to authenticated;
+grant execute on function private.is_admin() to authenticated;
+```
+
+И вызывается **только так**:
+
+```sql
+using ( (select private.is_admin()) or (select auth.uid()) = user_id )
+```
+
+Три вещи, которые легко сделать неправильно, и каждая — по делу:
+
+1. **Обёртка в `select` обязательна.** Без неё функция вызывается на
+   **каждую строку**; `(select ...)` заставляет планировщик построить
+   initPlan и вычислить один раз на запрос. Документация говорит это
+   прямо и про `auth.jwt()`, и про `security definer`-функции. Работает
+   только пока результат не зависит от данных строки — функция с
+   аргументом-колонкой так обёрнута быть не может.
+2. **Схема `private`, не `public`.** Функция в `public` с `execute` у
+   `authenticated` вызываема через REST как RPC: PostgREST выставляет
+   функции схемы `public`. Та же страница предупреждает: «Remember
+   functions you use in RLS can be called from the API. Secure your
+   functions in an alternate schema if their results would be a security
+   leak». Для `is_admin()` утечка мала, но `authorize(permission)` дал
+   бы любому перебрать матрицу прав своей роли.
+3. **Читать роль из таблицы, а не из claim, если нужна свежесть.**
+   Вариант через `auth.jwt() ->> 'user_role'` дешевле (без обращения к
+   таблице), но наследует последствие этого ADR: роль в токене обновится
+   только при следующем входе. Решать по месту; если выбран claim,
+   приведение неизвестной строки к enum ловится как
+   `invalid_text_representation`, а не `when others` — отсутствующий
+   claim даёт `null`, а не исключение, и широкий `when others` проглотил
+   бы и настоящую ошибку.
+
+Мультироль при этом **не** предполагается: PK `user_roles` — `(user_id)`,
+одна роль на человека, и claim в JWT — строка, а не массив (ADR 0043).
+Переход на несколько ролей потребует менять и хук, и `hasRole`, и это
+будет отдельное решение.
+
 ### `getClaims()`, а не `getUser()`
 
 `getClaims()` проверяет подпись и срок действия токена локально.
