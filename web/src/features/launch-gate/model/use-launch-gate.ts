@@ -8,7 +8,18 @@ import { isStandaloneDisplayMode } from "@/shared/lib/display-mode";
 // Require launching from a home-screen icon (ADR 0017), otherwise → /install.
 // Paths come from shared/config/routes.ts (ADR 0030) — the single place
 // these literals are written down.
-const APP_SCREEN_PATHS: string[] = [routes.root, routes.day, routes.soon];
+// /soon is absent: it is the public landing now (ADR 0045) and opens in an
+// ordinary browser tab.
+const APP_SCREEN_PATHS: string[] = [
+  routes.root,
+  routes.day,
+  routes.login,
+  routes.forgotPassword,
+  routes.calendar,
+  routes.month,
+  routes.year,
+  routes.profile,
+];
 const INSTALL_PATH = routes.install;
 const APP_ENTRY_PATH = routes.day;
 

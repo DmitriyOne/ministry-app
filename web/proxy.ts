@@ -1,8 +1,9 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { LAUNCH_MODE } from "@/app/config/launch-mode";
 import { classifyAccess } from "@/shared/lib/access";
+import { resolveGate } from "@/shared/lib/auth";
 import { env, routes } from "@/shared/config";
 
 // redirect, not rewrite — the address bar DOES change (ADR 0017's
@@ -31,12 +32,25 @@ const APP_ROUTES: string[] = [
   routes.install,
   routes.about,
   routes.privacy,
+  routes.login,
+  routes.forgotPassword,
+  routes.calendar,
+  routes.month,
+  routes.year,
+  routes.profile,
 ];
 
 // The server can't see display-mode (standalone/fullscreen) — that check
-// is done by LaunchGate on the client (ADR 0017/0019/0028). All that's left
-// here is the server-side /day → /soon switch driven by LAUNCH_MODE.
-export const proxy = (request: NextRequest) => {
+// is done by LaunchGate on the client (ADR 0017/0019/0028). What the server
+// decides is the device class and, for v2, whether there is a session.
+//
+// The order of the checks below is load-bearing:
+//   1. DEV_MODE bypasses everything;
+//   2. paths outside APP_ROUTES are left alone, so /qwerty is a real 404;
+//   3. the device shield runs before the session is even read, so a
+//      desktop visitor never reaches /login;
+//   4. only then does the session decide (resolveGate).
+export const proxy = async (request: NextRequest) => {
   if (env.DEV_MODE) return NextResponse.next();
 
   const { pathname } = request.nextUrl;
@@ -58,11 +72,63 @@ export const proxy = (request: NextRequest) => {
     return NextResponse.redirect(url, 307);
   }
 
-  if (pathname !== routes.day || LAUNCH_MODE === "app") return NextResponse.next();
+  // Cookies come from the request here, not from next/headers, so this
+  // client is built inline instead of through shared/api/supabase/server.
+  // Refreshed session cookies are written both onto the request (so the
+  // rest of this render sees them) and onto the response.
+  let supabaseResponse = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookiesToSet, headers) => {
+          for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
+          supabaseResponse = NextResponse.next({ request });
+          for (const { name, value, options } of cookiesToSet) {
+            supabaseResponse.cookies.set(name, value, options);
+          }
+          // Cache headers that stop a CDN from caching a response that
+          // carries Set-Cookie.
+          for (const [key, value] of Object.entries(headers)) {
+            supabaseResponse.headers.set(key, value);
+          }
+        },
+      },
+    },
+  );
+
+  // getClaims(), not getUser() (ADR 0044): local signature and expiry
+  // check. Any failure counts as "no session" — the gate would send the
+  // person to /login either way.
+  let hasSession = false;
+  try {
+    const { data } = await supabase.auth.getClaims();
+    hasSession = Boolean(data?.claims);
+  } catch {
+    hasSession = false;
+  }
+
+  const decision = resolveGate({ pathname, hasSession });
+  if (decision.action === "pass") return supabaseResponse;
 
   const url = request.nextUrl.clone();
-  url.pathname = routes.soon;
-  return NextResponse.rewrite(url);
+  url.pathname = decision.to;
+  url.search = "";
+  // The refreshed session cookies must travel on the redirect too, or a
+  // person whose token was just refreshed would be signed out by the very
+  // redirect that follows. 307 for the same reason as above.
+  const redirectResponse = NextResponse.redirect(url, 307);
+  for (const cookie of supabaseResponse.cookies.getAll()) {
+    redirectResponse.cookies.set(cookie);
+  }
+  for (const header of ["cache-control", "expires", "pragma"]) {
+    const value = supabaseResponse.headers.get(header);
+    if (value) redirectResponse.headers.set(header, value);
+  }
+  return redirectResponse;
 };
 
 // "monitoring" is Sentry's tunnel route (next.config.ts). The proxy already

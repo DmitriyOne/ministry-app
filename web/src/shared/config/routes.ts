@@ -14,6 +14,12 @@ export const routes = {
   install: "/install",
   about: "/about",
   privacy: "/privacy",
+  login: "/login",
+  forgotPassword: "/forgot-password",
+  calendar: "/calendar",
+  month: "/month",
+  year: "/year",
+  profile: "/profile",
   // Debug pages, served outside production only (isDebugPageEnabled).
   sentryExampleError: "/sentry-example-error",
   sentryExampleErrorServer: "/sentry-example-error/server",
