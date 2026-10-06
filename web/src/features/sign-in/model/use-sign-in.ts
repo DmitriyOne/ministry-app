@@ -62,7 +62,11 @@ export const useSignIn = () => {
     // The profile read can fail while sign-in itself succeeded, leaving no
     // name: then there is simply no greeting.
     if (state.displayName) writeWelcomeFlag(state.displayName);
-    router.push(routes.day);
+    // replace, not push: with push the sign-in screen stays in history, and
+    // Back would land on it — where the proxy, seeing a session, bounces
+    // straight to /day again. Nothing breaks, but Back appears to do
+    // nothing. Replacing drops that entry entirely.
+    router.replace(routes.day);
   }, [state, router]);
 
   return {

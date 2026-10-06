@@ -75,12 +75,20 @@ describe("createSignInSchema: password", () => {
     expect(errorFor("password", VALID_EMAIL, "TestPass12")).toBe("passwordNeedsSymbol");
   });
 
-  // The rules are written in Unicode classes rather than ASCII ranges, so a
-  // password in another script is judged by the same rules instead of being
-  // rejected for not being Latin. Greek rather than Cyrillic only to keep
-  // the repository's one Cyrillic check (CLAUDE.md) at its four known lines.
-  it("counts non-Latin capitals and digits", () => {
-    expect(parse(VALID_EMAIL, "ΑΒγδεζ1!").success).toBe(true);
+  // Both fields are limited to printable ASCII. The case that matters is
+  // the invisible one: U+0430 is indistinguishable from a Latin "a" on
+  // screen, so without this rule the person would get "incorrect password"
+  // with nothing to look at.
+  it("rejects characters outside Latin", () => {
+    // Escaped rather than pasted, and not only to keep the repository's
+    // Cyrillic check at its four known lines (CLAUDE.md): \u0430 spells out
+    // what the test is about, where a pasted character would look like an
+    // ordinary "a" to the next reader too.
+    expect(errorFor("password", VALID_EMAIL, "TestP\u0430ss1!")).toBe("passwordLatinOnly");
+    // Eight characters, so the length rule passes and the one under test
+    // is the one that fires.
+    expect(errorFor("password", VALID_EMAIL, "\u0391\u0392\u03b3\u03b4\u03b5\u03b61!")).toBe("passwordLatinOnly");
+    expect(errorFor("email", "\u0440uth@jw.fenko.dev", VALID_PASSWORD)).toBe("emailInvalid");
   });
 
   it("reports an empty password as missing, not as too short", () => {

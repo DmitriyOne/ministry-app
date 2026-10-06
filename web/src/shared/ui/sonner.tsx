@@ -1,5 +1,7 @@
 "use client";
 
+import type { CSSProperties } from "react";
+
 import { toast, Toaster as Sonner } from "sonner";
 
 import { AlertCircleIcon, CheckCircleIcon } from "./icons";
@@ -67,8 +69,19 @@ export const dismissToast = (id: ToastId) => {
 export const Toaster = () => (
   <Sonner
     position="top-center"
-    offset="calc(env(safe-area-inset-top) + 1rem)"
-    mobileOffset="calc(env(safe-area-inset-top) + 1rem)"
+    // Per side, not one string for all four: a single value put the TOP
+    // safe-area inset into --offset-left and --offset-right as well, which
+    // is meaningless there. Only the top edge has a notch to clear
+    // (viewport-fit=cover, ADR 0020).
+    offset={{ top: "calc(env(safe-area-inset-top) + 1rem)", left: "1rem", right: "1rem" }}
+    mobileOffset={{ top: "calc(env(safe-area-inset-top) + 1rem)", left: "1rem", right: "1rem" }}
+    // The toaster is 356px wide by default and the toast stretched to fill
+    // it, because sonner only sets a toast's own width for styled toasts
+    // (`[data-sonner-toast][data-styled='true']`) and ours is unstyled.
+    // Sizing the toaster to its content makes the pill hug its text; sonner
+    // still centres it with left:50% and a transform of its own, which is
+    // why none of this touches transform.
+    style={{ "--width": "fit-content" } as CSSProperties}
     toastOptions={{
       unstyled: true,
       classNames: {

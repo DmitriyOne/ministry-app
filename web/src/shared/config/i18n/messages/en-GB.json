@@ -423,7 +423,8 @@
       "passwordTooShort": "Password must be at least 8 characters.",
       "passwordNeedsUppercase": "Password must contain at least two capital letters.",
       "passwordNeedsDigit": "Password must contain at least one digit.",
-      "passwordNeedsSymbol": "Password must contain at least one symbol."
+      "passwordNeedsSymbol": "Password must contain at least one symbol.",
+      "passwordLatinOnly": "Password must use Latin letters, digits and symbols only."
     }
   }
 }
