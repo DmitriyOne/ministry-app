@@ -19,7 +19,11 @@ const SENSITIVE_KEYS = new Set([
   "password",
 ]);
 
-const redactText = (value: string): string => value.replace(EMAIL_PATTERN, REDACTED);
+// Exported so that anything writing to a server log can reuse the one
+// redaction rule rather than inventing a second one. ADR 0026/0027 keep
+// addresses out of logs, and an exception's message is text like any other:
+// a Postgres or Supabase error can quote the input that caused it.
+export const redactEmails = (value: string): string => value.replace(EMAIL_PATTERN, REDACTED);
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -28,7 +32,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 // mutated. Strings inside are scrubbed for addresses too, so a nested
 // message does not slip through. `seen` guards against cycles.
 const scrubValue = (value: unknown, seen: WeakSet<object>): unknown => {
-  if (typeof value === "string") return redactText(value);
+  if (typeof value === "string") return redactEmails(value);
   if (typeof value !== "object" || value === null) return value;
   if (seen.has(value)) return REDACTED;
 
@@ -47,14 +51,14 @@ const scrubValue = (value: unknown, seen: WeakSet<object>): unknown => {
 const scrubEventUnsafe = <T extends Event>(event: T): T => {
   const copy: Record<string, unknown> = { ...(event as Record<string, unknown>) };
 
-  if (typeof event.message === "string") copy.message = redactText(event.message);
+  if (typeof event.message === "string") copy.message = redactEmails(event.message);
 
   if (isPlainObject(event.exception) && Array.isArray(event.exception.values)) {
     copy.exception = {
       ...event.exception,
       values: event.exception.values.map((entry) =>
         isPlainObject(entry) && typeof entry.value === "string"
-          ? { ...entry, value: redactText(entry.value) }
+          ? { ...entry, value: redactEmails(entry.value) }
           : entry,
       ),
     };
@@ -63,7 +67,7 @@ const scrubEventUnsafe = <T extends Event>(event: T): T => {
   if (Array.isArray(event.breadcrumbs)) {
     copy.breadcrumbs = event.breadcrumbs.map((crumb) =>
       isPlainObject(crumb) && typeof crumb.message === "string"
-        ? { ...crumb, message: redactText(crumb.message) }
+        ? { ...crumb, message: redactEmails(crumb.message) }
         : crumb,
     );
   }

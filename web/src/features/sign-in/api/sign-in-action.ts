@@ -4,7 +4,10 @@ import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 
+import * as Sentry from "@sentry/nextjs";
+
 import { createServerSupabaseClient } from "@/shared/api";
+import { redactEmails } from "@/shared/lib/observability";
 import { getClientIp } from "@/shared/lib/rate-limit";
 
 import { checkSignInRateLimit } from "./rate-limit";
@@ -39,8 +42,15 @@ export const signIn = async (
   // creating the client or reading the profile can throw outright. A server
   // action that throws reaches app/error.tsx, i.e. the 500 screen, and ADR 0046
   // is explicit that a backend which did not answer belongs in a toast instead.
+  // Which step threw, so the log says more than "something did". Three
+  // things in here can fail for unrelated reasons and the difference matters
+  // when reading a log: the cookie store, the auth call, the profile read.
+  let stage: "client" | "sign-in" | "profile" = "client";
+
   try {
     const supabase = await createServerSupabaseClient();
+
+    stage = "sign-in";
     const { error } = await supabase.auth.signInWithPassword(result.data);
 
     if (error) {
@@ -61,11 +71,30 @@ export const signIn = async (
     // not undo a sign-in that already succeeded, so the name is simply left
     // out. displayName is carried for the welcome toast (task 10) and has no
     // consumer yet.
+    stage = "profile";
+
     const { data: profile } = await supabase.from("profiles").select("display_name").maybeSingle();
 
     return { status: "success", displayName: profile?.display_name };
-  } catch {
-    console.warn("[sign-in] rejected", { reason: "threw" });
+  } catch (error) {
+    // Two destinations on purpose. Sentry gets the whole exception, stack
+    // included, and beforeSend runs it through scrubSentryEvent, so an
+    // address quoted inside a message never leaves the process (ADR 0041).
+    // The server log gets what can be read at a glance and carries no
+    // personal data: which step threw, the error's class, and its message
+    // with addresses redacted by the same rule the scrubber uses.
+    //
+    // Sentry is off outside production (ADR 0041, update), so in development
+    // the log below is all there is — which is why it carries the message
+    // rather than only the class.
+    Sentry.captureException(error);
+
+    console.warn("[sign-in] rejected", {
+      reason: "threw",
+      stage,
+      error: error instanceof Error ? error.name : typeof error,
+      message: error instanceof Error ? redactEmails(error.message) : undefined,
+    });
 
     return { status: "unavailable" };
   }
