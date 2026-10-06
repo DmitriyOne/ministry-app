@@ -399,6 +399,19 @@
       "retryingButton": "Checking…"
     },
     "login": {
+      "metadata": {
+        "title": "Sign in",
+        "description": "Sign in to sync your service report across your devices."
+      },
+      "title": "Ministry log",
+      "subtitle": "Sign in so your report syncs between your devices. Your data is visible only to you.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Sign in",
+      "forgotPassword": "Forgot password?",
+      "footnote": "Accounts are created by your congregation coordinator. You do not need to register in the app.",
       "emailRequired": "Enter your email",
       "emailInvalid": "Enter a valid email address",
       "emailTooLong": "That email address is too long",
