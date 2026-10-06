@@ -52,7 +52,15 @@ export default withSentryConfig(withNextIntl(withSerwist(nextConfig)), {
   // auto-generated route breaks client delivery if middleware intercepts
   // it, and this project builds with Turbopack and has a proxy.ts.
   // The route is excluded in proxy.ts and never cached in sw.ts.
-  tunnelRoute: "/monitoring",
+  //
+  // TURNED OFF by the owner (ADR 0041, update): the tunnel adds a route of
+  // our own that every client event passes through, and in development it
+  // was a source of load and of the MaxListenersExceededWarning from Next's
+  // compression layer. The cost of leaving it off is real and worth
+  // knowing: without the tunnel, client events go straight to Sentry's
+  // ingest domain, which content blockers can block — so some browser-side
+  // errors will simply never arrive. Server-side events are unaffected.
+  // tunnelRoute: "/monitoring",
   silent: !process.env.CI,
   // Drops Sentry's debug logger from the client bundle. SDK v11 replaced
   // the old top-level `disableLogger` with this webpack-scoped option; it

@@ -135,6 +135,9 @@ export const proxy = async (request: NextRequest) => {
 // "monitoring" is Sentry's tunnel route (next.config.ts). The proxy already
 // ignores every path outside APP_ROUTES, but that is a side effect; Sentry's
 // docs require excluding the route explicitly when building with Turbopack.
+// The tunnel is currently switched off (ADR 0041, update), so this entry
+// guards nothing today — it is kept so that turning the tunnel back on does
+// not silently reintroduce the interception it was written to prevent.
 // Assets don't need classification — running them through proxy would
 // only slow down serving them.
 export const config = {

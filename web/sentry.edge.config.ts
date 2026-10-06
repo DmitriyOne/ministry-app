@@ -6,9 +6,15 @@ import { scrubSentryEvent } from "@/shared/lib/observability";
 Sentry.init({
   // Public by design: a DSN only lets a sender submit events.
   dsn: env.NEXT_PUBLIC_SENTRY_DSN,
-  // Without a DSN the SDK stays off, so local development and builds
-  // without Sentry behave exactly as they did before.
-  enabled: Boolean(env.NEXT_PUBLIC_SENTRY_DSN),
+  // Off unless there is a DSN *and* this is a production build, so
+  // `pnpm dev` never sends anything: local noise does not burn the quota,
+  // and an error being debugged does not raise an alert.
+  //
+  // DEV_MODE is deliberately not part of this condition. It cannot be true
+  // in a production build — env.ts refuses to start on that combination —
+  // so NODE_ENV already covers it; and in the client config DEV_MODE is a
+  // server-only variable that must not be read in the browser at all.
+  enabled: Boolean(env.NEXT_PUBLIC_SENTRY_DSN) && process.env.NODE_ENV === "production",
   // Errors only. Performance tracing is switched off explicitly rather
   // than left to a default that may change.
   tracesSampleRate: 0,
