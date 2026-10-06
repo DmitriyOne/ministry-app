@@ -6,8 +6,13 @@
 -- Two accounts, one per role, because v2 has exactly two (ADR 0043) and the
 -- difference is only visible once you can sign in as each:
 --
---   admin@ministry.local / password123   role: admin
---   user@ministry.local  / password123   role: user
+--   admin@jw.fenko.dev / TestPass1!   role: admin
+--   user@jw.fenko.dev  / TestPass1!   role: user
+--
+-- Neither the domain nor the shape of the password is chosen here: the
+-- sign-in form accepts addresses on jw.fenko.dev only, and requires at
+-- least eight characters with two capitals, a digit and a symbol. An
+-- account that cannot get through that form is useless for testing it.
 --
 -- Rows go straight into auth.users rather than through the Admin API,
 -- because a seed file runs as SQL with no server to call. That means every
@@ -55,8 +60,8 @@ values
     '00000000-0000-4000-8000-000000000001',
     'authenticated',
     'authenticated',
-    'admin@ministry.local',
-    extensions.crypt('password123', extensions.gen_salt('bf')),
+    'admin@jw.fenko.dev',
+    extensions.crypt('TestPass1!', extensions.gen_salt('bf')),
     now(),
     '', '', '', '', '', '', '', '',
     '{"provider": "email", "providers": ["email"]}'::jsonb,
@@ -69,8 +74,8 @@ values
     '00000000-0000-4000-8000-000000000002',
     'authenticated',
     'authenticated',
-    'user@ministry.local',
-    extensions.crypt('password123', extensions.gen_salt('bf')),
+    'user@jw.fenko.dev',
+    extensions.crypt('TestPass1!', extensions.gen_salt('bf')),
     now(),
     '', '', '', '', '', '', '', '',
     '{"provider": "email", "providers": ["email"]}'::jsonb,
@@ -99,7 +104,7 @@ select
   now(),
   now()
 from auth.users u
-where u.email in ('admin@ministry.local', 'user@ministry.local');
+where u.email in ('admin@jw.fenko.dev', 'user@jw.fenko.dev');
 
 -- The trigger gave both accounts the default role; only this one differs.
 update public.user_roles

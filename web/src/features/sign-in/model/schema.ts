@@ -19,10 +19,37 @@ export type SignInActionState = {
 
 export const signInInitialState: SignInActionState = { status: "idle" };
 
-type SignInTranslator = (key: "emailRequired" | "emailInvalid" | "emailTooLong" | "passwordRequired") => string;
+type SignInTranslator = (
+  key:
+    | "emailRequired"
+    | "emailInvalid"
+    | "emailTooLong"
+    | "emailWrongDomain"
+    | "passwordRequired"
+    | "passwordTooShort"
+    | "passwordNeedsUppercase"
+    | "passwordNeedsDigit"
+    | "passwordNeedsSymbol",
+) => string;
 
-// No isDisposableEmail check here, unlike the waitlist: the address was
-// issued by the owner, so judging it would only lock real people out.
+// Accounts live on one domain and are issued by the owner, so an address
+// anywhere else cannot belong to anyone here. Checking it in the form is
+// what keeps a typo, or a throwaway address someone tried, from reaching
+// the auth server at all — which also means the disposable-domain list the
+// waitlist uses is unnecessary: every one of those domains is already out.
+export const ALLOWED_EMAIL_DOMAIN = "jw.fenko.dev";
+
+// Counted, not merely detected: the rule asks for two capitals, so the
+// match has to be collected rather than tested. \p{Lu} with the u flag
+// covers non-Latin capitals too, which matters because nothing restricts a
+// password to ASCII.
+const UPPERCASE_PATTERN = /\p{Lu}/gu;
+const DIGIT_PATTERN = /\p{Nd}/u;
+// A symbol is "neither a letter nor a number", which is the definition that
+// survives contact with non-Latin input; a hand-written list of punctuation
+// would not.
+const SYMBOL_PATTERN = /[^\p{L}\p{N}]/u;
+
 export const createSignInSchema = (t: SignInTranslator) =>
   z.object({
     // .max(254) before .pipe(): z.email() puts no limit on length (RFC 5321).
@@ -30,8 +57,21 @@ export const createSignInSchema = (t: SignInTranslator) =>
       .string()
       .min(1, t("emailRequired"))
       .max(254, t("emailTooLong"))
-      .pipe(z.email(t("emailInvalid"))),
-    // Deliberately no strength or length rules: this is a check against an
-    // existing password, not the choice of a new one.
-    password: z.string().min(1, t("passwordRequired")),
+      .pipe(z.email(t("emailInvalid")))
+      // Lowercased first: the domain part of an address is case-insensitive,
+      // so an address typed in capitals is the same address.
+      .refine(
+        (email) => email.toLowerCase().endsWith(`@${ALLOWED_EMAIL_DOMAIN}`),
+        t("emailWrongDomain"),
+      ),
+    password: z
+      .string()
+      .min(1, t("passwordRequired"))
+      .min(8, t("passwordTooShort"))
+      .refine(
+        (password) => (password.match(UPPERCASE_PATTERN)?.length ?? 0) >= 2,
+        t("passwordNeedsUppercase"),
+      )
+      .refine((password) => DIGIT_PATTERN.test(password), t("passwordNeedsDigit"))
+      .refine((password) => SYMBOL_PATTERN.test(password), t("passwordNeedsSymbol")),
   });

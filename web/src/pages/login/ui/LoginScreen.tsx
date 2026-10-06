@@ -24,7 +24,7 @@ export const LoginScreen = () => {
   return (
     <CenteredState
       background="deep"
-      className="items-stretch justify-between gap-8 px-6 pb-10 text-left pt-[calc(--spacing(6)+env(safe-area-inset-top))]"
+      className="items-stretch justify-between gap-8 px-6 pt-24 pb-10 text-left"
     >
       {/* A plain div, not <header>: CenteredState already provides the
           screen's <main>, and this block is the screen's own title, not a

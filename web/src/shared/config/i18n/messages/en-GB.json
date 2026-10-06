@@ -411,14 +411,19 @@
       "passwordPlaceholder": "••••••••",
       "submit": "Sign in",
       "forgotPassword": "Forgot password?",
-      "footnote": "Accounts are created by your congregation coordinator. You do not need to register in the app.",
+      "footnote": "Accounts are created by the admin. You do not need to register in the app.",
       "emailRequired": "Enter your email",
       "emailInvalid": "Enter a valid email address",
       "emailTooLong": "That email address is too long",
       "passwordRequired": "Enter your password",
       "invalidCredentials": "Incorrect email or password.",
       "tooManyRequests": "Too many attempts. Please wait a few minutes and try again.",
-      "backendUnavailable": "Couldn't reach the server. Please try again in a moment."
+      "backendUnavailable": "Couldn't reach the server. Please try again in a moment.",
+      "emailWrongDomain": "Use your jw.fenko.dev address.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordNeedsUppercase": "Password must contain at least two capital letters.",
+      "passwordNeedsDigit": "Password must contain at least one digit.",
+      "passwordNeedsSymbol": "Password must contain at least one symbol."
     }
   }
 }
