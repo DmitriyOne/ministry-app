@@ -31,16 +31,20 @@ describe("createSignInSchema: email", () => {
     expect(parse("Ruth@JW.FENKO.DEV", VALID_PASSWORD).success).toBe(true);
   });
 
-  it("rejects any other domain, which is what keeps throwaway addresses out", () => {
-    expect(errorFor("email", "ruth@example.com", VALID_PASSWORD)).toBe("emailWrongDomain");
-    expect(errorFor("email", "ruth@mailinator.com", VALID_PASSWORD)).toBe("emailWrongDomain");
-    expect(errorFor("email", "ruth@test.jw.fenko.dev.evil.com", VALID_PASSWORD)).toBe("emailWrongDomain");
+  // The message is the same one a malformed address gets, on purpose: the
+  // form must not hand someone probing it the name of the domain that holds
+  // accounts.
+  it("rejects any other domain, and says no more than it would about a typo", () => {
+    expect(errorFor("email", "ruth@example.com", VALID_PASSWORD)).toBe("emailInvalid");
+    expect(errorFor("email", "ruth@mailinator.com", VALID_PASSWORD)).toBe("emailInvalid");
+    expect(errorFor("email", "ruth@test.jw.fenko.dev.evil.com", VALID_PASSWORD)).toBe("emailInvalid");
+    expect(errorFor("email", "not-an-address", VALID_PASSWORD)).toBe("emailInvalid");
   });
 
   // endsWith on "@domain", not on the domain alone: without the @ an address
   // at a lookalike domain would pass.
   it("rejects a domain that merely ends with the allowed one", () => {
-    expect(errorFor("email", "ruth@notjw.fenko.dev", VALID_PASSWORD)).toBe("emailWrongDomain");
+    expect(errorFor("email", "ruth@notjw.fenko.dev", VALID_PASSWORD)).toBe("emailInvalid");
   });
 
   it("reports an empty address as missing, not as malformed", () => {

@@ -419,7 +419,6 @@
       "invalidCredentials": "Incorrect email or password.",
       "tooManyRequests": "Too many attempts. Please wait a few minutes and try again.",
       "backendUnavailable": "Couldn't reach the server. Please try again in a moment.",
-      "emailWrongDomain": "Use your jw.fenko.dev address.",
       "passwordTooShort": "Password must be at least 8 characters.",
       "passwordNeedsUppercase": "Password must contain at least two capital letters.",
       "passwordNeedsDigit": "Password must contain at least one digit.",

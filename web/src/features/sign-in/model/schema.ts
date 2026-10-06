@@ -24,7 +24,6 @@ type SignInTranslator = (
     | "emailRequired"
     | "emailInvalid"
     | "emailTooLong"
-    | "emailWrongDomain"
     | "passwordRequired"
     | "passwordTooShort"
     | "passwordNeedsUppercase"
@@ -58,11 +57,16 @@ export const createSignInSchema = (t: SignInTranslator) =>
       .min(1, t("emailRequired"))
       .max(254, t("emailTooLong"))
       .pipe(z.email(t("emailInvalid")))
+      // Deliberately the SAME message as a malformed address, not a
+      // "use your <domain> address" hint: the form must not tell someone
+      // probing it which domain holds accounts. A wrong domain and a typo
+      // are indistinguishable from the outside, which is the point.
+      //
       // Lowercased first: the domain part of an address is case-insensitive,
       // so an address typed in capitals is the same address.
       .refine(
         (email) => email.toLowerCase().endsWith(`@${ALLOWED_EMAIL_DOMAIN}`),
-        t("emailWrongDomain"),
+        t("emailInvalid"),
       ),
     password: z
       .string()
