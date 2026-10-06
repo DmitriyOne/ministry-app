@@ -22,7 +22,10 @@ export const InputGroup = ({ className, ...props }: GroupProps) => (
   <Group
     data-slot="input-group"
     className={cn(
-      "group/input-group relative flex h-8 w-full min-w-0 items-center rounded-lg border border-input transition-colors outline-none focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 data-[invalid=true]:border-negative data-[invalid=true]:ring-3 data-[invalid=true]:ring-negative/20 has-disabled:bg-input/50 has-disabled:opacity-50 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5",
+      // Same as the base Input: no focus ring and no error ring, removed here
+      // rather than cancelled by every caller. What the group keeps is layout
+      // and the disabled state.
+      "group/input-group relative flex h-8 w-full min-w-0 items-center rounded-lg border border-input transition-colors outline-none has-disabled:bg-input/50 has-disabled:opacity-50 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5",
       className,
     )}
     {...props}
@@ -119,7 +122,9 @@ export const InputGroupInput = ({ className, ...props }: ComponentProps<typeof I
   <Input
     data-slot="input-group-control"
     className={cn(
-      "flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 disabled:bg-transparent aria-invalid:ring-0 dark:bg-transparent dark:disabled:bg-transparent",
+      // No ring cancellations here any more: the base Input no longer emits
+      // any, so repeating them would only put the classes back.
+      "flex-1 rounded-none border-0 bg-transparent shadow-none disabled:bg-transparent dark:bg-transparent dark:disabled:bg-transparent",
       className,
     )}
     {...props}

@@ -47,7 +47,7 @@ export const CardField = ({ label, errors, children }: CardFieldProps) => {
       </FieldLabel>
       <InputGroup
         isInvalid={isInvalid}
-        className="h-auto gap-2.5 rounded-none border-0 bg-transparent p-0 shadow-none ring-0"
+        className="h-auto gap-2.5 rounded-none border-0 bg-transparent p-0 shadow-none"
       >
         {children({ id: inputId, describedBy: isInvalid ? errorId : undefined, isInvalid })}
       </InputGroup>
@@ -59,8 +59,8 @@ export const CardField = ({ label, errors, children }: CardFieldProps) => {
 // The class every control inside a CardField wears: no border or ring of its
 // own, because ADR 0013 keeps both on the group above.
 export const CARD_FIELD_CONTROL_CLASS
-  // The aria-invalid:* cancellations are not belt-and-braces. The vendored
-  // Input carries `aria-invalid:ring-3` from the registry, and a variant
-  // beats a plain `ring-0`, so without cancelling it in the same variant an
-  // invalid field still drew a ring.
-  = "h-auto min-w-0 border-0 bg-transparent p-0 text-list-row font-560 text-ink shadow-none ring-0 outline-none focus-visible:ring-0 aria-invalid:border-0 aria-invalid:ring-0 aria-invalid:text-negative";
+  // aria-invalid:border-0 is the one cancellation still needed: the base
+  // Input keeps its error border for PillForm's sake, and inside a card it
+  // must not draw one. The ring cancellations are gone with the rings
+  // themselves.
+  = "h-auto min-w-0 border-0 bg-transparent p-0 text-list-row font-560 text-ink shadow-none outline-none aria-invalid:border-0 aria-invalid:text-negative";
