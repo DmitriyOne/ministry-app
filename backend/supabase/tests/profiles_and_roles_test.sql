@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(30);
+select plan(31);
 
 -- The enum, not text: a typo in a role must fail on insert rather than
 -- surface later as a failed permission check.
@@ -46,11 +46,22 @@ select is(
 
 -- user_roles stays fully in the v1 model: no policy at all, so nothing
 -- authenticated asks of it is ever permitted.
+-- Deny-all, stated rather than implied (ADR 0048). The protection is the
+-- same as it was with no policies at all: every reader of this table
+-- bypasses RLS, so the policy governs nobody — it makes the rule legible
+-- and gives the "RLS enabled, no policy" advisor nothing to report.
 select is(
   (select count(*)::int from pg_policies
     where schemaname = 'public' and tablename = 'user_roles'),
-  0,
-  'user_roles has no policies'
+  1,
+  'user_roles has exactly the one deny-all policy'
+);
+select is(
+  (select array_agg(distinct coalesce(qual, 'null') || '/' || coalesce(with_check, 'null'))
+     from pg_policies
+    where schemaname = 'public' and tablename = 'user_roles'),
+  array['false/false'],
+  'user_roles: the policy denies both reads and writes'
 );
 select ok(
   not has_table_privilege('authenticated', 'public.user_roles', 'select'),
