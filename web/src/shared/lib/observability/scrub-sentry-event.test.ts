@@ -92,7 +92,7 @@ describe("scrubSentryEvent", () => {
 // event walker.
 describe("redactEmails", () => {
   it("removes an address quoted inside an exception message", () => {
-    expect(redactEmails('duplicate key (email)=(ruth@example.com) already exists'))
+    expect(redactEmails("duplicate key (email)=(ruth@example.com) already exists"))
       .toBe("duplicate key (email)=([redacted]) already exists");
   });
 
