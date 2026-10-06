@@ -39,7 +39,12 @@ export const PasswordField = ({ label, errors, className, ...props }: PasswordFi
             aria-describedby={describedBy}
             className={cn(CARD_FIELD_CONTROL_CLASS, className)}
           />
-          <InputGroupAddon align="inline-end" className="p-0 has-[>button]:mr-0 has-[>button]:pr-0">
+          {/* p-0 only: the registry's own `has-[>button]:mr-[-0.3rem]` has to
+              survive. It pulls the button out by its own internal padding —
+              the hit area is size-8 around a 21px icon — so the ICON lines up
+              with the end of the row instead of the button's box. Cancelling
+              it is what left the gap. */}
+          <InputGroupAddon align="inline-end" className="p-0">
             <InputGroupButton
               size="icon-sm"
               onPress={() => setIsShown((shown) => !shown)}

@@ -24,7 +24,7 @@ export const LoginScreen = () => {
   return (
     <CenteredState
       background="deep"
-      className="items-stretch justify-between gap-8 px-6 pt-24 pb-10 text-left"
+      className="items-stretch justify-between gap-8 px-6 pb-10 text-left pt-[calc(--spacing(6)+env(safe-area-inset-top))]"
     >
       {/* A plain div, not <header>: CenteredState already provides the
           screen's <main>, and this block is the screen's own title, not a
@@ -93,15 +93,7 @@ export const LoginScreen = () => {
           {isPending ? <Spinner className="size-5" /> : null}
           {t("submit")}
         </Button>
-        <LinkButton
-          href={routes.forgotPassword}
-          variant="heroGhost"
-          size="role"
-          // Quieter than the submit button beside it: size="role" is 50px
-          // and there is no smaller role step, so the height and the type
-          // scale come down here.
-          className="h-11 text-caption font-540"
-        >
+        <LinkButton href={routes.forgotPassword} variant="heroGhost" size="role">
           {t("forgotPassword")}
         </LinkButton>
         <BodyText tone="hero" className="px-3 pt-1.5 text-center text-caption text-hero-foreground/40">
