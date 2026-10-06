@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 
 import { routes } from "@/shared/config";
+import { writeWelcomeFlag } from "@/shared/lib/welcome-flag";
 import { showToast } from "@/shared/ui/sonner";
 
 import { signIn } from "../api/sign-in-action";
@@ -56,7 +57,12 @@ export const useSignIn = () => {
   }, [state, t]);
 
   useEffect(() => {
-    if (state.status === "success") router.push(routes.day);
+    if (state.status !== "success") return;
+
+    // The profile read can fail while sign-in itself succeeded, leaving no
+    // name: then there is simply no greeting.
+    if (state.displayName) writeWelcomeFlag(state.displayName);
+    router.push(routes.day);
   }, [state, router]);
 
   return {

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { WelcomeToast } from "@/features/welcome-toast";
 import { env, SB_API_ROUTES } from "@/shared/config";
 import { BodyText } from "@/shared/ui/body-text";
 import { CenteredState } from "@/shared/ui/centered-state";
@@ -43,6 +44,7 @@ export const DayPage = async () => {
 
   return (
     <CenteredState fill>
+      <WelcomeToast />
       <Title size="compact">{t("title")}</Title>
       <BodyText>
         {t("supabaseStatusLabel")}

@@ -77,9 +77,10 @@ describe("createSignInSchema: password", () => {
 
   // The rules are written in Unicode classes rather than ASCII ranges, so a
   // password in another script is judged by the same rules instead of being
-  // rejected for not being Latin.
+  // rejected for not being Latin. Greek rather than Cyrillic only to keep
+  // the repository's one Cyrillic check (CLAUDE.md) at its four known lines.
   it("counts non-Latin capitals and digits", () => {
-    expect(parse(VALID_EMAIL, "ПРивет1!").success).toBe(true);
+    expect(parse(VALID_EMAIL, "ΑΒγδεζ1!").success).toBe(true);
   });
 
   it("reports an empty password as missing, not as too short", () => {

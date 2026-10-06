@@ -38,6 +38,7 @@
     "day": {
       "title": "Day",
       "supabaseStatusLabel": "Supabase:",
+      "welcomeBack": "Welcome back, {name}",
       "metadata": {
         "title": "Day",
         "description": "Record today's ministry hours and Bible studies in a few taps, and see how you're tracking against your monthly and yearly goal."
