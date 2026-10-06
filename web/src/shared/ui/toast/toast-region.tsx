@@ -28,7 +28,12 @@ export type QueuedToast = {
 const TONE_ICON_CLASS = {
   neutral: "text-hero-foreground",
   positive: "text-positive-hero",
-  negative: "text-negative",
+  // --negative-hero, not --negative: the latter is terracotta tuned for
+  // light surfaces and lands at 1.73:1 on --hero, under the 3:1 a non-text
+  // graphic needs — which is exactly why it read as a muddy brown here. The
+  // tint is the palette's counterpart for this surface (5.44:1), and it is
+  // what pace-card already uses on --hero; inline-error.tsx states the rule.
+  negative: "text-negative-hero",
 } as const;
 
 type ToastRegionProps = {
