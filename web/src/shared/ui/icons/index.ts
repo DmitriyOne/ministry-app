@@ -9,6 +9,7 @@ export { ChevronLeftIcon } from "./chevron-left-icon";
 export { ChevronRightIcon } from "./chevron-right-icon";
 export { CloseIcon } from "./close-icon";
 export { CompassIcon } from "./compass-icon";
+export { EyeIcon } from "./eye-icon";
 export { InfoCircleIcon } from "./info-circle-icon";
 export { LockClosedIcon } from "./lock-closed-icon";
 export { LockOpenIcon } from "./lock-open-icon";

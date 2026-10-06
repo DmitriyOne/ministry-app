@@ -30,6 +30,8 @@
     "sheet": {
       "close": "Close"
     },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "honeypotLabel": "Leave this field blank"
   },
   "screens": {
