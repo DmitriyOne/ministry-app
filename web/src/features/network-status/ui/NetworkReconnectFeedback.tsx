@@ -7,7 +7,7 @@ type NetworkReconnectFeedbackProps = {
   status: NetworkStatus;
 };
 
-// Renders nothing itself: the toast is drawn by the app-wide ToastProvider,
+// Renders nothing itself: the toast is drawn by the app-wide Toaster,
 // this only decides when to ask for it.
 export const NetworkReconnectFeedback = ({ status }: NetworkReconnectFeedbackProps) => {
   useReconnectFeedback(status);

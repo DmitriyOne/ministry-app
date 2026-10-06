@@ -8,8 +8,8 @@ import { routes } from "@/shared/config";
 import { BodyText } from "@/shared/ui/body-text";
 import { Button, LinkButton } from "@/shared/ui/button";
 import { CenteredState } from "@/shared/ui/centered-state";
+import { showToast } from "@/shared/ui/sonner";
 import { Title } from "@/shared/ui/title";
-import { useToast } from "@/shared/ui/toast";
 
 import { probeBackendFailure } from "../api/probe-backend-failure";
 import { throwServerError } from "../api/throw-server-error";
@@ -47,7 +47,6 @@ export const SentryExampleErrorScreen = () => {
   const [explode, setExplode] = useState(false);
   const [serverCalled, setServerCalled] = useState(false);
   const [backendProbed, setBackendProbed] = useState(false);
-  const { showToast } = useToast();
 
   if (explode) return <RenderBomb />;
 

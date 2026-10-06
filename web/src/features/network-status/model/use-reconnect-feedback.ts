@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { useToast } from "@/shared/ui/toast";
+import { dismissToast, showToast, type ToastId } from "@/shared/ui/sonner";
 
 import { NETWORK_CONFIG } from "../config/network-config";
 
@@ -22,11 +22,10 @@ export const useReconnectFeedback = (status: NetworkStatus) => {
   // is "pending" — and the toast could end up never appearing. A string
   // compares by value, so that question does not arise.
   const message = t("connectionRestored");
-  const { showToast, dismissToast } = useToast();
   const [phase, setPhase] = useState<ReconnectToastPhase>("hidden");
   const [previousStatus, setPreviousStatus] = useState<NetworkStatus>("checking");
   // The id of the toast this hook last showed, so it can be taken away again.
-  const toastId = useRef<number | null>(null);
+  const toastId = useRef<ToastId | null>(null);
 
   // Adjusted during render rather than in an effect. This is not
   // synchronisation with anything outside React — it is state derived from a
@@ -51,8 +50,7 @@ export const useReconnectFeedback = (status: NetworkStatus) => {
   // The wait before the toast appears. If the connection drops again while
   // this runs, the render-time adjustment above has already put the phase
   // back to "hidden" and this effect's cleanup cancels the timer. Showing
-  // happens here, in a timer, never during render: showToast updates the
-  // provider's state.
+  // happens here, in a timer, never during render, since a toast is a side effect.
   useEffect(() => {
     if (phase !== "pending") return;
 
@@ -66,7 +64,7 @@ export const useReconnectFeedback = (status: NetworkStatus) => {
     }, NETWORK_CONFIG.reconnectToastDelayMs);
 
     return () => window.clearTimeout(timeout);
-  }, [phase, showToast, message]);
+  }, [phase, message]);
 
   // Dropped back offline while the toast was still up: take it away at once
   // instead of announcing a restored connection over the offline screen. The
@@ -78,5 +76,5 @@ export const useReconnectFeedback = (status: NetworkStatus) => {
 
     dismissToast(toastId.current);
     toastId.current = null;
-  }, [status, dismissToast]);
+  }, [status]);
 };
