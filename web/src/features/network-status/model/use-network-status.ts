@@ -95,6 +95,19 @@ export const useNetworkStatus = (): UseNetworkStatusResult => {
 
     return () => {
       probeIdRef.current += 1;
+      // Dropping the in-flight probe along with its id is what makes this
+      // survive React's development double-invoke (Strict Mode: mount →
+      // cleanup → mount). Without it the sequence deadlocks: the first
+      // mount starts a probe and stores it here; this cleanup invalidates
+      // its id; the second mount calls probe(), finds a promise already in
+      // flight and joins it instead of starting one; and when that promise
+      // resolves its captured id no longer matches, so setStatus is never
+      // called and the status stays "checking" for ever — the loading
+      // screen never leaves. Production does not double-invoke, which is
+      // why `pnpm start` was fine and `pnpm dev` was not, and on a desktop
+      // it usually went unnoticed because alt-tabbing back to the browser
+      // fires visibilitychange, which starts a fresh probe.
+      inFlightRef.current = null;
 
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);

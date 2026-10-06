@@ -366,6 +366,22 @@
         "title": "6. Server Component error",
         "hint": "Opens a page that throws while it renders on the server. You will see the error screen, and Sentry should receive a server-side error.",
         "button": "Open failing page"
+      },
+      "toast": {
+        "title": "6. Backend unavailable",
+        "hint": "Asks Supabase for its health endpoint with a timeout too short to answer, so the call fails the way a real outage fails. The answer comes back as a state, not an exception, and the UI shows it as a toast — not a field error and not the 500 screen.",
+        "button": "Call a backend that cannot answer",
+        "done": "Called. A toast should have appeared at the top.",
+        "unavailable": "The backend is not responding. Please try again later.",
+        "reachable": "The backend answered after all."
+      },
+      "tones": {
+        "title": "7. Every toast tone",
+        "hint": "Shows all three tones at once, so their colours can be compared and the way the region stacks them is visible.",
+        "button": "Show all three tones",
+        "neutral": "Neutral tone — a plain statement",
+        "positive": "Positive tone — something worked",
+        "negative": "Negative tone — something did not"
       }
     },
     "globalError": {
