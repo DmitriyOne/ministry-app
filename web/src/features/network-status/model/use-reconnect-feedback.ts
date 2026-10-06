@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { useToast } from "@/shared/ui/toast-provider";
+import { useToast } from "@/shared/ui/toast";
 
 import { NETWORK_CONFIG } from "../config/network-config";
 

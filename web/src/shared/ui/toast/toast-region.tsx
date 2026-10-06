@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircleIcon, CheckCircleIcon } from "./icons";
+import { AlertCircleIcon, CheckCircleIcon } from "../icons";
 
 export type ToastTone = "neutral" | "positive" | "negative";
 
@@ -18,16 +18,13 @@ export type QueuedToast = {
   isLeaving: boolean;
 };
 
-// How long a toast stays before it starts leaving, and how long the exit
-// animation is given before the toast is removed regardless. The second
-// number is the safety net: under prefers-reduced-motion there is no
-// animation, so animationend never fires, and a backgrounded tab can swallow
-// the event too. It has to outlast the 300ms animation below.
-export const TOAST_CONFIG = {
-  visibleMs: 4000,
-  exitFallbackMs: 500,
-} as const;
-
+// Which token colours the icon for each tone. A map rather than a chain of
+// ternaries: the three token names sit together where they can be compared,
+// and because the keys are typed as ToastTone, adding a tone without giving
+// it a colour fails typecheck instead of falling back to something at
+// runtime. It stays beside the markup because it IS markup — the tone
+// changes nothing else about the toast, the background is bg-hero
+// throughout.
 const TONE_ICON_CLASS = {
   neutral: "text-hero-foreground",
   positive: "text-positive-hero",

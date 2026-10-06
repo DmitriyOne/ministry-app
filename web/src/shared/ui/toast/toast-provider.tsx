@@ -3,9 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
-import { TOAST_CONFIG, ToastRegion, type QueuedToast, type ToastInput } from "./toast";
-
-export type { ToastInput, ToastTone } from "./toast";
+import { TOAST_CONFIG } from "./config";
+import { ToastRegion, type QueuedToast, type ToastInput } from "./toast-region";
 
 type ToastContextValue = {
   // Returns an id so the caller can take the toast away early.

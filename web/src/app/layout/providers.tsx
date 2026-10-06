@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
 
-import { ToastProvider } from "@/shared/ui/toast-provider";
+import { ToastProvider } from "@/shared/ui/toast";
 
 type ProvidersProps = {
   children: ReactNode;
