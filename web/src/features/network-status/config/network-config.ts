@@ -11,7 +11,4 @@ export const NETWORK_CONFIG = {
   // per flap, so waiting serves as the debounce as well as reading calmer.
   reconnectToastDelayMs: 1_000,
   reconnectToastDurationMs: 3_000,
-  // How long the toast's enter/exit animation runs. Kept here because the
-  // hook's failsafe timer has to outlast it — see use-reconnect-feedback.
-  reconnectToastAnimationMs: 300,
 } as const;
