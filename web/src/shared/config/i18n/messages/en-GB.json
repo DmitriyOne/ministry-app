@@ -397,6 +397,15 @@
       "text": "Check your Wi-Fi or mobile data, then try again.",
       "retryButton": "Try again",
       "retryingButton": "Checking…"
+    },
+    "login": {
+      "emailRequired": "Enter your email",
+      "emailInvalid": "Enter a valid email address",
+      "emailTooLong": "That email address is too long",
+      "passwordRequired": "Enter your password",
+      "invalidCredentials": "Incorrect email or password.",
+      "tooManyRequests": "Too many attempts. Please wait a few minutes and try again.",
+      "backendUnavailable": "Couldn't reach the server. Please try again in a moment."
     }
   }
 }
