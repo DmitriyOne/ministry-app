@@ -17,7 +17,7 @@ type FieldCardProps = {
 export const FieldCard = ({ children, className }: FieldCardProps) => (
   <div
     className={cn(
-      "flex flex-col rounded-3xl bg-background px-4 shadow-card [&>*+*]:border-t [&>*+*]:border-ink-a09",
+      "flex flex-col rounded-xl bg-background px-4 shadow-card [&>*+*]:border-t [&>*+*]:border-ink-a09",
       className,
     )}
   >

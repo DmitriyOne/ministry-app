@@ -28,11 +28,10 @@ type CardFieldProps = {
 // It exists because the row is where several decisions live at once, and
 // every one of them would otherwise be copied per field: the eyebrow styling,
 // the label-to-control and control-to-error wiring via useId, and above all
-// the error state — ADR 0013 puts data-invalid on the group around the
-// control (InputGroup sets it from isInvalid) with focus-within listed
-// before it, so a focused invalid field stays terracotta. Copying that into
-// each field is exactly how the "one source" rule in ADR 0013 gets lost: the
-// next change to it would have to be made twice, and one copy would drift.
+// the error state. Copying those into each field is exactly how the "one
+// source" rule in ADR 0013 gets lost: the next change would have to be made
+// twice, and one copy would drift — which is what happened here once already,
+// when the email row arrived as a near-copy of the password one.
 export const CardField = ({ label, errors, children }: CardFieldProps) => {
   const inputId = useId();
   const errorId = useId();
@@ -48,7 +47,7 @@ export const CardField = ({ label, errors, children }: CardFieldProps) => {
       </FieldLabel>
       <InputGroup
         isInvalid={isInvalid}
-        className="-mx-2 -my-1 h-auto gap-2.5 rounded-xs border-transparent px-2 py-1"
+        className="h-auto gap-2.5 rounded-none border-0 bg-transparent p-0 shadow-none ring-0"
       >
         {children({ id: inputId, describedBy: isInvalid ? errorId : undefined, isInvalid })}
       </InputGroup>

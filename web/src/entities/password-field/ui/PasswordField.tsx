@@ -39,14 +39,14 @@ export const PasswordField = ({ label, errors, className, ...props }: PasswordFi
             aria-describedby={describedBy}
             className={cn(CARD_FIELD_CONTROL_CLASS, className)}
           />
-          <InputGroupAddon align="inline-end" className="p-0 has-[>button]:mr-0">
+          <InputGroupAddon align="inline-end" className="p-0 has-[>button]:mr-0 has-[>button]:pr-0">
             <InputGroupButton
               size="icon-sm"
               onPress={() => setIsShown((shown) => !shown)}
               // No aria-pressed beside this: the label already says which
               // state pressing it leads to, and both would announce it twice.
               aria-label={isShown ? t("hidePassword") : t("showPassword")}
-              className="-mr-1.5 rounded-mark-md text-ink-faint hover:bg-transparent"
+              className="rounded-mark-md text-ink-faint hover:bg-transparent"
             >
               <EyeIcon crossed={!isShown} />
             </InputGroupButton>

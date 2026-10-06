@@ -26,13 +26,16 @@ export const LoginScreen = () => {
       background="deep"
       className="items-stretch justify-between gap-8 px-6 pt-24 pb-10 text-left"
     >
-      <header className="flex flex-col gap-3.5 px-2">
+      {/* A plain div, not <header>: CenteredState already provides the
+          screen's <main>, and this block is the screen's own title, not a
+          banner landmark. CLAUDE.md reserves <header> for navigation. */}
+      <div className="flex flex-col gap-3.5 px-2">
         <AppMark size={56} tone="translucent" />
         <div className="flex flex-col gap-2">
           <Title tone="hero">{t("title")}</Title>
           <BodyText tone="hero">{t("subtitle")}</BodyText>
         </div>
-      </header>
+      </div>
 
       <form
         noValidate
@@ -90,7 +93,15 @@ export const LoginScreen = () => {
           {isPending ? <Spinner className="size-5" /> : null}
           {t("submit")}
         </Button>
-        <LinkButton href={routes.forgotPassword} variant="heroGhost" size="role">
+        <LinkButton
+          href={routes.forgotPassword}
+          variant="heroGhost"
+          size="role"
+          // Quieter than the submit button beside it: size="role" is 50px
+          // and there is no smaller role step, so the height and the type
+          // scale come down here.
+          className="h-11 text-caption font-540"
+        >
           {t("forgotPassword")}
         </LinkButton>
         <BodyText tone="hero" className="px-3 pt-1.5 text-center text-caption text-hero-foreground/40">
