@@ -17,7 +17,12 @@ type FieldCardProps = {
 export const FieldCard = ({ children, className }: FieldCardProps) => (
   <div
     className={cn(
-      "flex flex-col rounded-xl bg-background px-4 shadow-card [&>*+*]:border-t [&>*+*]:border-ink-a09",
+      // --autofill-surface travels with bg-background, one line apart on
+      // purpose: the card paints the surface, so the card is what tells
+      // the autofill rule in globals.css which colour to cover the
+      // browser's own with. It inherits, so every field inside is covered
+      // and no form repeats it (ADR 0013, update).
+      "flex flex-col rounded-xl bg-background px-4 shadow-card [--autofill-surface:var(--background)] [&>*+*]:border-t [&>*+*]:border-ink-a09",
       className,
     )}
   >

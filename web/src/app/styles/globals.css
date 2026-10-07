@@ -450,12 +450,21 @@
  * `:is()` because a selector list is thrown away whole if one entry is
  * unknown to the browser, and `:is()` is forgiving: `:autofill` is the
  * standard pseudo-class, `:-webkit-autofill` the alias older WebKit
- * knows. Colours come from the two variables so a field on another
- * surface can say so (PillForm sets --autofill-ink to --hero) instead of
- * this rule knowing every surface in the app.
+ * knows.
+ *
+ * The cover has to be opaque — a transparent one covers nothing, and the
+ * browser's colour stays — so this rule has to be told which colour the
+ * field sits on. It is not told here: whoever paints the surface declares
+ * --autofill-surface beside its own bg-* class, and the variable inherits
+ * down to the fields (FieldCard sets --background, PillForm's input sets
+ * --card and --autofill-ink). The fallbacks below are the page's own
+ * ground and ink, which is right for a field sitting directly on a
+ * screen; a field on anything else that forgets to declare them will
+ * quietly get the wrong colour, so the declaration belongs with the
+ * background, not in a form.
  */
 input:is(:autofill, :-webkit-autofill) {
-  box-shadow: inset 0 0 0 1000px var(--autofill-surface, var(--card));
+  box-shadow: inset 0 0 0 1000px var(--autofill-surface, var(--background));
   -webkit-text-fill-color: var(--autofill-ink, var(--ink));
   caret-color: var(--autofill-ink, var(--ink));
 }
