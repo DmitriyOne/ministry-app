@@ -113,7 +113,11 @@ export const PillForm = ({
           placeholder={placeholder}
           aria-invalid={invalid || undefined}
           aria-describedby={invalid ? errorId : undefined}
-          className="h-auto w-full rounded-full border-hero/15 bg-card px-4.5 py-3.5 text-control text-hero placeholder:text-hero/75 focus-visible:border-hero"
+          // --autofill-ink: this field's text is --hero, not the --ink the
+          // autofill rule in globals.css defaults to. Its surface is
+          // --card, which is that rule's default, so --autofill-surface
+          // stays unset.
+          className="h-auto w-full rounded-full border-hero/15 bg-card px-4.5 py-3.5 text-control text-hero [--autofill-ink:var(--hero)] placeholder:text-hero/75 focus-visible:border-hero"
         />
         <FieldError id={errorId} errors={errors} className="text-left text-caption" />
         {honeypot ? <HoneypotField name={honeypot.name} label={honeypot.label} /> : null}

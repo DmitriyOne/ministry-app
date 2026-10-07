@@ -1,25 +1,16 @@
-"use client";
+import { getTranslations } from "next-intl/server";
 
-import { useTranslations } from "next-intl";
-import { Controller } from "react-hook-form";
-
-import { PasswordField } from "@/entities/password-field";
-import { useSignIn } from "@/features/sign-in";
-import { routes } from "@/shared/config";
 import { AppMark } from "@/shared/ui/app-mark";
 import { BodyText } from "@/shared/ui/body-text";
-import { Button, LinkButton } from "@/shared/ui/button";
 import { CenteredState } from "@/shared/ui/centered-state";
-import { CARD_FIELD_CONTROL_CLASS, CardField } from "@/shared/ui/card-field";
-import { FieldCard } from "@/shared/ui/field-card";
-import { InputGroupInput } from "@/shared/ui/input-group";
-import { InlineError } from "@/shared/ui/inline-error";
-import { Spinner } from "@/shared/ui/spinner";
 import { Title } from "@/shared/ui/title";
+import { SignInForm } from "@/widgets/sign-in-form";
 
-export const LoginScreen = () => {
-  const t = useTranslations("screens.login");
-  const { control, onSubmit, hasErrors, isPending, formError } = useSignIn();
+// Same shape as ComingSoonScreen: the screen is a Server Component and the
+// only client island on it is the form widget. It stopped being "use
+// client" when the form moved out — nothing left here has state.
+export const LoginScreen = async () => {
+  const t = await getTranslations("screens.login");
 
   return (
     <CenteredState
@@ -37,69 +28,7 @@ export const LoginScreen = () => {
         </div>
       </div>
 
-      <form
-        noValidate
-        className="flex flex-col gap-3.5"
-        onSubmit={(event) => {
-          event.preventDefault();
-          onSubmit();
-        }}
-      >
-        <FieldCard>
-          <Controller
-            name="email"
-            control={control}
-            render={({ field, fieldState }) => (
-              <CardField label={t("emailLabel")} errors={fieldState.error && [fieldState.error]}>
-                {({ id, describedBy, isInvalid }) => (
-                  <InputGroupInput
-                    {...field}
-                    id={id}
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    placeholder={t("emailPlaceholder")}
-                    aria-invalid={isInvalid || undefined}
-                    aria-describedby={describedBy}
-                    className={CARD_FIELD_CONTROL_CLASS}
-                  />
-                )}
-              </CardField>
-            )}
-          />
-          <Controller
-            name="password"
-            control={control}
-            render={({ field, fieldState }) => (
-              <PasswordField
-                {...field}
-                label={t("passwordLabel")}
-                placeholder={t("passwordPlaceholder")}
-                autoComplete="current-password"
-                errors={fieldState.error && [fieldState.error]}
-              />
-            )}
-          />
-        </FieldCard>
-
-        {formError ? <InlineError>{formError}</InlineError> : null}
-
-        <Button
-          type="submit"
-          variant="action"
-          size="role-lg"
-          isDisabled={hasErrors || isPending}
-        >
-          {isPending ? <Spinner className="size-5" /> : null}
-          {t("submit")}
-        </Button>
-        <LinkButton href={routes.forgotPassword} variant="heroGhost" size="role">
-          {t("forgotPassword")}
-        </LinkButton>
-        <BodyText tone="hero" className="px-3 pt-1.5 text-center text-caption text-hero-foreground/40">
-          {t("footnote")}
-        </BodyText>
-      </form>
+      <SignInForm />
     </CenteredState>
   );
 };

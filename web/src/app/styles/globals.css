@@ -428,3 +428,34 @@
     }
   }
 }
+
+/*
+ * Autofilled fields keep the project's own surface and ink.
+ *
+ * Safari and Chrome paint an autofilled input with their own background
+ * and text colour, and both declare them `!important` in the UA
+ * stylesheet, where they outrank any author rule — including an author
+ * `!important`. They cannot be overridden, only covered: the documented
+ * trick is a huge inset box-shadow (a property the UA sheet does not
+ * touch) plus `-webkit-text-fill-color`, which takes precedence over
+ * `color`. `caret-color` is set for the same reason the fill colour is.
+ *
+ * Deliberately OUTSIDE @layer, like the shell-gate block above: the
+ * inputs carry `shadow-none` (CARD_FIELD_CONTROL_CLASS), and a utility
+ * beats @layer base whatever the specificity — inside `base` this rule
+ * would be switched off by the very class it has to survive. Unlayered
+ * sits above the utilities layer, so no !important is needed here (the
+ * same cascade-layer trap as ADR 0019 and ADR 0046).
+ *
+ * `:is()` because a selector list is thrown away whole if one entry is
+ * unknown to the browser, and `:is()` is forgiving: `:autofill` is the
+ * standard pseudo-class, `:-webkit-autofill` the alias older WebKit
+ * knows. Colours come from the two variables so a field on another
+ * surface can say so (PillForm sets --autofill-ink to --hero) instead of
+ * this rule knowing every surface in the app.
+ */
+input:is(:autofill, :-webkit-autofill) {
+  box-shadow: inset 0 0 0 1000px var(--autofill-surface, var(--card));
+  -webkit-text-fill-color: var(--autofill-ink, var(--ink));
+  caret-color: var(--autofill-ink, var(--ink));
+}
