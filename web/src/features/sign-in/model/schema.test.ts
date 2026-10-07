@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { ALLOWED_EMAIL_DOMAIN, createSignInSchema } from "./schema";
+import { ALLOWED_EMAIL_DOMAIN } from "@/shared/lib/email";
+
+import { createSignInSchema } from "./schema";
 
 // The translator is the identity on the key, so an assertion names the rule
 // that fired rather than a sentence that will be reworded.

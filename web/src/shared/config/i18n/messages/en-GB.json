@@ -425,6 +425,22 @@
       "passwordNeedsDigit": "Password must contain at least one digit.",
       "passwordNeedsSymbol": "Password must contain at least one symbol.",
       "passwordLatinOnly": "Password must use Latin letters, digits and symbols only."
+    },
+    "forgotPassword": {
+      "metadata": {
+        "title": "Reset password",
+        "description": "Request a password reset for your ministry log account."
+      },
+      "title": "Reset password",
+      "subtitle": "Enter the email address for your account and the admin will set a new password for you.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@example.com",
+      "submit": "Send request",
+      "backToSignIn": "Back to sign in",
+      "sent": "If that address has an account, a reset is on its way. Check with the admin if nothing arrives.",
+      "emailRequired": "Enter your email",
+      "emailInvalid": "Enter a valid email address",
+      "emailTooLong": "That email address is too long"
     }
   }
 }
