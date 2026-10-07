@@ -431,6 +431,7 @@
         "title": "Reset password",
         "description": "Request a password reset for your ministry log account."
       },
+      "eyebrow": "Password",
       "title": "Reset password",
       "subtitle": "Enter the email address for your account and the admin will set a new password for you.",
       "emailLabel": "Email",

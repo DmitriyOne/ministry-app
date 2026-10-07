@@ -5,10 +5,11 @@ import { Controller } from "react-hook-form";
 
 import { useRequestPasswordReset } from "@/features/request-password-reset";
 import { routes } from "@/shared/config";
-import { BodyText } from "@/shared/ui/body-text";
+import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button, LinkButton } from "@/shared/ui/button";
 import { CARD_FIELD_CONTROL_CLASS, CardField } from "@/shared/ui/card-field";
 import { FieldCard } from "@/shared/ui/field-card";
+import { CheckCircleIcon } from "@/shared/ui/icons";
 import { InputGroupInput } from "@/shared/ui/input-group";
 import { Spinner } from "@/shared/ui/spinner";
 
@@ -25,7 +26,21 @@ export const PasswordResetForm = () => {
   if (isSent) {
     return (
       <div className="flex flex-col gap-3.5">
-        <BodyText tone="hero">{t("sent")}</BodyText>
+        {/* @shadcn/alert: a light plate whose icon sits in its own grid
+            column, which is the whole reason it is here rather than a
+            paragraph — no layout of our own, and role="alert" comes with
+            it, so the message is announced when it replaces the form. */}
+        {/* text-primary sits on the plate, not on the icon: the registry
+            forces every direct <svg> child to currentColor with a
+            selector that outranks a plain class, so the colour has to
+            come down as the plate's own. The description below states
+            its colour and is unaffected. */}
+        <Alert className="rounded-xl border-0 px-4 py-3.5 text-primary shadow-card">
+          <CheckCircleIcon className="size-5" />
+          <AlertDescription className="text-caption font-540 text-ink-muted">
+            {t("sent")}
+          </AlertDescription>
+        </Alert>
         <LinkButton href={routes.login} variant="action" size="role-lg">
           {t("backToSignIn")}
         </LinkButton>
@@ -70,11 +85,6 @@ export const PasswordResetForm = () => {
         {isPending ? <Spinner className="size-5" /> : null}
         {t("submit")}
       </Button>
-      {/* A link back to /login, not history-based back: this screen can be
-          opened directly, and "back" then has nowhere sensible to go. */}
-      <LinkButton href={routes.login} variant="heroGhost" size="role">
-        {t("backToSignIn")}
-      </LinkButton>
     </form>
   );
 };

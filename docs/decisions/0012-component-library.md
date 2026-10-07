@@ -57,7 +57,7 @@ Desktop block, О приложении), матрицу их использов�
 | `CenteredState` | `centered-state.tsx` | `background: warm \| deep`, `glyph`, `children`, `actions`, `footnote` | нет |
 | `TopAndBottomState` | `top-and-bottom-state.tsx` | `top`, `bottom` | нет |
 | `ScrollState` | `scroll-state.tsx` | `eyebrow`, `onBack?`, `backLabel?`, `children` | нет (хук нажатия — в `Button`) |
-| `ScreenHeader` | `screen-header.tsx` | `eyebrow`, `onBack?`, `backLabel?` | нет |
+| `ScreenHeader` | `screen-header.tsx` | `eyebrow`, `onBack?` \| `backHref?`, `backLabel?`, `tone?` | нет |
 | `AppMark` | `app-mark.tsx` | `size: 44\|52\|56\|88`, `tone: solid\|translucent`, `elevated?`, `label?` | нет |
 | `StatusGlyph` | `status-glyph.tsx` | `code`, `tone: neutral\|alert` | нет |
 | `Eyebrow` | `eyebrow.tsx` | `as?` | нет |
@@ -364,3 +364,31 @@ card` / чтением из истории git этого коммита — в�
 
 **Проверка**: `pnpm typecheck` и `pnpm lint` (`eslint` + `steiger`) —
 чисто после удаления.
+
+
+## Обновление (2026-10-07): `Alert` и ссылка-назад в `ScreenHeader`
+
+**`Alert` (`alert.tsx`)** — взят из реестра (`@shadcn/alert`, вариант
+`aria-nova`), новых npm-зависимостей не тянет (только `cn`). Светлая
+подложка с иконкой слева: иконка лежит в собственной колонке grid, то
+есть раскладку писать не нужно, и `role="alert"` приходит вместе с
+компонентом — сообщение зачитывается, когда заменяет собой форму.
+Используется на `/forgot-password` для нейтрального ответа об отправке.
+Код приведён к стилю проекта (стрелочные функции, без `import * as
+React`, `cn` из `@/shared/lib/cn`), CSS реестра не тронут.
+
+Одна ловушка, стоившая проверки по собранному CSS: правило реестра
+`*:[svg]:text-current` компилируется в `:is(.…>*):is(svg)` со
+специфичностью (0,1,1) и перебивает класс цвета на самой иконке (0,1,0).
+Поэтому цвет знака задаётся на подложке (`text-primary` на `Alert`), а
+не на `<svg>`; текст описания объявляет свой цвет сам и не страдает.
+
+**`ScreenHeader`** получил два свойства. `backHref` рендерит
+`LinkButton` вместо `Button` — и это не альтернатива по вкусу: `onBack`
+— функция, её нельзя передать из серверного компонента (React не
+сериализует функции через границу RSC), а `backHref` — строка, и это
+честный выбор для экрана, который открывают напрямую, где возвращаться
+по истории некуда. Передать оба сразу — ошибка типов, а не молчаливый
+приоритет. `tone="hero"` переключает кнопку на `heroGhost` и приглушает
+eyebrow до `text-hero-foreground/70`: на тёмно-зелёном белая кнопка
+`plain` и чернильный eyebrow одинаково неуместны.
