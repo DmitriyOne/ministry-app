@@ -75,18 +75,26 @@ export const Toaster = () => (
     // (viewport-fit=cover, ADR 0020).
     offset={{ top: "calc(env(safe-area-inset-top) + 1rem)", left: "1rem", right: "1rem" }}
     mobileOffset={{ top: "calc(env(safe-area-inset-top) + 1rem)", left: "1rem", right: "1rem" }}
-    // The toaster is 356px wide by default and the toast stretched to fill
-    // it, because sonner only sets a toast's own width for styled toasts
+    // Wide screens: the toaster is 356px by default and the toast stretches
+    // to fill it, because sonner sizes a toast itself only when it is styled
     // (`[data-sonner-toast][data-styled='true']`) and ours is unstyled.
-    // Sizing the toaster to its content makes the pill hug its text; sonner
-    // still centres it with left:50% and a transform of its own, which is
-    // why none of this touches transform.
     style={{ "--width": "fit-content" } as CSSProperties}
+    // Under 600px — i.e. always, this is an iPhone-only app (ADR 0016) —
+    // sonner's own media query takes the layout over and the variable above
+    // stops mattering: it pins the toaster to `width: 100%` while also
+    // setting left AND right to the mobile offset, so the box runs 1rem past
+    // the right edge and anything centred inside it sits 1rem off. `w-auto`
+    // lets the two offsets size it instead, which is what centring needs.
+    // `!` because the rule is `[data-sonner-toaster] [data-sonner-toast]` —
+    // two attribute selectors beat a single class, so a plain `w-fit` on the
+    // toast loses and the pill goes full width. This is the only reason that
+    // happens; the media query applies to unstyled toasts too.
+    className="max-[600px]:w-auto!"
     toastOptions={{
       unstyled: true,
       classNames: {
         toast:
-          "inset-x-0 mx-auto flex w-fit max-w-[calc(100vw-2rem)] items-center gap-2.5 rounded-xl bg-hero px-4 py-3 text-body font-540 text-hero-foreground shadow-mark-elevated",
+          "inset-x-0 mx-auto flex w-fit! max-w-[calc(100vw-2rem)] items-center gap-2.5 rounded-xl bg-hero px-4 py-3 text-body font-540 text-hero-foreground shadow-mark-elevated",
       },
     }}
   />
