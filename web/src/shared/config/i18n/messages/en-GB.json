@@ -12,6 +12,14 @@
     "privacyLink": "Privacy & cookies",
     "connectionRestored": "You're back online"
   },
+  "nav": {
+    "label": "Main navigation",
+    "calendar": "Calendar",
+    "month": "Month",
+    "day": "Day",
+    "year": "Year",
+    "profile": "Profile"
+  },
   "notifications": {
     "waitlist": {
       "enable": "Notify me at launch",

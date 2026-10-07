@@ -29,6 +29,7 @@ const FONT_SIZE_NAMES = [
   "list-row",
   "caption",
   "eyebrow",
+  "tab",
   "title",
   "body",
   "status",
@@ -44,9 +45,10 @@ const FONT_WEIGHT_NAMES = ["500", "520", "540", "560", "580", "600", "620", "640
 // directly and don't produce `rounded-*` utilities.
 const RADIUS_NAMES = ["mark-sm", "mark-md", "mark-lg", "button"] as const;
 
-// `--shadow-card`, `--shadow-mark-elevated` in @theme inline — the
-// `shadow-card`/`shadow-mark-elevated` class suffix.
-const SHADOW_NAMES = ["card", "mark-elevated"] as const;
+// `--shadow-card`, `--shadow-mark-elevated`, `--shadow-nav`,
+// `--shadow-nav-primary` in @theme inline — the `shadow-card` etc. class
+// suffix.
+const SHADOW_NAMES = ["card", "mark-elevated", "nav", "nav-primary"] as const;
 
 export const cn = createCn({
   extend: {

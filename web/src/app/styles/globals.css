@@ -81,6 +81,12 @@
   --color-hint: var(--hint);
   --color-hint-surface: var(--hint-surface);
 
+  /* The bottom navigation's glass bar (ADR 0012, update): a translucent
+     white surface over the page, not a palette colour — it only means
+     anything with something behind it to blur. */
+  --color-nav-surface: var(--nav-surface);
+  --color-nav-border: var(--nav-border);
+
   /* Shadow: the prototype's only shadow (cards). */
   --shadow-card: var(--shadow-card);
 
@@ -132,6 +138,11 @@
   /* Shadow for the elevated AppMark (88 px, Coming soon / About). */
   --shadow-mark-elevated: var(--shadow-mark-elevated);
 
+  /* The bottom navigation: the bar's own lift, and the raised Day button,
+     whose second layer is a halo rather than a drop shadow. */
+  --shadow-nav: var(--shadow-nav);
+  --shadow-nav-primary: var(--shadow-nav-primary);
+
   /* Prototype's typographic scale: name → (size, weight set below via
      --font-weight-*, tracking via --tracking-*). Usage:
      `text-display font-[620] tracking-display tabular-nums`. */
@@ -149,6 +160,11 @@
   --text-caption--line-height: 1.5;
   --text-eyebrow: 11px;
   --text-eyebrow--line-height: 1.4;
+  /* One step below the eyebrow, for the bottom navigation's labels — the
+     only place in the app where a label sits under an icon in a 54px-tall
+     target and has to stay on one line. */
+  --text-tab: 10px;
+  --text-tab--line-height: 1.2;
 
   /* Weights not in Tailwind's standard scale (400/500/600/700…), but set
      by the prototype as fractional values. */
@@ -166,6 +182,7 @@
   --tracking-day-title: -0.025em;
   --tracking-list-row: -0.015em;
   --tracking-eyebrow: 0.12em;
+  --tracking-tab: 0.01em;
 }
 
 :root {
@@ -208,6 +225,12 @@
   /* Prototype's shadow. */
   --shadow-card: 0 1px 2px rgba(34, 48, 44, 0.05);
   --shadow-mark-elevated: 0 12px 24px rgba(30, 74, 64, 0.18);
+  --shadow-nav: 0 10px 34px rgba(34, 48, 44, 0.14);
+  /* Two layers: a drop shadow and a 5px halo of the same green — the
+   * prototype draws the raised Day button that way, and a ring utility
+   * would collide with the ring classes removed in ADR 0013. */
+  --shadow-nav-primary:
+    0 8px 22px rgba(46, 111, 94, 0.34), 0 0 0 5px rgba(46, 111, 94, 0.16);
 
   /* ---- 2) Semantic tokens on top of the palette ---- */
   /* --background/--foreground are set once, below, in the shadcn token
@@ -238,6 +261,16 @@
   --ink-a09: rgba(34, 48, 44, 0.09);
   --ink-a07: rgba(34, 48, 44, 0.07);
   --ink-a05: rgba(34, 48, 44, 0.05);
+
+  /* Bottom navigation (prototype menu.html). The bar is white at 0.76
+   * with a lighter hairline on top of it; both are surfaces, so the
+   * contrast rules that shaped the ink scale above don't apply to them.
+   * The prototype's label/icon colour, rgba(34,48,44,0.42), is NOT set up
+   * here: that is the very level ADR 0011 rejected (2.26:1 on
+   * --background, below AA), and the navigation uses --ink-faint like
+   * every other muted text. */
+  --nav-surface: rgba(255, 255, 255, 0.76);
+  --nav-border: rgba(255, 255, 255, 0.7);
 
   /* System font — set in root-layout.tsx via the CSS variables
      --font-sans / --font-mono (Geist removed, see ADR 0011). */
