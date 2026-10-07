@@ -12,6 +12,9 @@ export type RequestPasswordResetActionState = {
   // the address has an account (see api/request-password-reset-action.ts).
   status: "idle" | "success" | "error";
   fieldErrors?: Partial<Record<keyof RequestPasswordResetFormValues, string>>;
+  // Belongs to the whole form rather than a field — today only the rate
+  // limit, shown the same way sign-in and the waitlist show theirs.
+  formError?: string;
 };
 
 export const requestPasswordResetInitialState: RequestPasswordResetActionState = {

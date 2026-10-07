@@ -1,10 +1,9 @@
 import { getTranslations } from "next-intl/server";
 
-import { routes } from "@/shared/config";
+import { ScreenBackHeader } from "@/features/screen-back";
 import { AppMark } from "@/shared/ui/app-mark";
 import { BodyText } from "@/shared/ui/body-text";
 import { CenteredState } from "@/shared/ui/centered-state";
-import { ScreenHeader } from "@/shared/ui/screen-header";
 import { Title } from "@/shared/ui/title";
 import { PasswordResetForm } from "@/widgets/password-reset-form";
 
@@ -21,18 +20,16 @@ export const ForgotPasswordScreen = async () => {
 
   return (
     <div className="flex min-h-dvh flex-col bg-hero text-hero-foreground">
-      {/* backHref, not onBack: this screen can be opened directly — from
-          the sign-in link, a bookmark, or a reload — and then browser
-          history has nothing sensible to go back to. A Server Component
-          could not pass onBack anyway (React does not serialise functions
-          across the RSC boundary). The padding adds the iOS safe-area
-          inset on top of the header's own pt-6, so the button never sits
-          under the status bar (viewport-fit=cover, ADR 0020). */}
-      <ScreenHeader
+      {/* The same back scenario the about and privacy screens use: go
+          back in history if there is anywhere to go, otherwise a full
+          navigation to "/" — which, with no session, the proxy sends on
+          to /login, exactly where this screen's back belongs. The padding
+          adds the iOS safe-area inset on top of the header's own pt-6, so
+          the button never sits under the status bar (viewport-fit=cover,
+          ADR 0020). */}
+      <ScreenBackHeader
         tone="hero"
         eyebrow={t("eyebrow")}
-        backHref={routes.login}
-        backLabel={t("backToSignIn")}
         className="pt-[calc(--spacing(6)+env(safe-area-inset-top))]"
       />
 

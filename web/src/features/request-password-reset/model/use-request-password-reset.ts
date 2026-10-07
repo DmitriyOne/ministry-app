@@ -52,5 +52,6 @@ export const useRequestPasswordReset = () => {
     hasErrors: Object.keys(errors).length > 0,
     isPending,
     isSent: state.status === "success",
+    formError: state.status === "error" ? state.formError : undefined,
   };
 };

@@ -21,7 +21,20 @@ export const requestPasswordReset = async (
 
   // The IP is only ever a rate-limit key: never logged or persisted.
   const ip = getClientIp(await headers());
-  const withinRateLimit = checkRequestPasswordResetRateLimit(ip).success;
+
+  // Over the limit, the person is told so — the same message, in the same
+  // place, as on the sign-in form and the waitlist (ADR 0043, update).
+  // This is a deliberate choice against hiding it: a uniform answer would
+  // reveal nothing about how the limiter is set, but it would also leave
+  // someone staring at a form that silently stopped working. Consistency
+  // across the three forms won. It does not touch the other kind of
+  // neutrality: the answer still never depends on whether the address has
+  // an account.
+  if (!checkRequestPasswordResetRateLimit(ip).success) {
+    console.warn("[request-password-reset] rejected", { reason: "rate-limit" });
+
+    return { status: "error", formError: t("tooManyRequests") };
+  }
 
   const result = createRequestPasswordResetSchema(t).safeParse(values);
 
@@ -34,25 +47,16 @@ export const requestPasswordReset = async (
     return { status: "error", fieldErrors: { email: email?.[0] } };
   }
 
-  if (withinRateLimit) {
-    // No mail is sent yet (that waits for a mail sender), so this log IS
-    // the working mechanism: the owner sees the request and sets a new
-    // password in Studio. The address in plaintext is the same temporary
-    // trade-off ADR 0027 accepted for waitlist addresses, and it retires
-    // the same way — once mail goes out, this drops to the fact without
-    // the address.
-    console.info("[request-password-reset] reset requested", { email: result.data.email });
-  } else {
-    // Over the limit: the request is dropped rather than answered
-    // differently. Nothing identifying goes into this line — the point is
-    // only that the drop is visible to the owner at all.
-    console.warn("[request-password-reset] rejected", { reason: "rate-limit" });
-  }
+  // No mail is sent yet (that waits for a mail sender), so this log IS the
+  // working mechanism: the owner sees the request and sets a new password
+  // in Studio. The address in plaintext is the same temporary trade-off
+  // ADR 0027 accepted for waitlist addresses, and it retires the same way
+  // — once mail goes out, this drops to the fact without the address.
+  console.info("[request-password-reset] reset requested", { email: result.data.email });
 
-  // One answer, always. Not whether the address has an account, not
-  // whether the limiter let it through: either would turn this page into a
-  // way of finding out who has an account here. Which is also why no
-  // account lookup happens above — there would be nothing to do with the
-  // answer that does not break this.
+  // The same answer whether or not that address has an account. This is
+  // also why no account lookup happens above: there would be nothing to do
+  // with the answer that does not turn this page into a way of finding out
+  // who has an account here.
   return { status: "success" };
 };

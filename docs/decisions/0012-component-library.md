@@ -57,7 +57,7 @@ Desktop block, О приложении), матрицу их использов�
 | `CenteredState` | `centered-state.tsx` | `background: warm \| deep`, `glyph`, `children`, `actions`, `footnote` | нет |
 | `TopAndBottomState` | `top-and-bottom-state.tsx` | `top`, `bottom` | нет |
 | `ScrollState` | `scroll-state.tsx` | `eyebrow`, `onBack?`, `backLabel?`, `children` | нет (хук нажатия — в `Button`) |
-| `ScreenHeader` | `screen-header.tsx` | `eyebrow`, `onBack?` \| `backHref?`, `backLabel?`, `tone?` | нет |
+| `ScreenHeader` | `screen-header.tsx` | `eyebrow`, `onBack?`, `backLabel?`, `tone?` | нет |
 | `AppMark` | `app-mark.tsx` | `size: 44\|52\|56\|88`, `tone: solid\|translucent`, `elevated?`, `label?` | нет |
 | `StatusGlyph` | `status-glyph.tsx` | `code`, `tone: neutral\|alert` | нет |
 | `Eyebrow` | `eyebrow.tsx` | `as?` | нет |
@@ -383,12 +383,19 @@ React`, `cn` из `@/shared/lib/cn`), CSS реестра не тронут.
 Поэтому цвет знака задаётся на подложке (`text-primary` на `Alert`), а
 не на `<svg>`; текст описания объявляет свой цвет сам и не страдает.
 
-**`ScreenHeader`** получил два свойства. `backHref` рендерит
-`LinkButton` вместо `Button` — и это не альтернатива по вкусу: `onBack`
-— функция, её нельзя передать из серверного компонента (React не
-сериализует функции через границу RSC), а `backHref` — строка, и это
-честный выбор для экрана, который открывают напрямую, где возвращаться
-по истории некуда. Передать оба сразу — ошибка типов, а не молчаливый
-приоритет. `tone="hero"` переключает кнопку на `heroGhost` и приглушает
-eyebrow до `text-hero-foreground/70`: на тёмно-зелёном белая кнопка
-`plain` и чернильный eyebrow одинаково неуместны.
+**`ScreenHeader`** получил одно свойство — `tone`. `tone="hero"`
+переключает кнопку на `heroGhost` и приглушает eyebrow до
+`text-hero-foreground/70`: на тёмно-зелёном белая кнопка `plain` и
+чернильный eyebrow одинаково неуместны. Больше между двумя тонами
+ничего не различается.
+
+Сначала сюда же был добавлен `backHref` (рендерил `LinkButton` вместо
+`Button`) с союзным типом, запрещавшим передать его вместе с `onBack`.
+Это было лишнее, и владелец это заметил: сценарий «вернуться назад» уже
+есть — `ScreenBackHeader` (`features/screen-back`), он сам решает между
+историей и запасным переходом на `/`. Рассуждение, которым добавление
+оправдывалось («серверный компонент не может передать функцию через
+границу RSC»), верно по сути и неприменимо по факту: `ScreenBackHeader`
+— клиентский компонент, принимает только строки, и серверный экран
+рендерит его без всяких функций. `backHref` удалён вместе с союзным
+типом; `tone` прокинут через `ScreenBackHeader` тем же именем.

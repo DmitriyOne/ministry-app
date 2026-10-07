@@ -441,7 +441,8 @@
       "sent": "If that address has an account, a reset is on its way. Check with the admin if nothing arrives.",
       "emailRequired": "Enter your email",
       "emailInvalid": "Enter a valid email address",
-      "emailTooLong": "That email address is too long"
+      "emailTooLong": "That email address is too long",
+      "tooManyRequests": "Too many attempts. Please wait a few minutes and try again."
     }
   }
 }

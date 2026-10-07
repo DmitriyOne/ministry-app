@@ -33,35 +33,33 @@ afterEach(() => {
 });
 
 describe("requestPasswordReset", () => {
-  it("answers a rate-limited request exactly as it answers a successful one", async () => {
-    // The limiter allows three per hour per IP and this module holds one
-    // instance for the whole test file, so the fourth submission is the
-    // rejected one. It must be indistinguishable from the first, or the
-    // page becomes a way to probe which addresses have accounts and how
-    // the limiter is configured.
+  it("answers an address that has no account exactly as it answers one that has", async () => {
+    // The property that must hold whatever else changes: nothing in the
+    // action looks an account up, so it cannot answer differently. The
+    // assertion is here so that adding a lookup breaks a test.
     const first = await submit(EMAIL);
 
-    await submit(EMAIL);
-    await submit(EMAIL);
-
-    const limited = await submit(EMAIL);
-
     expect(first).toEqual({ status: "success" });
-    expect(limited).toEqual(first);
-  });
-
-  it("answers an address that has no account the same way", async () => {
-    // Nothing in the action looks an account up, which is what makes this
-    // hold; the assertion is here so that adding a lookup breaks a test.
-    expect(await submit(`nobody@${ALLOWED_EMAIL_DOMAIN}`)).toEqual({ status: "success" });
+    expect(await submit(`nobody@${ALLOWED_EMAIL_DOMAIN}`)).toEqual(first);
   });
 
   it("rejects an address that could not belong to an account", async () => {
     // A malformed or foreign address is about the input, not about who has
-    // an account, so this is the one case that may answer differently.
+    // an account, so it may answer differently.
     expect(await submit("ruth@example.com")).toEqual({
       status: "error",
       fieldErrors: { email: "emailInvalid" },
     });
+  });
+
+  it("says so when the limit is reached", async () => {
+    // Three per hour per IP, and this module holds one limiter instance
+    // for the whole file: the two tests above spend all three (the
+    // malformed address counts too — the limiter is checked before the
+    // schema), so this is the fourth and is rejected. Deliberately NOT a
+    // neutral answer: the owner chose the same message the sign-in form
+    // and the waitlist give, over leaving someone with a form that
+    // silently stopped working (ADR 0043, update).
+    expect(await submit(EMAIL)).toEqual({ status: "error", formError: "tooManyRequests" });
   });
 });

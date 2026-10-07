@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button, LinkButton } from "@/shared/ui/button";
 import { CARD_FIELD_CONTROL_CLASS, CardField } from "@/shared/ui/card-field";
 import { FieldCard } from "@/shared/ui/field-card";
+import { InlineError } from "@/shared/ui/inline-error";
 import { CheckCircleIcon } from "@/shared/ui/icons";
 import { InputGroupInput } from "@/shared/ui/input-group";
 import { Spinner } from "@/shared/ui/spinner";
@@ -17,7 +18,8 @@ import { Spinner } from "@/shared/ui/spinner";
 // hook to shared controls, the screen only places it.
 export const PasswordResetForm = () => {
   const t = useTranslations("screens.forgotPassword");
-  const { control, onSubmit, hasErrors, isPending, isSent } = useRequestPasswordReset();
+  const { control, onSubmit, hasErrors, isPending, isSent, formError }
+    = useRequestPasswordReset();
 
   // One state replaces the form, as on the waitlist screen. The text says
   // nothing about whether that address has an account — the action is
@@ -80,6 +82,8 @@ export const PasswordResetForm = () => {
           )}
         />
       </FieldCard>
+
+      {formError ? <InlineError>{formError}</InlineError> : null}
 
       <Button type="submit" variant="action" size="role-lg" isDisabled={hasErrors || isPending}>
         {isPending ? <Spinner className="size-5" /> : null}
