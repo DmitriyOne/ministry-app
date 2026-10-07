@@ -52,6 +52,27 @@
         "description": "Record today's ministry hours and Bible studies in a few taps, and see how you're tracking against your monthly and yearly goal."
       }
     },
+    "calendar": {
+      "metadata": {
+        "title": "Calendar",
+        "description": "Your ministry month, day by day."
+      },
+      "title": "Calendar"
+    },
+    "month": {
+      "metadata": {
+        "title": "Month",
+        "description": "Totals and entries for the month."
+      },
+      "title": "Month"
+    },
+    "year": {
+      "metadata": {
+        "title": "Year",
+        "description": "Your service year at a glance."
+      },
+      "title": "Year"
+    },
     "access": {
       "desktop": {
         "title": "Phones only, for now",
