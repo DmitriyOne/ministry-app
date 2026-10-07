@@ -1,7 +1,5 @@
 "use client";
 
-import type { CSSProperties } from "react";
-
 import { toast, Toaster as Sonner } from "sonner";
 
 import { AlertCircleIcon, CheckCircleIcon } from "./icons";
@@ -34,20 +32,36 @@ const TONE_ICON_CLASS = {
 
 const DEFAULT_DURATION_MS = 4000;
 
+// The pill itself, as our own element rather than classes on sonner's <li>.
+// Sonner injects its stylesheet at runtime as a plain <style> in <head>,
+// outside any cascade layer, while every Tailwind utility sits inside
+// @layer utilities — and an unlayered declaration beats a layered one
+// whatever its specificity. So any property sonner declares (on phones that
+// includes the toast's width) wins over our class, which is why sonner's own
+// docs say Tailwind classes passed through `classNames` have to be marked
+// !important. Sonner's documented way out is the headless toast, "no default
+// styles + full control of the jsx", which is this: the <li> stays a bare
+// positioning box sonner is free to size, and the pill is a child no rule of
+// sonner's reaches.
+const ToastPill = ({ message, tone }: { message: string; tone: ToastTone }) => {
+  const Icon = tone === "negative" ? AlertCircleIcon : CheckCircleIcon;
+
+  return (
+    <div className="pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-2.5 rounded-xl bg-hero px-4 py-3 text-body font-540 text-hero-foreground shadow-mark-elevated">
+      <Icon size={20} className={TONE_ICON_CLASS[tone]} />
+      {message}
+    </div>
+  );
+};
+
 // The one place that knows sonner exists: callers say what to show and in
 // which tone, and get an id back so a toast can be taken away early.
 export const showToast = ({
   message,
   tone = "neutral",
   durationMs = DEFAULT_DURATION_MS,
-}: ToastInput): ToastId => {
-  const Icon = tone === "negative" ? AlertCircleIcon : CheckCircleIcon;
-
-  return toast(message, {
-    duration: durationMs,
-    icon: <Icon size={20} className={TONE_ICON_CLASS[tone]} />,
-  });
-};
+}: ToastInput): ToastId =>
+  toast.custom(() => <ToastPill message={message} tone={tone} />, { duration: durationMs });
 
 // Safe at any point: sonner ignores an id that has already left.
 export const dismissToast = (id: ToastId) => {
@@ -55,17 +69,14 @@ export const dismissToast = (id: ToastId) => {
 };
 
 // Vendored from the shadcn registry (@shadcn/sonner), then adapted: no
-// next-themes (there is no dark theme, ADR 0011), no icon placeholder (the
-// project's own icons are passed per toast in showToast), no popover/border
-// variables (the palette is the project's own).
+// next-themes (there is no dark theme, ADR 0011), and no styling of sonner's
+// own elements at all — the visible pill is ToastPill above, so `unstyled`
+// and the whole classNames map are gone with it.
 //
-// `unstyled` drops sonner's visual defaults so the pill is built from tokens:
-// bg-hero, text-hero-foreground, rounded-xl, shadow-mark-elevated. Sonner
-// still positions the toast absolutely without a width, so `inset-x-0 mx-auto
-// w-fit` centres a content-sized pill in the toaster. Top, not bottom: a
-// toast reports on what was just on screen and primary actions sit at the
-// bottom; the offset keeps it clear of the notch (viewport-fit=cover, ADR
-// 0020). Sonner disables its own transitions under prefers-reduced-motion.
+// Top, not bottom: a toast reports on what was just on screen and primary
+// actions sit at the bottom; the offset keeps it clear of the notch
+// (viewport-fit=cover, ADR 0020). Sonner disables its own transitions under
+// prefers-reduced-motion.
 export const Toaster = () => (
   <Sonner
     position="top-center"
@@ -75,27 +86,15 @@ export const Toaster = () => (
     // (viewport-fit=cover, ADR 0020).
     offset={{ top: "calc(env(safe-area-inset-top) + 1rem)", left: "1rem", right: "1rem" }}
     mobileOffset={{ top: "calc(env(safe-area-inset-top) + 1rem)", left: "1rem", right: "1rem" }}
-    // Wide screens: the toaster is 356px by default and the toast stretches
-    // to fill it, because sonner sizes a toast itself only when it is styled
-    // (`[data-sonner-toast][data-styled='true']`) and ours is unstyled.
-    style={{ "--width": "fit-content" } as CSSProperties}
-    // Under 600px — i.e. always, this is an iPhone-only app (ADR 0016) —
-    // sonner's own media query takes the layout over and the variable above
-    // stops mattering: it pins the toaster to `width: 100%` while also
-    // setting left AND right to the mobile offset, so the box runs 1rem past
-    // the right edge and anything centred inside it sits 1rem off. `w-auto`
-    // lets the two offsets size it instead, which is what centring needs.
-    // `!` because the rule is `[data-sonner-toaster] [data-sonner-toast]` —
-    // two attribute selectors beat a single class, so a plain `w-fit` on the
-    // toast loses and the pill goes full width. This is the only reason that
-    // happens; the media query applies to unstyled toasts too.
-    className="max-[600px]:w-auto!"
     toastOptions={{
-      unstyled: true,
-      classNames: {
-        toast:
-          "inset-x-0 mx-auto flex w-fit! max-w-[calc(100vw-2rem)] items-center gap-2.5 rounded-xl bg-hero px-4 py-3 text-body font-540 text-hero-foreground shadow-mark-elevated",
-      },
+      // Two layout classes, no visual ones. `inset-x-0` makes the <li> span
+      // the toaster so `mx-auto` on the pill centres against the screen
+      // (under 600px sonner sets the same two values itself, and sizes the
+      // <li> to the screen minus the offsets). `pointer-events-none` is the
+      // price of the <li> being wider than the pill: it is a touch target
+      // with `touch-action: none`, and left alone it would swallow taps in
+      // the empty space beside the pill — the pill takes them back.
+      className: "pointer-events-none inset-x-0",
     }}
   />
 );
