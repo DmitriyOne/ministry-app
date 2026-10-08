@@ -20,6 +20,7 @@ export const routes = {
   month: "/month",
   year: "/year",
   profile: "/profile",
+  adminNewUser: "/admin/users/new",
   // Debug pages, served outside production only (isDebugPageEnabled).
   sentryExampleError: "/sentry-example-error",
   sentryExampleErrorServer: "/sentry-example-error/server",

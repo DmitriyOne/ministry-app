@@ -42,6 +42,33 @@ describe("resolveGate", () => {
     });
   });
 
+  // The role travels in the token, so the proxy can decide an admin path
+  // without asking the auth server (ADR 0044). All four combinations are
+  // asserted: this is the first place in the app where a role decides
+  // anything, and "forgot to check" looks exactly like "checked and
+  // allowed" from the outside.
+  it("opens an admin path only for an admin", () => {
+    expect(resolveGate({ pathname: "/admin/users/new", hasSession: true, role: "admin" }))
+      .toEqual({ action: "pass" });
+  });
+
+  it("sends a signed-in non-admin away from an admin path", () => {
+    // /profile, not /login: they are signed in, so /login would bounce
+    // them straight back and the two rules would form a loop.
+    expect(resolveGate({ pathname: "/admin/users/new", hasSession: true, role: "user" }))
+      .toEqual({ action: "redirect", to: "/profile" });
+  });
+
+  it("treats a missing role on an admin path as not an admin", () => {
+    expect(resolveGate({ pathname: "/admin/users/new", hasSession: true }))
+      .toEqual({ action: "redirect", to: "/profile" });
+  });
+
+  it("sends a visitor with no session on an admin path to the login screen", () => {
+    expect(resolveGate({ pathname: "/admin/users/new", hasSession: false }))
+      .toEqual({ action: "redirect", to: "/login" });
+  });
+
   // /soon is the public landing now that LAUNCH_MODE is gone (ADR 0045):
   // no session needed, and a signed-in person is not bounced off it.
   it("leaves the public landing alone either way", () => {

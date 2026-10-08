@@ -8,7 +8,7 @@ import type { NextRequest } from "next/server";
 // no business carrying that client, so it takes only the factory.
 import { createSupabaseClientWithCookies } from "@/shared/api/supabase/create-client-with-cookies";
 import { classifyAccess } from "@/shared/lib/access";
-import { resolveGate } from "@/shared/lib/auth";
+import { parseSessionClaims, resolveGate } from "@/shared/lib/auth";
 import { env, routes } from "@/shared/config";
 
 // redirect, not rewrite — the address bar DOES change (ADR 0017's
@@ -43,6 +43,7 @@ const APP_ROUTES: string[] = [
   routes.month,
   routes.year,
   routes.profile,
+  routes.adminNewUser,
 ];
 
 // The server can't see display-mode (standalone/fullscreen) — that check
@@ -104,15 +105,22 @@ export const proxy = async (request: NextRequest) => {
   // getClaims(), not getUser() (ADR 0044): local signature and expiry
   // check. Any failure counts as "no session" — the gate would send the
   // person to /login either way.
-  let hasSession = false;
+  let claims = null;
   try {
     const { data } = await supabase.auth.getClaims();
-    hasSession = Boolean(data?.claims);
+    claims = parseSessionClaims(data?.claims ?? null);
   } catch {
-    hasSession = false;
+    claims = null;
   }
 
-  const decision = resolveGate({ pathname, hasSession });
+  // The role comes out of the same verified token, so an admin path costs
+  // no extra round trip (ADR 0044). Unreadable claims mean no session and
+  // no role, which the gate treats as "not an admin" either way.
+  const decision = resolveGate({
+    pathname,
+    hasSession: claims !== null,
+    role: claims?.role,
+  });
   if (decision.action === "pass") return supabaseResponse;
 
   const url = request.nextUrl.clone();

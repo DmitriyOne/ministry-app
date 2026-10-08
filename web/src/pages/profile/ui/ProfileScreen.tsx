@@ -6,6 +6,7 @@ import { SignOutButton } from "@/features/sign-out";
 import { createServerSupabaseClient } from "@/shared/api";
 import { routes } from "@/shared/config";
 import { hasRole } from "@/shared/lib/auth";
+import { LinkButton } from "@/shared/ui/button";
 import { CenteredState } from "@/shared/ui/centered-state";
 import { ListCard } from "@/shared/ui/list-card";
 import { ListRow } from "@/shared/ui/list-row";
@@ -33,7 +34,8 @@ export const ProfileScreen = async () => {
 
   // The only use of the role guard in v2 (ADR 0044): nothing branches on
   // the role, the screen just names it.
-  const roleLabel = hasRole(claims, "admin") ? t("roleAdmin") : t("roleUser");
+  const isAdmin = hasRole(claims, "admin");
+  const roleLabel = isAdmin ? t("roleAdmin") : t("roleUser");
 
   return (
     <CenteredState fill className="items-stretch justify-start gap-6 px-5 pt-14 text-left">
@@ -47,6 +49,18 @@ export const ProfileScreen = async () => {
           text={roleLabel}
         />
       </ListCard>
+
+      {/* Shown to an admin only. This is presentation, not protection:
+          the path is gated in proxy.ts and the action checks the role
+          again, so hiding the link is about not offering a door that
+          would shut in your face. */}
+      {isAdmin
+        ? (
+            <LinkButton href={routes.adminNewUser} variant="action" size="role-lg">
+              {t("newUser")}
+            </LinkButton>
+          )
+        : null}
 
       <nav aria-label={t("linksLabel")} className="flex gap-4 px-1">
         <TextLink href={routes.about}>{t("about")}</TextLink>
