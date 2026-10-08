@@ -18,7 +18,7 @@ export const BottomNav = async () => {
   return (
     <nav
       aria-label={t("label")}
-      className="fixed bottom-[calc(--spacing(6)+env(safe-area-inset-bottom))] left-1/2 z-40 flex h-16 -translate-x-1/2 items-center gap-1 rounded-4xl border border-nav-border bg-nav-surface px-2 shadow-nav backdrop-blur-[26px] backdrop-saturate-[1.8]"
+      className="fixed bottom-[calc(--spacing(6)+env(safe-area-inset-bottom))] left-1/2 z-40 flex h-16 -translate-x-1/2 items-center gap-1 rounded-xl border border-nav-border bg-nav-surface px-2 shadow-nav backdrop-blur-[26px] backdrop-saturate-[1.8]"
     >
       {navItems.map(({ href, labelKey, Icon, isPrimary }) => (
         <BottomNavItem key={href} href={href} label={t(labelKey)} isPrimary={isPrimary}>
