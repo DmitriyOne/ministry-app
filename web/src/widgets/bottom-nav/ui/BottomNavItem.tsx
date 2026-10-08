@@ -43,12 +43,18 @@ export const BottomNavItem = ({ href, label, children, isPrimary = false }: Bott
       className={cn(
         "h-auto flex-col gap-1 bg-transparent p-0 text-tab font-600 tracking-tab shadow-none",
         isPrimary
-          // 64px, the bar's own height, lifted by 10: the prototype's 76
-          // on a 64px bar made the button the whole navigation. The halo
-          // in shadow-nav-primary is what makes the lift read as
-          // deliberate rather than as a misplaced circle.
-          ? "size-16 -translate-y-2.5 rounded-full bg-primary text-hero-foreground/85 shadow-nav-primary [--press-scale:0.94]"
-          : "h-13.5 w-14.5 rounded-lg",
+          // 56px, lifted by 8. The prototype's 76 on a 64px bar made the
+          // button the whole navigation; 64 was still heavy. The halo in
+          // shadow-nav-primary is what makes the lift read as deliberate
+          // rather than as a misplaced circle.
+          ? "size-14 -translate-y-2 rounded-full bg-primary text-hero-foreground/85 shadow-nav-primary [--press-scale:0.94]"
+          // rounded-2xl (26px), not rounded-lg (20): radii that sit
+          // inside one another have to be concentric, inner = outer −
+          // gap. The bar is 32 and the item clears its edge by 5, so 26
+          // is the radius whose curve runs parallel to the bar's. At 20
+          // the two curves fought each other, which is what made the
+          // active pill look pasted on.
+          : "h-13.5 w-14.5 rounded-2xl",
         // The inactive colour is --ink-faint, not the prototype's 0.42
         // opacity: that is the level ADR 0011 rejected as failing AA. The
         // active one is --primary with a tint behind it — full ink next to

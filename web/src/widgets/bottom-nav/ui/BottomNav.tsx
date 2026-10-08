@@ -24,7 +24,7 @@ export const BottomNav = async () => {
         <BottomNavItem key={href} href={href} label={t(labelKey)} isPrimary={isPrimary}>
           {/* aria-hidden by default in every icon of ours: the label next
               to it already says the same thing. */}
-          <Icon size={isPrimary ? 22 : 18} />
+          <Icon size={isPrimary ? 20 : 18} />
         </BottomNavItem>
       ))}
     </nav>
