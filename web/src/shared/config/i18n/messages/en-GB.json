@@ -73,6 +73,20 @@
       },
       "title": "Year"
     },
+    "profile": {
+      "metadata": {
+        "title": "Profile",
+        "description": "Your account and the way out of it."
+      },
+      "title": "Profile",
+      "nameUnknown": "Your account",
+      "roleUser": "User",
+      "roleAdmin": "Administrator",
+      "linksLabel": "About this app",
+      "about": "About",
+      "privacy": "Privacy & cookies",
+      "signOut": "Sign out"
+    },
     "access": {
       "desktop": {
         "title": "Phones only, for now",
