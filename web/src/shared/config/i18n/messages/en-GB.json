@@ -45,7 +45,6 @@
   "screens": {
     "day": {
       "title": "Day",
-      "supabaseStatusLabel": "Supabase:",
       "welcomeBack": "Welcome back, {name}",
       "metadata": {
         "title": "Day",

@@ -1,67 +1,29 @@
 import { getTranslations } from "next-intl/server";
 
 import { WelcomeToast } from "@/features/welcome-toast";
-import { env, SB_API_ROUTES } from "@/shared/config";
-import { BodyText } from "@/shared/ui/body-text";
 import { CenteredState } from "@/shared/ui/centered-state";
 import { Title } from "@/shared/ui/title";
 
-// Scaffold-stage signal that the two projects are wired together, not business logic.
-const getSupabaseStatus = async (): Promise<"ok" | "unreachable"> => {
-  try {
-    const response = await fetch(
-      `${env.NEXT_PUBLIC_SUPABASE_URL}${SB_API_ROUTES.functions.health}`,
-      {
-        cache: "no-store",
-        headers: {
-          apikey: env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-      },
-    );
-
-    if (!response.ok) {
-      return "unreachable";
-    }
-
-    const body: unknown = await response.json();
-    const status
-      = typeof body === "object" && body !== null && "status" in body
-        ? (body as { status?: unknown }).status
-        : undefined;
-
-    return status === "ok" ? "ok" : "unreachable";
-  } catch {
-    return "unreachable";
-  }
-};
-
+// A placeholder, like /calendar, /month and /year: v2 lays out the
+// navigation and the routes, the day's own entry form arrives with the
+// ministry tables.
+//
+// What stood here was a scaffold probe that called the Supabase Edge
+// Function `health` and printed "ok" / "unreachable" — a wiring check
+// from the first days of the project, never a screen. Whether the
+// backend answers is now the job of features/network-status, on every
+// screen rather than this one, and whether the database answers shows up
+// where a person actually asks something of it.
+//
+// WelcomeToast stays: it is what greets someone by name right after they
+// sign in (ADR 0046), and /day is where the gate sends them.
 export const DayPage = async () => {
-  const [supabaseStatus, t] = await Promise.all([
-    getSupabaseStatus(),
-    getTranslations("screens.day"),
-  ]);
+  const t = await getTranslations("screens.day");
 
   return (
     <CenteredState fill>
       <WelcomeToast />
-      <Title size="compact">{t("title")}</Title>
-      <BodyText>
-        {t("supabaseStatusLabel")}
-        {" "}
-        {/* No dedicated "connected/disconnected" pair in the palette
-            (ADR 0011) — --positive-hero (mint) is restricted to the
-            --hero/deep-green background only, so it can't be reused here.
-            --primary (muted green, already the app's general "go"/action
-            colour) and --negative (terracotta, the general error colour)
-            are the closest tokens that are valid on --background. */}
-        <span
-          data-testid="supabase-status"
-          className={supabaseStatus === "ok" ? "font-600 text-primary" : "font-600 text-negative"}
-        >
-          {supabaseStatus}
-        </span>
-      </BodyText>
+      <Title>{t("title")}</Title>
     </CenteredState>
   );
 };
