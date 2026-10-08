@@ -7,6 +7,8 @@ import type { AppRoute } from "@/shared/config";
 import { cn } from "@/shared/lib/cn";
 import { LinkButton } from "@/shared/ui/button";
 
+import { isNavItemCurrent } from "../model/is-nav-item-current";
+
 type BottomNavItemProps = {
   href: AppRoute;
   label: string;
@@ -24,14 +26,10 @@ type BottomNavItemProps = {
 // (ADR 0024), or every tap on the menu runs LaunchGate and its loading
 // screen again (ADR 0017/0019/0028).
 export const BottomNavItem = ({ href, label, children, isPrimary = false }: BottomNavItemProps) => {
-  // Same two guards as FooterLink: `?? ""` for the `string | null`
-  // signature some toolchains attribute to usePathname, and a trailing
-  // slash normalised away before comparing. Exact comparison, not a
-  // prefix — /month must not light up for a future /month-summary.
-  const pathname = usePathname() ?? "";
-  const normalisedPathname
-    = pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
-  const isCurrent = normalisedPathname === href;
+  // `?? ""` guards against the `string | null` signature some toolchains
+  // attribute to usePathname; the comparison itself lives in the model,
+  // under test.
+  const isCurrent = isNavItemCurrent(usePathname() ?? "", href);
 
   return (
     <LinkButton
@@ -45,15 +43,18 @@ export const BottomNavItem = ({ href, label, children, isPrimary = false }: Bott
       className={cn(
         "h-auto flex-col gap-1 bg-transparent p-0 text-tab font-600 tracking-tab shadow-none",
         isPrimary
-          // -translate-y-3 lifts it out of the bar; the halo in
-          // shadow-nav-primary is what makes the lift read as deliberate.
-          ? "size-19 -translate-y-3 rounded-full bg-primary text-hero-foreground/85 shadow-nav-primary [--press-scale:0.94]"
+          // 64px, the bar's own height, lifted by 10: the prototype's 76
+          // on a 64px bar made the button the whole navigation. The halo
+          // in shadow-nav-primary is what makes the lift read as
+          // deliberate rather than as a misplaced circle.
+          ? "size-16 -translate-y-2.5 rounded-full bg-primary text-hero-foreground/85 shadow-nav-primary [--press-scale:0.94]"
           : "h-13.5 w-14.5 rounded-lg",
-        // The prototype paints an inactive item at 0.42 opacity, which is
-        // the level ADR 0011 rejected as failing AA — --ink-faint is the
-        // project's muted text and what every other screen uses. The
-        // active item is the full ink, which is the contrast between them.
-        !isPrimary && (isCurrent ? "text-ink" : "text-ink-faint"),
+        // The inactive colour is --ink-faint, not the prototype's 0.42
+        // opacity: that is the level ADR 0011 rejected as failing AA. The
+        // active one is --primary with a tint behind it — full ink next to
+        // faint ink was a difference you had to look for, and the one
+        // thing a navigation bar must say at a glance is where you are.
+        !isPrimary && (isCurrent ? "bg-primary/10 text-primary" : "text-ink-faint"),
       )}
     >
       {children}
