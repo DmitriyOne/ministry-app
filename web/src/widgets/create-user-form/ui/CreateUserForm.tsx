@@ -11,7 +11,7 @@ import { Button } from "@/shared/ui/button";
 import { CARD_FIELD_CONTROL_CLASS, CardField } from "@/shared/ui/card-field";
 import { FieldCard } from "@/shared/ui/field-card";
 import { Field, FieldLabel } from "@/shared/ui/field";
-import { AlertCircleIcon, CheckCircleIcon } from "@/shared/ui/icons";
+import { AlertCircleIcon } from "@/shared/ui/icons";
 import { InputGroupInput } from "@/shared/ui/input-group";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import { Spinner } from "@/shared/ui/spinner";
@@ -23,7 +23,7 @@ import { cn } from "@/shared/lib/cn";
 // screen only places it.
 export const CreateUserForm = () => {
   const t = useTranslations("screens.adminNewUser");
-  const { control, onSubmit, hasErrors, isPending, formError, createdEmail } = useCreateUser();
+  const { control, onSubmit, hasErrors, isPending, formError } = useCreateUser();
 
   return (
     <form
@@ -142,25 +142,12 @@ export const CreateUserForm = () => {
         )}
       />
 
-      {/* Both answers sit here, right above the button that produced
-          them, and look the same apart from the colour and the mark: the
-          success plate used to be at the top of the form, which meant the
-          form could answer in two different places depending on how it
-          went. A light plate with dark red text rather than InlineError,
-          which is built for the deep green background. The form does not
-          disappear on success — issuing several accounts in a row is the
-          normal case, and it has already emptied itself. */}
-      {createdEmail
-        ? (
-            <Alert className="rounded-xl border-0 px-4 py-3.5 text-primary shadow-card">
-              <CheckCircleIcon className="size-5" />
-              <AlertDescription className="text-caption font-540 text-ink-muted">
-                {t("created", { email: createdEmail })}
-              </AlertDescription>
-            </Alert>
-          )
-        : null}
-
+      {/* Only what the admin has to act on stays on the screen: a taken
+          address, too many attempts, a role that did not apply. Success
+          is a toast (the hook raises it) — it has nothing to be acted on
+          and should not sit above the fields while the next account is
+          typed. A light plate with dark red text rather than InlineError,
+          which is built for the deep green background. */}
       {formError
         ? (
             <Alert variant="destructive" className="rounded-xl border-0 px-4 py-3.5 shadow-card">

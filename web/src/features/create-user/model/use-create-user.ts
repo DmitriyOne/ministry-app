@@ -61,13 +61,23 @@ export const useCreateUser = () => {
     }
   }, [state, t]);
 
-  // Emptied only on success, and deliberately: issuing several accounts in
-  // a row is the normal case, and a form still holding the previous
-  // person's password is both confusing and a way to create a duplicate by
-  // pressing the button twice.
+  // Success is a toast, like every other answer that is not about a
+  // field: it names the account and goes away on its own, where a plate
+  // under the form would sit there while the admin types the next one.
+  //
+  // Emptying the form is deliberate too: issuing several accounts in a
+  // row is the normal case, and a form still holding the previous
+  // person's password is both confusing and a way to create a duplicate
+  // by pressing the button twice.
   useEffect(() => {
-    if (state.status === "success") reset();
-  }, [state, reset]);
+    if (state.status !== "success") return;
+
+    if (state.createdEmail) {
+      showToast({ message: t("created", { email: state.createdEmail }), tone: "positive" });
+    }
+
+    reset();
+  }, [state, reset, t]);
 
   return {
     control,
@@ -75,6 +85,5 @@ export const useCreateUser = () => {
     hasErrors: Object.keys(errors).length > 0,
     isPending,
     formError: state.status === "error" ? state.formError : undefined,
-    createdEmail: state.status === "success" ? state.createdEmail : undefined,
   };
 };
