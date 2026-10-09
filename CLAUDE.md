@@ -63,38 +63,35 @@ CSS-оверлея» и раздела «Ловушка: `@layer` и специ�
 ```
 ministry-app/
 ├─ web/                          Next.js
-│  ├─ proxy.ts                   Классифицирует User-Agent (ADR 0016) и
-│  │                             перенаправляет (redirect 307, адрес
-│  │                             МЕНЯЕТСЯ — ADR 0017, раздел "redirect
-│  │                             вместо rewrite") заблокированные
-│  │                             устройства на /access/*; на /day
-│  │                             переключает /day ↔ /soon по LAUNCH_MODE
-│  │                             (там — по-прежнему rewrite, адрес не
-│  │                             меняется). "Установлено ли приложение"
+│  ├─ proxy.ts                   Два щита подряд. Классифицирует
+│  │                             User-Agent (ADR 0016) и перенаправляет
+│  │                             (redirect 307, адрес МЕНЯЕТСЯ — ADR
+│  │                             0017) заблокированные устройства на
+│  │                             /access/*; затем читает сессию
+│  │                             (getClaims, ADR 0044) и применяет
+│  │                             resolveGate — /login, /day или /profile.
+│  │                             "Установлено ли приложение"
 │  │                             (display-mode) решает клиент —
 │  │                             LaunchGate (ADR 0017/0019/0028)
 │  ├─ app/                       Next App Router — тонкие роуты,
-│  │                             реэкспортирующие экраны из src/pages:
-│  │                             /day (приложение), /soon (Coming soon),
-│  │                             /install (установка), /about (об
-│  │                             приложении — ADR 0029), /privacy
-│  │                             (уведомление о конфиденциальности и
-│  │                             cookies — ADR 0031), /access/* —
+│  │                             реэкспортирующие экраны из src/pages.
+│  │                             Две route group'ы, обе только про
+│  │                             layout (адреса не меняют):
+│  │                             app/(with-bottom-nav)/ — /day,
+│  │                             /calendar, /month, /year, /profile,
+│  │                             /admin/users/new, его layout.tsx даёт
+│  │                             BottomNav и резервирует место под
+│  │                             панель; app/(with-footer)/ — только
+│  │                             /soon и /install, его layout.tsx даёт
+│  │                             ScreenFooter ("About", "Privacy &
+│  │                             cookies") — группа сужена владельцем
+│  │                             (ADR 0045, обновление). Вне групп: /
+│  │                             (редирект на /day), /login,
+│  │                             /forgot-password, /about (ADR 0029),
+│  │                             /privacy (ADR 0031), /access/* —
 │  │                             заглушки устройства (служебные витрины
 │  │                             /styleguide и /components удалены — см.
-│  │                             ADR 0011/0012); app/(with-footer)/ —
-│  │                             route group (адрес не меняется), общий
-│  │                             layout.tsx добавляет ScreenFooter
-│  │                             ("About", "Privacy & cookies") к /, /day,
-│  │                             /soon, /install, /about, /privacy —
-│  │                             все, кроме /access/* (ADR 0029/0031,
-│  │                             обновление: /about и /privacy теперь
-│  │                             внутри группы, их собственная ссылка в
-│  │                             футере рендерится активной — жирной и
-│  │                             подчёркнутой, с aria-current="page");
-│  │                             /access/* — вне группы, без футера (на
-│  │                             эти экраны всё равно никого не пускают,
-│  │                             ADR 0016); никакой логики доступа в
+│  │                             ADR 0011/0012); никакой логики доступа в
 │  │                             layout нет —
 │  │                             всё решает proxy.ts; not-found.tsx/
 │  │                             error.tsx/global-error.tsx — 404/500
@@ -162,7 +159,12 @@ ministry-app/
 │  │  │                          NetworkGate; ui/ — только вёрстка, повтор проверки
 │  │  │                          приходит пропом `onRetry`), not-found, server-error
 │  │  │                          (styleguide,
-│  │  │                          components удалены — ADR 0011/0012)
+│  │  │                          components удалены — ADR 0011/0012);
+│  │  │                          v2: login (ADR 0043), forgot-password,
+│  │  │                          calendar/month/year (заглушки с одним
+│  │  │                          заголовком), profile (имя, роль, выход
+│  │  │                          — ADR 0044), admin-new-user (создание
+│  │  │                          аккаунта, только для роли admin)
 │  │  ├─ widgets/                install-sheet (панель установки),
 │  │  │                          waitlist-form (форма вайтлиста) — ADR
 │  │  │                          0018; screen-footer (ScreenFooter —
@@ -174,13 +176,22 @@ ministry-app/
 │  │  │                          единственный клиентский лист внутри
 │  │  │                          (usePathname, подсвечивает ссылку на
 │  │  │                          текущую страницу активной — ADR
-│  │  │                          0029/0030/0031, обновление). bottom-nav
-│  │  │                          удалён в ADR 0016, вернётся с реальными
-│  │  │                          экранами навигации; sign-in-form (форма
-│  │  │                          входа — связывает useSignIn из
-│  │  │                          features/sign-in с полями shared/ui,
-│  │  │                          единственный клиентский остров на
-│  │  │                          /login — ADR 0049, обновление)
+│  │  │                          0029/0030/0031, обновление — сейчас не
+│  │  │                          срабатывает ни на одном экране, см.
+│  │  │                          раздел про группы маршрутов);
+│  │  │                          bottom-nav (стеклянная панель из
+│  │  │                          menu.html: BottomNav серверный,
+│  │  │                          BottomNavItem — единственный клиентский
+│  │  │                          лист, model/nav-items.ts — порядок
+│  │  │                          пунктов, model/is-nav-item-current.ts —
+│  │  │                          сравнение с тестами; ADR 0012,
+│  │  │                          обновление). Формы v2 — тоже виджеты, по
+│  │  │                          образцу waitlist-form: sign-in-form,
+│  │  │                          password-reset-form, create-user-form —
+│  │  │                          каждая связывает хук своей фичи с полями
+│  │  │                          shared/ui и является единственным
+│  │  │                          клиентским островом на своём экране
+│  │  │                          (ADR 0049, обновление)
 │  │  ├─ features/                launch-gate (сценарий "определить
 │  │  │                          способ запуска и решить, куда отправить
 │  │  │                          человека" — LaunchGate/LaunchLoading/
@@ -209,8 +220,23 @@ ministry-app/
 │  │  │                          вайтлист: ui/EnableWaitlistNotifications, lib/
 │  │  │                          subscribe-to-push.ts, Server Action
 │  │  │                          api/register-push-subscription-action.ts со своим
-│  │  │                          лимитером; зависимость `web-push`)
-│  │  ├─ entities/                пока пусто (.gitkeep)
+│  │  │                          лимитером; зависимость `web-push`).
+│  │  │                          v2: sign-in (схема, Server Action,
+│  │  │                          классификация ошибок auth, лимитер — 3
+│  │  │                          неверных пароля на IP за 15 минут),
+│  │  │                          request-password-reset (пока пишет
+│  │  │                          запрос в лог, ADR 0043), sign-out
+│  │  │                          (Server Action + форма, без "use
+│  │  │                          client"), welcome-toast (приветствие по
+│  │  │                          имени после входа), create-user
+│  │  │                          (создание аккаунта админским клиентом;
+│  │  │                          действие само проверяет роль)
+│  │  ├─ entities/                session (getSessionClaims — кто вошёл,
+│  │  │                          для серверных компонентов; getClaims, а
+│  │  │                          не getUser — ADR 0044),
+│  │  │                          password-field (поле пароля с
+│  │  │                          кнопкой-глазком на @shadcn/input-group —
+│  │  │                          ADR 0049)
 │  │  └─ shared/
 │  │      ├─ ui/                 shadcn/ui компоненты, плюс TextLink
 │  │      │                      (тихая ссылка, клиентская навигация как
@@ -224,8 +250,23 @@ ministry-app/
 │  │      │                      (вёрстка numbered-document экрана
 │  │      │                      privacy — чип-якоря, раздел с номером,
 │  │      │                      таблица cookies с пилюлей статуса, без
-│  │      │                      домена — ADR 0031)
+│  │      │                      домена — ADR 0031); из реестра shadcn
+│  │      │                      добавлены sonner (тосты — ADR 0046),
+│  │      │                      alert (светлая плашка со знаком),
+│  │      │                      input-group, radio-group — у всех
+│  │      │                      вендорных файлов кольца фокуса/ошибки
+│  │      │                      вырезаны в исходнике (ADR 0013)
 │  │      ├─ lib/access/          classifyAccess + тесты (vitest) — ADR 0016
+│  │      ├─ lib/auth/            parseSessionClaims (zod-разбор claims),
+│  │      │                       hasRole, resolveGate (весь гейт v2 как
+│  │      │                       чистая функция — ADR 0044/0045),
+│  │      │                       createAccountPasswordSchema (правила
+│  │      │                       пароля, общие для входа и создания
+│  │      │                       аккаунта); всё с тестами
+│  │      ├─ lib/display-name/    getInitials — буквы вместо аватара
+│  │      │                       (+ тесты)
+│  │      ├─ lib/welcome-flag/    одноразовый флаг «поздороваться после
+│  │      │                       входа», читается и сразу стирается
 │  │      ├─ lib/metadata/        buildPageMetadata — общий помощник
 │  │      │                       generateMetadata экранов (title/
 │  │      │                       description/openGraph/robots) и
@@ -237,7 +278,11 @@ ministry-app/
 │  │      │                       fullscreen + navigator.standalone), только на
 │  │      │                       клиенте; им пользуются LaunchGate и
 │  │      │                       features/push-notifications
-│  │      ├─ lib/email/           isDisposableEmail — проверка домена на
+│  │      ├─ lib/email/           createAccountEmailSchema — что в этом
+│  │      │                       проекте считается адресом аккаунта
+│  │      │                       (домен jw.fenko.dev, печатаемый ASCII),
+│  │      │                       общая для формы входа и сброса пароля;
+│  │      │                       isDisposableEmail — проверка домена на
 │  │      │                       одноразовую почту/зарезервированные домены (список
 │  │      │                       в disposable-email-domains.ts), используется схемой
 │  │      │                       вайтлиста + тест (vitest)
@@ -253,14 +298,19 @@ ministry-app/
 │  │      │                       routes.ts — единственный источник
 │  │      │                       всех путей приложения (`/`, `/day`,
 │  │      │                       `/soon`, `/install`, `/about`,
-│  │      │                       `/privacy`, `/access/*`), `as const` +
-│  │      │                       узкий тип `AppRoute` — ADR 0030/0031;
+│  │      │                       `/privacy`, `/login`,
+│  │      │                       `/forgot-password`, `/calendar`,
+│  │      │                       `/month`, `/year`, `/profile`,
+│  │      │                       `/admin/users/new`, `/access/*`),
+│  │      │                       `as const` + узкий тип `AppRoute` —
+│  │      │                       ADR 0030/0031;
 │  │      │                       api-routes.ts — пути HTTP-эндпоинтов
 │  │      │                       (WEB_API_ROUTES — собственные Route
-│  │      │                       Handler'ы, SB_API_ROUTES — Edge
-│  │      │                       Functions); здесь, а не в shared/api,
-│  │      │                       потому что у констант нет среды
-│  │      │                       выполнения — ADR 0034
+│  │      │                       Handler'ы; SB_API_ROUTES удалён вместе
+│  │      │                       с пробником на /day — его единственным
+│  │      │                       потребителем); здесь, а не в
+│  │      │                       shared/api, потому что у констант нет
+│  │      │                       среды выполнения — ADR 0034
 │  │      └─ api/supabase/        supabase клиенты: client.ts (браузер),
 │  │                              server.ts (@supabase/ssr, cookies),
 │  │                              admin.ts (секретный ключ, обходит RLS,
@@ -283,16 +333,25 @@ ministry-app/
 │                                 подтянуть)
 ├─ backend/
 │  ├─ supabase/                  Supabase CLI проект: config.toml,
-│  │                             migrations/ (waitlist_signups + функция
-│  │                             join_waitlist — ADR 0033; таблица закрыта
-│  │                             полностью: RLS включён, политик нет,
-│  │                             grants отозваны, наружу выдан только
-│  │                             execute на функцию роли anon),
+│  │                             migrations/: waitlist_signups + функция
+│  │                             join_waitlist — ADR 0033 (таблица
+│  │                             закрыта полностью: RLS включён, политик
+│  │                             нет, grants отозваны, наружу выдан
+│  │                             только execute на функцию роли anon);
+│  │                             v2 — profiles + user_roles + триггер
+│  │                             handle_new_user (ADR 0043),
+│  │                             custom_access_token_hook (роль в токене
+│  │                             — ADR 0044), deleted_at во всех
+│  │                             таблицах (ADR 0047), явные deny-all
+│  │                             политики (ADR 0048).
 │  │                             tests/ (pgTAP, `pnpm db:test` — проверяют
 │  │                             именно модель доступа: что anon может
 │  │                             записаться через функцию и не может
-│  │                             прочитать таблицу), functions/health,
-│  │                             seed.sql
+│  │                             прочитать таблицу, что свой профиль
+│  │                             читается, а чужой нет), functions/health,
+│  │                             seed.sql — два тестовых аккаунта
+│  │                             (admin@ и user@jw.fenko.dev, пароль
+│  │                             TestPass1!), только для локальной БД
 │  └─ package.json               supabase CLI как devDependency, скрипты db:*/functions:deploy
 ├─ envs/                         *.local.env.example — шаблоны переменных окружения
 ├─ docs/decisions/                ADR (см. ниже)
@@ -449,20 +508,36 @@ Aria `Link`'s `render`-проп) — не обычной перезагрузк�
   `Controller`, не `register` (наши поля — не голый `<input>`). Схема,
   `useForm` и тексты ошибок конкретной формы — в слайсе экрана/фичи, не в
   `shared/ui`. Ошибки — **пер-полевые**, под каждым контролом, не общим
-  списком над формой: `FieldRow`/`PasswordField` принимают проп
+  списком над формой: `CardField` (строка внутри `FieldCard`) и
+  `PasswordField` (`entities/password-field`) принимают проп
   `errors?: {message?: string}[]` (напрямую подходит
   `fieldState.error && [fieldState.error]` из `Controller`) и сами
   рендерят штатный shadcn `FieldError` (`shared/ui/field.tsx`: сворачивает
   несколько ошибок в `<ul className="list-disc">/<li>`) под контролом со
   своим `id` (`useId`), связанным через `aria-describedby`. `invalid`
   выводится из `errors` внутри компонента, отдельным пропом наружу не
-  передаётся. Состояние ошибки визуально — рамка **и** кольцо
-  (`data-invalid` + токены `--negative`/`--ring`, см. ADR 0013) в одном
-  месте (обёртка контрола), не дублируется на самом `<input>`. Кнопка
+  передаётся. **Колец нет нигде** — ни при фокусе, ни при ошибке:
+  владелец их убрал, и они вырезаны в исходниках `input.tsx`,
+  `input-group.tsx`, `radio-group.tsx`, а не перекрыты сверху (ADR 0013,
+  обновление 2026-10-06). Ошибка внутри карточки полей видна красным
+  текстом самого поля и сообщением под ним; вендорный файл из реестра
+  shadcn — первое место, куда кольца возвращаются, при каждом
+  `shadcn add` это надо проверять. Кнопка
   отправки — `isDisabled={Object.keys(formState.errors).length > 0}`
   (react-aria `isDisabled`, не `disabled`): до первого submit форма
   невалидирована, ошибок нет — кнопка активна; после первого submit
   блокируется, пока есть хоть одна ошибка.
+- **Один `<form>` — один виджет.** Блок, связывающий хук фичи с полями
+  `shared/ui`, живёт в `widgets/` (`waitlist-form`, `sign-in-form`,
+  `password-reset-form`, `create-user-form`), а экран в `pages/` его
+  только размещает и остаётся серверным компонентом с
+  `getTranslations`. Разметка формы прямо в экране — повод перенести, а
+  не дополнять (ADR 0049, обновление).
+- **Что показывать тостом, а что в форме.** На экране остаётся только
+  то, с чем человеку надо что-то сделать: занятый адрес, превышение
+  лимита, неверные креды. Недоступность бэкенда и успех — тосты
+  (`showToast` из `shared/ui/sonner`), они ничего не требуют и уходят
+  сами (ADR 0046).
 - **Автозаполнение не красится браузером.** Одно правило в
   `globals.css` (`input:is(:autofill, :-webkit-autofill)`) закрывает
   браузерный фон внутренней тенью и задаёт `-webkit-text-fill-color` —
@@ -480,8 +555,14 @@ Aria `Link`'s `render`-проп) — не обычной перезагрузк�
 - **Заголовки** — один `h1` на экран/страницу, без пропуска уровней;
   компоненты с текстом заголовка (`TextBlock`, `HeroCard`, `ListRow`,
   `SectionLabel`) принимают `as`/`titleAs` для уровня.
-- **Лендмарки** — ровно один `<main>` на экран (его даёт каркас —
-  `CenteredState`/`TopAndBottomState`/`ScrollState`), навигация — `<header>`.
+- **Лендмарки** — ровно один `<main>` на экран, навигация — `<header>`.
+  Каркас в `shared/ui` сейчас **один** — `CenteredState` (он и даёт
+  `<main>`); `TopAndBottomState` и `ScrollState` числились здесь, но в
+  `web/src/shared/ui/` их нет и никогда не было — все экраны собраны на
+  `CenteredState`, при необходимости с `className`. Экран с шапкой
+  (`/about`, `/privacy`, `/admin/users/new`) ставит `<header>` **рядом**
+  с `<main>`, а не внутрь него, поэтому фон и высота экрана уезжают на
+  обёртку, а `CenteredState` получает `fill`.
 - **Декоративные иконки и знаки** — `aria-hidden="true"` по умолчанию
   (`AppMark`, иконки строк списка), если рядом есть видимый текст с тем
   же смыслом.
@@ -504,60 +585,88 @@ Aria `Link`'s `render`-проп) — не обычной перезагрузк�
   повторить вручную; вендорный файл проверяется как обычный код
   (`pnpm lint`/`pnpm typecheck`), не построчным diff'ом с апстримом.
 
-## Доступ v1 — только iPhone в Safari, экраны — маршруты
+## Доступ v2 — iPhone в Safari, установленное приложение, сессия
 
-ADR 0016 (заменяет ADR 0015) + ADR 0017 (уточняет 0016 — экраны стали
-настоящими маршрутами вместо компонента в layout). Восемь состояний, у
-каждого свой адрес:
+Три щита подряд, в этом порядке, и каждый отвечает за своё. Порядок
+несущий: устройство проверяется до сессии, поэтому с компьютера нельзя
+даже увидеть экран входа.
+
+1. **Устройство** — `web/proxy.ts`, чистая функция `classifyAccess()`
+   по `User-Agent` (ADR 0016/0017). Все, кроме iPhone Safari, уходят на
+   `/access/*`.
+2. **Сессия** — тот же `proxy.ts`, чистая функция `resolveGate()`
+   (`shared/lib/auth`, покрыта тестами). Читает claims из cookie через
+   `getClaims()` (ADR 0044) — локальная проверка подписи, без обращения
+   к auth-серверу.
+3. **Запуск со значка** — только клиент, `LaunchGate` (ADR
+   0017/0019/0028). Сервер `display-mode` не видит.
+
+`LAUNCH_MODE` удалён (ADR 0045): переключателя «coming-soon / app»
+больше нет, `/soon` стал публичным лендингом, а что показать на `/day`,
+решает наличие сессии.
 
 | Адрес | Экран | Кто видит |
 |---|---|---|
-| `/day` | приложение | установленное приложение, `LAUNCH_MODE === "app"` |
-| `/soon` | Coming soon | установленное приложение, `LAUNCH_MODE === "coming-soon"` |
+| `/` | редирект на `/day` | — |
+| `/day` | экран дня (пока заглушка с заголовком) | сессия есть |
+| `/calendar`, `/month`, `/year` | заглушки с заголовком | сессия есть |
+| `/profile` | имя, роль, ссылки, выход (ADR 0044) | сессия есть |
+| `/admin/users/new` | создание аккаунта | сессия есть **и** роль `admin` |
+| `/login` | вход по email и паролю (ADR 0043) | сессии нет; с сессией — редирект на `/day` |
+| `/forgot-password` | запрос сброса пароля | то же, что `/login` |
+| `/soon` | публичный лендинг с вайтлистом | кто угодно, в том числе в обычной вкладке |
 | `/install` | установка — bottom sheet с каруселью из 5 шагов | iPhone Safari, обычный браузер |
-| `/about` | об приложении — экраны и возможности (ADR 0029) | iPhone Safari, и с установленным приложением (ссылка из футера), и без него — через `APP_ROUTES` в `proxy.ts`, но НЕ через `LaunchGate` (не требует запуска со значка) |
-| `/privacy` | уведомление о конфиденциальности и cookies (ADR 0031) | то же, что `/about` — iPhone Safari, и с установленным приложением (ссылка из футера), и без него — через `APP_ROUTES` в `proxy.ts`, но НЕ через `LaunchGate` |
-| `/access/ios-browser` | «Доступно только в Safari» (+ «Скопировать ссылку», если доступен Clipboard API) | iPhone, не Safari (Chrome/Firefox/Edge/Opera/Яндекс на iOS, встроенные браузеры мессенджеров) |
+| `/about` | об приложении (ADR 0029) | кто угодно на iPhone Safari, в том числе без сессии |
+| `/privacy` | конфиденциальность и cookies (ADR 0031) | то же, что `/about` |
+| `/access/ios-browser` | «Доступно только в Safari» | iPhone, не Safari |
 | `/access/android` | «Приложение доступно только для iOS» | любой Android |
-| `/access/desktop` | «Доступно только с телефона» | десктоп, ноутбук, любой планшет (включая iPad, в т.ч. с UA macOS) |
+| `/access/desktop` | «Доступно только с телефона» | десктоп, ноутбук, любой планшет (включая iPad с UA macOS) |
 | `DEV_MODE=true` | всё открыто, все адреса выше — напрямую | — |
 
-Футер (`ScreenFooter`, `widgets/screen-footer/`) показан на всех семи
-экранах внутри `app/(with-footer)/` — `/`, `/day`, `/soon`, `/install`,
-`/about`, `/privacy` — с двумя тихими ссылками, «About» и «Privacy &
-cookies», добавлен общим `layout.tsx` route group `app/(with-footer)/`
-(адрес не меняется), отдельно только от `/access/*` (ADR 0029/0031;
-обновление ADR 0029 — изначально `/about`/`/privacy` были вне группы
-именно потому, что футер со ссылкой на страницу, на которой человек уже
-находится, казался странным; пользователь это решение отменил — теперь
-ссылка на текущую страницу показывается, но оформлена как активная:
-жирная и подчёркнутая, с `aria-current="page"`, не скрыта). `ScreenFooter`
-(серверный компонент) рендерит список ссылок из `widgets/screen-footer/
-model/footer-links.ts` (`href` — из `shared/config/routes`, ADR 0030), а
-не хардкодит `<TextLink>` под каждую ссылку — третья ссылка добавится
-правкой этого списка, без изменений в разметке (ADR 0029, обновление;
-ADR 0031 — пример второй такой правки). Активная ссылка определяется на
-клиенте — `widgets/screen-footer/ui/FooterLink.tsx`, единственный
-клиентский лист внутри (`usePathname` из `next/navigation`, точное
-сравнение с `href`, не по префиксу), передаёт результат в `TextLink`
-(`shared/ui/`) двумя независимыми пропами: презентационный `isCurrent`
-(просто добавляет `font-600 text-ink` поверх обычного `font-500
-text-ink-faint` — `TextLink` не знает и не должен знать, что делает
-ссылку активной) и `aria-current="page"` (обычный HTML-атрибут, никакой
-специальной обработки). Ссылка в состоянии покоя теперь подчёркнута
-всегда, не только на hover/focus — иначе активной ссылке не с чем было
-бы контрастировать; фокус обозначен отдельно, `focus-visible:ring-2`.
-Этот же `layout.tsx`, а не каждый экран по отдельности, резервирует
-`min-h-dvh`, чтобы футер помещался в первый экран вместе с содержимым
-без прокрутки — `CenteredState` (`shared/ui/`) на экранах внутри группы
-получает проп `fill`, растягиваясь только на место, оставшееся над
-футером (ADR 0029); `AboutScreen`/`PrivacyScreen` не используют
-`CenteredState` (у них своя разметка), поэтому их корневой `<div>`
-применяет тот же принцип вручную — `flex-1` вместо `min-h-dvh` — так,
-чтобы на длинном содержимом обоих документов (весь текст — один скролл
-документа) колонка росла вместе с контентом и футер оказывался после
-него, в конце страницы, а не перекрывал его и не плавал (ADR 0029,
-обновление).
+Списки путей в `resolveGate` (`shared/lib/auth/resolve-gate.ts`) —
+единственное место, где записано, какой экран чего требует:
+`SESSION_REQUIRED_PATHS`, `SESSION_FORBIDDEN_PATHS` (`/login`,
+`/forgot-password` — с сессией уводят на `/day`) и `ADMIN_PATHS`. Не-админ
+с сессией на админском пути уходит на `/profile`, а **не** на `/login`:
+он аутентифицирован, и `/login` вернул бы его обратно своим же правилом —
+получился бы цикл. Все сочетания закреплены тестами.
+
+**Роль не защищает сама по себе.** Гейт закрывает навигацию, но Server
+Action — отдельная публичная ручка, доступная любому, кто умеет составить
+запрос. Поэтому каждое действие, доступное только админу, проверяет роль
+само (`features/create-user/api/create-user-action.ts` — образец), а
+экран проверяет ещё раз перед отрисовкой. Три проверки, три разные вещи:
+навигация, данные, бессмысленная форма.
+
+### Группы маршрутов и футер
+
+Две route group'ы, обе только про layout — адреса не меняют:
+
+- **`app/(with-bottom-nav)/`** — `/day`, `/calendar`, `/month`, `/year`,
+  `/profile`, `/admin/users/new`. Layout подключает `BottomNav`
+  (`widgets/bottom-nav`) и резервирует место под панель: она `fixed`,
+  вне потока, и сама ничего подвинуть не может.
+- **`app/(with-footer)/`** — только `/soon` и `/install`. Футер
+  (`ScreenFooter`, `widgets/screen-footer/`) с двумя тихими ссылками,
+  «About» и «Privacy & cookies». Раньше группа покрывала и `/`, `/day`,
+  `/about`, `/privacy`; владелец её сузил (ADR 0045, обновление
+  2026-10-08) до экранов, до которых человек доходит **до** входа. Внутри
+  приложения те же ссылки — на `/profile`, а у `/about` и `/privacy` своя
+  кнопка «назад».
+
+`ScreenFooter` (серверный компонент) рендерит список из
+`widgets/screen-footer/model/footer-links.ts`, а не хардкодит `<TextLink>`
+под каждую ссылку — третья добавится правкой списка (ADR 0029/0031).
+Подсветка активной ссылки (`FooterLink`, `usePathname`, `aria-current`)
+сейчас не срабатывает ни на одном экране: `/about` и `/privacy` футера не
+показывают. Код оставлен — он верен и понадобится, как только в футере
+появится ссылка на экран, который футер показывает.
+
+`AboutScreen`/`PrivacyScreen` вне обеих групп, поэтому высоту экрана
+резервируют сами (`min-h-dvh` на корневом `<div>`, `flex-1` на `<main>`
+внутри). Экран внутри группы, наоборот, `min-h-dvh` ставить **не должен**
+— layout уже его поставил, и второй даёт лишнюю прокрутку ровно на
+высоту панели.
 
 Кнопка «назад» на `/about`, `/privacy` (и на любом другом экране,
 который её подключит) — `ScreenBackHeader` из `features/screen-back` (ADR
@@ -594,15 +703,14 @@ https://caniuse.com/mdn-api_navigation_cangoback), `router.back()`
    список — побайтовое совпадение UA с формой настоящего Safari
    (`IOS_SAFARI_UA_PATTERN` в `classify-access.ts`); не совпало —
    `ios-not-safari`, без выяснения, какой это браузер.
-2. Для iPhone Safari на пути `/day` — переключение `/day` ↔ `/soon` по
-   `LAUNCH_MODE` (см. ниже), по-прежнему через `rewrite` (адрес
-   остаётся `/day`) — это безопасно именно для этой пары адресов,
-   потому что `LaunchGate` реагирует на `/day` и `/soon` одинаково (обе
-   есть в списке "экраны приложения"), так что подмена содержимого под
-   неизменным адресом не создаёт того рассинхрона, что был с
-   `/access/*`. Это единственное серверное решение на этом шаге —
-   "запущено со значка или нет" сервер больше не определяет.
-3. `/soon`, `/install`, `/access/*` — обычные страницы, открываются
+2. Для iPhone Safari читает сессию и применяет `resolveGate()` —
+   `redirect` 307 на `/login`, `/day` или `/profile`, смотря чего не
+   хватает. Обновлённые cookie сессии переносятся и на редирект: иначе
+   человека, которому только что обновили токен, выкинул бы тот самый
+   редирект. Никаких `rewrite` здесь больше нет — связка
+   `LAUNCH_MODE` + подмена `/day` ↔ `/soon` удалена вместе с самим
+   `LAUNCH_MODE` (ADR 0045).
+3. `/soon`, `/install`, `/about`, `/privacy`, `/access/*` — открываются
    напрямую чем угодно, что до них дошло (ничего чувствительного,
    гейтить нечем). Служебные витрины `/styleguide` и `/components`
    удалены (см. ADR 0011/0012).
@@ -620,7 +728,11 @@ https://caniuse.com/mdn-api_navigation_cangoback), `router.back()`
 сервере и на клиенте (расхождения при гидратации нет), и только после
 монтирования, в эффекте, `useLaunchGate` читает
 `matchMedia("(display-mode: standalone)")`/`navigator.standalone`,
-решает — на `/`, `/day`, `/soon` без standalone уводит на `/install`
+решает — на экранах приложения (`APP_SCREEN_PATHS` в
+`use-launch-gate.ts`: `/`, `/day`, `/login`, `/forgot-password`,
+`/calendar`, `/month`, `/year`, `/profile`, `/admin/users/new`; `/soon`
+там больше нет — он публичный лендинг, ADR 0045) без standalone уводит
+на `/install`
 через `window.location.replace` (не `next/navigation`, полная навигация
 нужна, чтобы хук смонтировался заново на странице назначения — App
 Router иначе держит корневой layout, а с ним и этот же экземпляр
@@ -664,13 +776,6 @@ launch-noscript-fallback.tsx`) для отключённого JavaScript — н
 предыдущей cookie/`<noscript>`-CSS-схемы, которая могла показать
 статически отрисованный контент немедленно без JS, — осознанно принято,
 подробности в ADR 0019).
-
-**`LAUNCH_MODE`** (`web/src/app/config/launch-mode.ts`,
-`"coming-soon" | "app"`) — единственное место переключения на реальное
-приложение; читает его `web/proxy.ts` (вычисляет `INSTALLED_APP_PATH`
-при импорте). Смена — одна строка. `DEV_MODE=true` обходит `proxy.ts`
-целиком (`if (env.DEV_MODE) return NextResponse.next()`) и показывает
-`/day` напрямую, что бы ни стояло в `LAUNCH_MODE`.
 
 **`DEV_MODE`** (`envs/*.local.env`, схема — `shared/config/env.ts`,
 булево, по умолчанию `false`) отключает **оба** щита сразу — и
@@ -786,8 +891,13 @@ server-error` использует `useTranslations`, не `getTranslations`);
 
 | Адрес | Что видно |
 |---|---|
-| `/day` | экран приложения |
-| `/soon` | Coming soon |
+| `/day` | экран дня (заглушка с заголовком) |
+| `/calendar`, `/month`, `/year` | заглушки с заголовком |
+| `/profile` | имя, роль, ссылки, выход — **нужна сессия**, без неё уводит на `/login` |
+| `/admin/users/new` | создание аккаунта — **нужна сессия и роль admin**, иначе уводит на `/profile` |
+| `/login` | вход по email и паролю |
+| `/forgot-password` | запрос сброса пароля |
+| `/soon` | Coming soon, публичный лендинг |
 | `/install` | экран установки (bottom sheet) |
 | `/about` | экран «О приложении» (ADR 0029) |
 | `/privacy` | экран уведомления о конфиденциальности и cookies (ADR 0031) |
@@ -795,6 +905,19 @@ server-error` использует `useTranslations`, не `getTranslations`);
 | `/access/android` | заглушка «только iOS» |
 | `/access/ios-browser` | заглушка «только Safari» |
 | любой несуществующий адрес (например `/qwerty`), а также `/styleguide`, `/components` (удалены — ADR 0011/0012) | 404 |
+
+**`DEV_MODE=true` снимает щит устройства и щит запуска со значка, но
+НЕ сессию.** `proxy.ts` при нём пропускает всё, однако `/profile` и
+`/admin/users/new` читают сессию сами и без неё уводят на `/login` — так
+и задумано: экран, читающий личность, не должен зависеть от того, что
+проверку выше не сломали. Чтобы посмотреть их локально, надо войти
+по-настоящему: `pnpm db:reset` зальёт `seed.sql` с двумя аккаунтами
+(`admin@jw.fenko.dev` и `user@jw.fenko.dev`, пароль `TestPass1!`).
+
+Проверить отказ бэкенда: `pnpm db:stop` и попробовать войти — должен
+появиться тост «Couldn't reach the server», а не ошибка поля и не экран
+500. Готовая кнопка для того же — на `/sentry-example-error`, проба «6.
+Backend unavailable».
 
 500 напрямую адресом не открыть (это не страница, а обработчик реальной
 ошибки рендера) — проверяется временно брошенным исключением в коде
@@ -840,11 +963,11 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
 |---|---|
 | `pnpm dev` | Поднимает Supabase (`db:start`), ждёт готовности (`wait-on` на health Supabase), затем `next dev` (Turbopack) с env из `envs/web.local.env` |
 | `pnpm db:start` / `db:stop` / `db:reset` | Обёртки над `supabase start/stop/db reset` в `backend/` |
-| `pnpm db:test` | pgTAP-тесты схемы (`supabase test db`) — модель доступа к `waitlist_signups` (ADR 0033). Только локальная БД |
+| `pnpm db:test` | pgTAP-тесты схемы (`supabase test db`) — модель доступа: `waitlist_signups` (ADR 0033), `profiles`/`user_roles` (ADR 0043), хук токена (ADR 0044), soft-delete (ADR 0047). Только локальная БД |
 | `pnpm db:types` | Генерация TS-типов из локальной БД в `web/src/shared/api/supabase/database.types.ts` |
 | `pnpm lint` | ESLint + `steiger` (проверка границ FSD) в `web/` |
 | `pnpm typecheck` | `tsc --noEmit` в `web/` |
-| `pnpm test` | `vitest run` в `web/` — `classifyAccess` (ADR 0016), `buildRobots`/`buildSitemap` (ADR 0032), `mapJoinWaitlistRow` (ADR 0033), `isDisposableEmail` (`shared/lib/email`) — пять файлов `*.test.ts` в `web/src` |
+| `pnpm test` | `vitest run` в `web/` — чистые функции: `classifyAccess` (ADR 0016), `resolveGate`/`hasRole`/`parseSessionClaims` (ADR 0044/0045), схема входа, нейтральность ответа сброса пароля (ADR 0043), лимитер, `getInitials`, `buildRobots`/`buildSitemap`, `isDisposableEmail` и другие. Файлы лежат рядом с кодом (`*.test.ts` в `web/src`), число растёт — точный список даёт сам прогон |
 | `pnpm build` | `next build` (Turbopack) в `web/` (с env из `envs/web.local.env`) |
 | `pnpm db:login` / `db:link` / `db:push` / `functions:deploy` | Деплой в облачный Supabase — см. раздел ниже |
 | `pnpm push:launch` | Рассылает уведомление о запуске всем подписчикам из `push_subscriptions`. Запускать только из корня: env лежит в `envs/backend.local.env`, а скрипт — в `backend/`, и связать их может лишь корневой `package.json` (как `wait:supabase`). Пара ключей VAPID в `envs/web.local.env` и `envs/backend.local.env` должна быть **одной и той же**, иначе push-служба отвергнет отправку |
@@ -872,6 +995,18 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
   от него — отдельное решение с отдельным ADR, не правка миграции
   «заодно». Модель доступа проверяется pgTAP-тестами
   (`backend/supabase/tests/`, `pnpm db:test`), а не на глаз.
+- **`profiles` — осознанное исключение из правила выше (ADR 0043).**
+  Это единственная таблица с настоящими RLS-политиками для
+  `authenticated`: человек читает свою строку и правит в ней ровно
+  `display_name`. Причина — у неё есть владелец, и `auth.uid()` его
+  называет, тогда как у `waitlist_signups` владельца нет и «своих» строк
+  там не бывает. Граница исключения: политики ограничивают строки, но не
+  столбцы, поэтому право на запись сужено грантом
+  `grant update (display_name)` — без него человек переписал бы себе
+  `created_at` (проверено живой мутацией, ADR 0043). `user_roles` под
+  исключение **не** попадает: роль не должна зависеть от того, кто её
+  читает, таблица закрыта полностью, и наружу роль едет только в токене
+  (ADR 0044).
 - **Строки не удаляются: везде soft-delete (ADR 0047).** Каждая таблица
   получает `deleted_at timestamptz` (без значения по умолчанию — `null`
   означает «живая»). `delete` из приложения не делается: у `profiles`
@@ -961,6 +1096,33 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
    `backend/supabase/migrations/` к привязанному облачному проекту.
 4. `pnpm functions:deploy` — деплоит `backend/supabase/functions/*`
    (включая `health`) в облачный проект.
+
+### Что в облаке надо включить руками (миграциями не ставится)
+
+Два шага живут в настройках проекта Supabase, а не в SQL, и после
+создания нового окружения их легко забыть — приложение тогда собирается
+и даже работает, но ведёт себя не так, как задумано:
+
+1. **Хук токена.** Authentication → Hooks → Customize Access Token
+   (JWT) Claims → выбрать `public.custom_access_token_hook` и включить.
+   Без него роль в токен не попадает, `parseSessionClaims` подставляет
+   `user` всем (намеренно — наименьшие права, ADR 0044), и админские
+   экраны не откроются даже админу.
+2. **Регистрация выключена.** Authentication → Sign In / Providers →
+   Email → Allow new users to sign up: **выключить**. Аккаунты выдаёт
+   владелец (решение D1); при включённой регистрации любой желающий
+   заведёт себе аккаунт сам.
+
+Полезно знать: подписаны ли токены асимметрично (ES256 c `kid`) —
+Authentication → JWT Keys. От этого зависит, проверяет ли `getClaims()`
+подпись локально или ходит на auth-сервер (ADR 0044); на работу это не
+влияет, на число запросов — да.
+
+Первый админ в проде заводится не через приложение: экран создания
+аккаунтов сам требует роль `admin`. Порядок — в ADR 0044 (создать
+пользователя в Studio, затем `update public.user_roles set role =
+'admin' …`, затем выйти и войти заново, чтобы роль попала в новый
+токен).
 
 ---
 

@@ -19,6 +19,7 @@ const APP_SCREEN_PATHS: string[] = [
   routes.month,
   routes.year,
   routes.profile,
+  routes.adminNewUser,
 ];
 const INSTALL_PATH = routes.install;
 const APP_ENTRY_PATH = routes.day;
