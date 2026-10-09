@@ -28,7 +28,13 @@ export const useCreateUser = () => {
     formState: { errors },
   } = useForm<CreateUserFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", displayName: "", password: "", role: DEFAULT_APP_ROLE },
+    defaultValues: {
+      email: "",
+      displayName: "",
+      password: "",
+      passwordConfirm: "",
+      role: DEFAULT_APP_ROLE,
+    },
     mode: "onSubmit",
     reValidateMode: "onChange",
   });
@@ -38,7 +44,7 @@ export const useCreateUser = () => {
   useEffect(() => {
     if (state.status !== "error" || !state.fieldErrors) return;
 
-    for (const field of ["email", "displayName", "password"] as const) {
+    for (const field of ["email", "displayName", "password", "passwordConfirm"] as const) {
       const message = state.fieldErrors[field];
 
       if (message) setError(field, { type: "server", message });

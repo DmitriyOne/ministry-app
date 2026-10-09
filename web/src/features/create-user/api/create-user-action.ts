@@ -50,7 +50,8 @@ export const createUser = async (
   const result = createCreateUserSchema(t).safeParse(values);
 
   if (!result.success) {
-    const { email, displayName, password } = z.flattenError(result.error).fieldErrors;
+    const { email, displayName, password, passwordConfirm }
+      = z.flattenError(result.error).fieldErrors;
 
     return {
       status: "error",
@@ -58,6 +59,7 @@ export const createUser = async (
         email: email?.[0],
         displayName: displayName?.[0],
         password: password?.[0],
+        passwordConfirm: passwordConfirm?.[0],
       },
     };
   }

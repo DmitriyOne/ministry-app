@@ -34,20 +34,6 @@ export const CreateUserForm = () => {
         onSubmit();
       }}
     >
-      {/* Stays above the form rather than replacing it: issuing several
-          accounts in a row is the normal case, and the form has already
-          emptied itself. */}
-      {createdEmail
-        ? (
-            <Alert className="rounded-xl border-0 px-4 py-3.5 text-primary shadow-card">
-              <CheckCircleIcon className="size-5" />
-              <AlertDescription className="text-caption font-540 text-ink-muted">
-                {t("created", { email: createdEmail })}
-              </AlertDescription>
-            </Alert>
-          )
-        : null}
-
       <FieldCard>
         <Controller
           name="displayName"
@@ -108,6 +94,19 @@ export const CreateUserForm = () => {
             />
           )}
         />
+        <Controller
+          name="passwordConfirm"
+          control={control}
+          render={({ field, fieldState }) => (
+            <PasswordField
+              {...field}
+              label={t("passwordConfirmLabel")}
+              placeholder={t("passwordConfirmPlaceholder")}
+              autoComplete="new-password"
+              errors={fieldState.error && [fieldState.error]}
+            />
+          )}
+        />
       </FieldCard>
 
       {/* The registry's own pattern for this control: the radio and its
@@ -143,9 +142,25 @@ export const CreateUserForm = () => {
         )}
       />
 
-      {/* A light plate with dark red text, the same shape as the success
-          one — InlineError is built for the deep green background and
-          would be wrong on this warm one. */}
+      {/* Both answers sit here, right above the button that produced
+          them, and look the same apart from the colour and the mark: the
+          success plate used to be at the top of the form, which meant the
+          form could answer in two different places depending on how it
+          went. A light plate with dark red text rather than InlineError,
+          which is built for the deep green background. The form does not
+          disappear on success — issuing several accounts in a row is the
+          normal case, and it has already emptied itself. */}
+      {createdEmail
+        ? (
+            <Alert className="rounded-xl border-0 px-4 py-3.5 text-primary shadow-card">
+              <CheckCircleIcon className="size-5" />
+              <AlertDescription className="text-caption font-540 text-ink-muted">
+                {t("created", { email: createdEmail })}
+              </AlertDescription>
+            </Alert>
+          )
+        : null}
+
       {formError
         ? (
             <Alert variant="destructive" className="rounded-xl border-0 px-4 py-3.5 shadow-card">

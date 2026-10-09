@@ -7,6 +7,7 @@ export type CreateUserFormValues = {
   email: string;
   displayName: string;
   password: string;
+  passwordConfirm: string;
   role: (typeof APP_ROLES)[number];
 };
 
@@ -35,7 +36,8 @@ type CreateUserTranslator = (
     | "passwordLatinOnly"
     | "passwordNeedsUppercase"
     | "passwordNeedsDigit"
-    | "passwordNeedsSymbol",
+    | "passwordNeedsSymbol"
+    | "passwordMismatch",
 ) => string;
 
 // The admin issues credentials, so this form sets a password rather than
@@ -53,7 +55,20 @@ export const createCreateUserSchema = (t: CreateUserTranslator) =>
       // about a name staying readable in a list, not about storage.
       .max(80, t("nameTooLong")),
     password: createAccountPasswordSchema(t),
+    // Only "is it empty" here; whether the two match is checked below,
+    // once both fields have a value. Repeating the full rule set would
+    // show the same six complaints twice while someone types.
+    passwordConfirm: z.string().min(1, t("passwordRequired")),
     // No message: the control is a pair of radios, so an invalid value
     // means the request did not come from this form at all.
     role: z.enum(APP_ROLES),
-  });
+  })
+  // On the confirmation field, not on the form: the message belongs under
+  // the box the person can fix. The admin types a password they will
+  // then read out to someone else, and a typo in it locks that person out
+  // of an account that otherwise looks fine — which is the whole reason
+  // for the second field.
+    .refine((values) => values.password === values.passwordConfirm, {
+      message: t("passwordMismatch"),
+      path: ["passwordConfirm"],
+    });

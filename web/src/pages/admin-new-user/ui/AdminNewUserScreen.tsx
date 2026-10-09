@@ -27,10 +27,19 @@ export const AdminNewUserScreen = async () => {
   if (!hasRole(claims, "admin")) redirect(routes.profile);
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background text-ink">
+    // flex-1, not min-h-dvh: app/(with-bottom-nav)/layout.tsx already
+    // reserves the viewport height and the room under the bar, and a
+    // second min-h-dvh here adds that room on top of a full screen, so
+    // the page scrolled by exactly the navigation's height for no reason.
+    <div className="flex flex-1 flex-col bg-background text-ink">
+      {/* sticky, like the about and privacy headers: this form is taller
+          than the viewport with the keyboard open, and a back button that
+          scrolls away is a back button you have to go looking for. `top`
+          is the safe-area inset rather than 0, or it would pin itself
+          under the status bar (viewport-fit=cover, ADR 0020). */}
       <ScreenBackHeader
         eyebrow={t("eyebrow")}
-        className="pt-[calc(--spacing(6)+env(safe-area-inset-top))]"
+        className="sticky top-[env(safe-area-inset-top)] z-10 bg-background pt-[calc(--spacing(6)+env(safe-area-inset-top))]"
       />
 
       <CenteredState fill className="items-stretch justify-start gap-6 px-5 pt-2 text-left">

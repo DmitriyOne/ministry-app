@@ -6,11 +6,11 @@ import { SignOutButton } from "@/features/sign-out";
 import { createServerSupabaseClient } from "@/shared/api";
 import { routes } from "@/shared/config";
 import { hasRole } from "@/shared/lib/auth";
+import { getInitials } from "@/shared/lib/display-name";
 import { LinkButton } from "@/shared/ui/button";
 import { CenteredState } from "@/shared/ui/centered-state";
 import { ListCard } from "@/shared/ui/list-card";
 import { ListRow } from "@/shared/ui/list-row";
-import { ProfileIcon } from "@/shared/ui/icons";
 import { TextLink } from "@/shared/ui/text-link";
 import { Title } from "@/shared/ui/title";
 
@@ -32,6 +32,12 @@ export const ProfileScreen = async () => {
   const supabase = await createServerSupabaseClient();
   const { data: profile } = await supabase.from("profiles").select("display_name").maybeSingle();
 
+  const displayName = profile?.display_name ?? "";
+  // Empty when the profile read failed or the name is blank; then the
+  // badge shows nothing rather than a stray letter from a fallback
+  // string, and the row still reads correctly.
+  const initials = getInitials(displayName);
+
   // The only use of the role guard in v2 (ADR 0044): nothing branches on
   // the role, the screen just names it.
   const isAdmin = hasRole(claims, "admin");
@@ -44,8 +50,11 @@ export const ProfileScreen = async () => {
       <ListCard>
         <ListRow
           divided={false}
-          icon={<ProfileIcon size={18} />}
-          title={profile?.display_name ?? t("nameUnknown")}
+          // Letters from the name instead of a generic figure: there are
+          // no uploaded pictures in this app, and one person's badge
+          // should not look like everyone else's.
+          icon={<span className="text-caption font-620 text-ink">{initials}</span>}
+          title={displayName || t("nameUnknown")}
           text={roleLabel}
         />
       </ListCard>
