@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 
 import { DEFAULT_APP_ROLE } from "@/shared/lib/auth";
+import { showToast } from "@/shared/ui/sonner";
 
 import { createUser } from "../api/create-user-action";
 import {
@@ -50,6 +51,15 @@ export const useCreateUser = () => {
       if (message) setError(field, { type: "server", message });
     }
   }, [state, setError]);
+
+  // The backend not answering is not the admin's mistake, so it is a
+  // toast rather than anything inside the form (ADR 0046) — and the form
+  // keeps everything that was typed, ready to be sent again.
+  useEffect(() => {
+    if (state.status === "unavailable") {
+      showToast({ message: t("backendUnavailable"), tone: "negative" });
+    }
+  }, [state, t]);
 
   // Emptied only on success, and deliberately: issuing several accounts in
   // a row is the normal case, and a form still holding the previous

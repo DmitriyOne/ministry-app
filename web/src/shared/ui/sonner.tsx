@@ -17,17 +17,17 @@ export type ToastInput = {
 // dismissToast.
 export type ToastId = string | number;
 
-// Which token colours the icon for each tone. The tone changes nothing else
-// about the toast, the background is bg-hero throughout. Keys are typed as
+// Which token colours the mark for each tone. The tone changes nothing
+// else about the toast: the plate is --card throughout. Keys are typed as
 // ToastTone, so adding a tone without a colour fails typecheck.
+//
+// All three are measured against white, not against the deep green they
+// were first chosen for: --primary is 4.9:1 and --negative 5.6:1, both
+// clear of the 3:1 a non-text graphic needs.
 const TONE_ICON_CLASS = {
-  neutral: "text-hero-foreground",
-  positive: "text-positive-hero",
-  // --negative-hero, not --negative: the latter is terracotta tuned for
-  // light surfaces and lands at 1.73:1 on --hero, under the 3:1 a non-text
-  // graphic needs. The tint is the palette's counterpart for this surface
-  // (5.44:1); inline-error.tsx states the rule.
-  negative: "text-negative-hero",
+  neutral: "text-ink-muted",
+  positive: "text-primary",
+  negative: "text-negative",
 } as const;
 
 const DEFAULT_DURATION_MS = 4000;
@@ -43,11 +43,17 @@ const DEFAULT_DURATION_MS = 4000;
 // styles + full control of the jsx", which is this: the <li> stays a bare
 // positioning box sonner is free to size, and the pill is a child no rule of
 // sonner's reaches.
+//
+// The plate is --card, not the --hero it was first built with. A deep
+// green pill is invisible on a deep green screen, and /login is both the
+// screen most likely to report "the server did not answer" and one of the
+// two painted that colour. White reads on either background, and it makes
+// the toast and the Alert plates one language instead of two.
 const ToastPill = ({ message, tone }: { message: string; tone: ToastTone }) => {
   const Icon = tone === "negative" ? AlertCircleIcon : CheckCircleIcon;
 
   return (
-    <div className="pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-2.5 rounded-xl bg-hero px-4 py-3 text-body font-540 text-hero-foreground shadow-mark-elevated">
+    <div className="pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-2.5 rounded-xl bg-card px-4 py-3 text-body font-540 text-ink shadow-mark-elevated">
       <Icon size={20} className={TONE_ICON_CLASS[tone]} />
       {message}
     </div>

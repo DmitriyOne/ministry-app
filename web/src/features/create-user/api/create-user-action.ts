@@ -88,13 +88,14 @@ export const createUser = async (
     if (error || !data.user) {
       console.warn("[create-user] rejected", { reason: "auth-admin", status: error?.status });
 
-      // 422 is what GoTrue answers for an address that already exists.
-      // Saying so is not a leak here: the person reading it is an admin
-      // who may look the account up anyway.
-      return {
-        status: "error",
-        formError: error?.status === 422 ? t("emailTaken") : t("backendUnavailable"),
-      };
+      // 422 is what GoTrue answers for an address that already exists —
+      // that one is about the form, and saying so is not a leak here: the
+      // person reading it is an admin who may look the account up anyway.
+      // Anything else is the auth server not doing its job, which is not
+      // this form's business to display (ADR 0046).
+      if (error?.status === 422) return { status: "error", formError: t("emailTaken") };
+
+      return { status: "unavailable" };
     }
 
     // The trigger always writes the least privileged role, so an admin is
@@ -128,6 +129,6 @@ export const createUser = async (
       message: error instanceof Error ? redactEmails(error.message) : undefined,
     });
 
-    return { status: "error", formError: t("backendUnavailable") };
+    return { status: "unavailable" };
   }
 };

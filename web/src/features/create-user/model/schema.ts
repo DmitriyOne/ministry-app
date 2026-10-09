@@ -12,7 +12,10 @@ export type CreateUserFormValues = {
 };
 
 export type CreateUserActionState = {
-  status: "idle" | "success" | "error";
+  // "unavailable" is the backend failing to answer (ADR 0046): the UI
+  // shows it as a toast, not as something inside the form — nothing the
+  // admin typed is wrong, and the form keeps every value for the retry.
+  status: "idle" | "success" | "error" | "unavailable";
   fieldErrors?: Partial<Record<keyof CreateUserFormValues, string>>;
   // The whole form's problem: not an admin, too many attempts, the
   // address already taken, or the auth server not answering.
