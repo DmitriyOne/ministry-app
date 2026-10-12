@@ -8,10 +8,9 @@ import { useSignIn } from "@/features/sign-in";
 import { routes } from "@/shared/config";
 import { BodyText } from "@/shared/ui/body-text";
 import { Button, LinkButton } from "@/shared/ui/button";
-import { CARD_FIELD_CONTROL_CLASS, CardField } from "@/shared/ui/card-field";
+import { CardTextField } from "@/shared/ui/card-text-field";
 import { FieldCard } from "@/shared/ui/field-card";
 import { InlineError } from "@/shared/ui/inline-error";
-import { InputGroupInput } from "@/shared/ui/input-group";
 import { Spinner } from "@/shared/ui/spinner";
 
 // Same split as widgets/waitlist-form: the block that wires a feature's
@@ -37,21 +36,15 @@ export const SignInForm = () => {
           name="email"
           control={control}
           render={({ field, fieldState }) => (
-            <CardField label={t("emailLabel")} errors={fieldState.error && [fieldState.error]}>
-              {({ id, describedBy, isInvalid }) => (
-                <InputGroupInput
-                  {...field}
-                  id={id}
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  placeholder={t("emailPlaceholder")}
-                  aria-invalid={isInvalid || undefined}
-                  aria-describedby={describedBy}
-                  className={CARD_FIELD_CONTROL_CLASS}
-                />
-              )}
-            </CardField>
+            <CardTextField
+              {...field}
+              label={t("emailLabel")}
+              placeholder={t("emailPlaceholder")}
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              errors={fieldState.error && [fieldState.error]}
+            />
           )}
         />
         <Controller

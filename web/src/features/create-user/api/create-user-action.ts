@@ -9,7 +9,7 @@ import * as Sentry from "@sentry/nextjs";
 import { getSessionClaims } from "@/entities/session";
 import { createAdminSupabaseClient } from "@/shared/api";
 import { hasRole } from "@/shared/lib/auth";
-import { redactEmails } from "@/shared/lib/observability";
+import { reportActionFailure } from "@/shared/lib/action-failure";
 import { getClientIp } from "@/shared/lib/rate-limit";
 
 import { checkCreateUserRateLimit } from "./rate-limit";
@@ -162,13 +162,7 @@ export const createUser = async (
 
     return { status: "success", createdEmail: email };
   } catch (error) {
-    Sentry.captureException(error);
-
-    console.warn("[create-user] rejected", {
-      reason: "threw",
-      error: error instanceof Error ? error.name : typeof error,
-      message: error instanceof Error ? redactEmails(error.message) : undefined,
-    });
+    reportActionFailure({ scope: "create-user", error });
 
     return { status: "unavailable" };
   }

@@ -3,11 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import * as Sentry from "@sentry/nextjs";
-
 import { createServerSupabaseClient } from "@/shared/api";
 import { routes } from "@/shared/config";
-import { redactEmails } from "@/shared/lib/observability";
+import { reportActionFailure } from "@/shared/lib/action-failure";
 
 export const signOut = async (): Promise<void> => {
   try {
@@ -23,12 +21,7 @@ export const signOut = async (): Promise<void> => {
     // out, or with an error they cannot act on, is worse than sending
     // them to /login, where the session is checked again from scratch —
     // and if it survived, the gate sends them straight back to /day.
-    Sentry.captureException(error);
-
-    console.warn("[sign-out] failed", {
-      error: error instanceof Error ? error.name : typeof error,
-      message: error instanceof Error ? redactEmails(error.message) : undefined,
-    });
+    reportActionFailure({ scope: "sign-out", error, outcome: "failed" });
   }
 
   // The client cache holds the RSC payload of every screen visited in

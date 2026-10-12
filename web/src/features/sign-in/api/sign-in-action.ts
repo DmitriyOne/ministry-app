@@ -4,10 +4,8 @@ import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 
-import * as Sentry from "@sentry/nextjs";
-
 import { createServerSupabaseClient } from "@/shared/api";
-import { redactEmails } from "@/shared/lib/observability";
+import { reportActionFailure } from "@/shared/lib/action-failure";
 import { getClientIp } from "@/shared/lib/rate-limit";
 
 import { checkSignInRateLimit, recordSignInFailure } from "./rate-limit";
@@ -82,24 +80,10 @@ export const signIn = async (
 
     return { status: "success", displayName: profile?.display_name };
   } catch (error) {
-    // Two destinations on purpose. Sentry gets the whole exception, stack
-    // included, and beforeSend runs it through scrubSentryEvent, so an
-    // address quoted inside a message never leaves the process (ADR 0041).
-    // The server log gets what can be read at a glance and carries no
-    // personal data: which step threw, the error's class, and its message
-    // with addresses redacted by the same rule the scrubber uses.
-    //
-    // Sentry is off outside production (ADR 0041, update), so in development
-    // the log below is all there is — which is why it carries the message
-    // rather than only the class.
-    Sentry.captureException(error);
-
-    console.warn("[sign-in] rejected", {
-      reason: "threw",
-      stage,
-      error: error instanceof Error ? error.name : typeof error,
-      message: error instanceof Error ? redactEmails(error.message) : undefined,
-    });
+    // Which step threw travels with the report: the cookie store, the
+    // auth call and the profile read fail for unrelated reasons, and the
+    // difference is what makes the log worth reading.
+    reportActionFailure({ scope: "sign-in", error, context: { stage } });
 
     return { status: "unavailable" };
   }
