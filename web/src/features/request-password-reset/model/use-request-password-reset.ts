@@ -45,10 +45,19 @@ export const useRequestPasswordReset = () => {
 
   return {
     control,
+    // A second submit while the first is still in flight would send the
+    // same values twice: the button is disabled while pending, but Enter
+    // in a field submits the form without going through it. Same guard as
+    // PillForm's.
+    //
     // startTransition is required: submitAction is called directly rather
     // than through form action, and without a transition isPending does
     // not update.
-    onSubmit: () => handleSubmit((values) => startTransition(() => submitAction(values)))(),
+    onSubmit: () => {
+      if (isPending) return;
+
+      handleSubmit((values) => startTransition(() => submitAction(values)))();
+    },
     hasErrors: Object.keys(errors).length > 0,
     isPending,
     isSent: state.status === "success",

@@ -71,10 +71,21 @@ export const useSignIn = () => {
 
   return {
     control,
+    // A second submit while the first is still in flight would send the
+    // same values twice. The button is disabled while pending, but Enter
+    // in a field submits the form without going through it — and here
+    // both attempts would be charged to the same budget of three
+    // (api/rate-limit.ts), so one keypress could cost two of them. Same
+    // guard as PillForm's.
+    //
     // startTransition is required: submitAction is called directly rather
     // than through form action, and without a transition isPending does
     // not update.
-    onSubmit: () => handleSubmit((values) => startTransition(() => submitAction(values)))(),
+    onSubmit: () => {
+      if (isPending) return;
+
+      handleSubmit((values) => startTransition(() => submitAction(values)))();
+    },
     hasErrors: Object.keys(errors).length > 0,
     isPending,
     formError: state.status === "error" ? state.formError : undefined,

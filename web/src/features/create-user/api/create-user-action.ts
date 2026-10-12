@@ -30,6 +30,11 @@ export const createUser = async (
   // is reachable by anyone who can craft the request, whatever screen
   // they can or cannot open. The screen's gate protects the screen; this
   // line protects the account table.
+  //
+  // This is the cheap half of the check: the role as the token claims it,
+  // verified without leaving the process. It rejects everyone who is not
+  // an admin at all. The second half — is that claim still true — is
+  // further down, once there is a client to ask the database with.
   const claims = await getSessionClaims();
 
   if (!hasRole(claims, "admin")) {
@@ -71,6 +76,42 @@ export const createUser = async (
     // exactly the kind of thing it exists for, and the authorisation it
     // does not do is the check above.
     const admin = createAdminSupabaseClient();
+
+    // The second half of the authorisation check, and the reason it is
+    // not enough to read the token: the role lives in the access token
+    // for an hour (`jwt_expiry`), so an admin whose role was taken away
+    // — or whose account was banned — keeps a token that still says
+    // "admin" until it expires. For navigation that gap is acceptable
+    // and deliberate (ADR 0044: the gate must not cost a round trip per
+    // screen). For creating an account it is not: Supabase's own
+    // guidance is to re-read the authoritative record for a critical
+    // mutation rather than trust the claim, and here the record is one
+    // query on a path that runs once per issued account.
+    //
+    // `deleted_at is null` for the same reason it is in every policy
+    // (ADR 0047): a row marked deleted must not grant anything.
+    const { data: currentRole, error: roleReadError } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", claims.userId)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (roleReadError) {
+      // The database could not answer, so whether this person may act is
+      // unknown — and unknown is not permission. Reported as an outage
+      // rather than as "not allowed", because that is what it is.
+      Sentry.captureException(roleReadError);
+      console.warn("[create-user] rejected", { reason: "role-read", code: roleReadError.code });
+
+      return { status: "unavailable" };
+    }
+
+    if (currentRole?.role !== "admin") {
+      console.warn("[create-user] rejected", { reason: "role-revoked" });
+
+      return { status: "error", formError: t("notAllowed") };
+    }
 
     const { data, error } = await admin.auth.admin.createUser({
       email,

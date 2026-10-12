@@ -2,25 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { routes } from "@/shared/config";
+import { resolveRoutePolicy, routes } from "@/shared/config";
 import { isStandaloneDisplayMode } from "@/shared/lib/display-mode";
 
 // Require launching from a home-screen icon (ADR 0017), otherwise → /install.
-// Paths come from shared/config/routes.ts (ADR 0030) — the single place
-// these literals are written down.
-// /soon is absent: it is the public landing now (ADR 0045) and opens in an
-// ordinary browser tab.
-const APP_SCREEN_PATHS: string[] = [
-  routes.root,
-  routes.day,
-  routes.login,
-  routes.forgotPassword,
-  routes.calendar,
-  routes.month,
-  routes.year,
-  routes.profile,
-  routes.adminNewUser,
-];
+// WHICH addresses those are comes from ROUTE_POLICY (shared/config/
+// route-policy.ts, the launchGate flag), not from a list kept here: this
+// used to be a third hand-maintained copy of "which paths are the app",
+// and /admin/users/new shipped missing from it — the one screen that
+// opened in an ordinary Safari tab.
+// /soon is absent from it: it is the public landing now (ADR 0045) and
+// opens in an ordinary browser tab.
 const INSTALL_PATH = routes.install;
 const APP_ENTRY_PATH = routes.day;
 
@@ -100,7 +92,7 @@ export const useLaunchGate = (): UseLaunchGateResult => {
         // (LinkButton deliberately uses next/link for in-app navigation) —
         // this redirect is about launch-state detection, not user-initiated
         // navigation.
-        if (APP_SCREEN_PATHS.includes(path) && !standalone) {
+        if (resolveRoutePolicy(path)?.launchGate && !standalone) {
           window.location.replace(INSTALL_PATH);
           return;
         }
