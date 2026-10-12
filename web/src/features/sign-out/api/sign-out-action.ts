@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import * as Sentry from "@sentry/nextjs";
@@ -29,6 +30,17 @@ export const signOut = async (): Promise<void> => {
       message: error instanceof Error ? redactEmails(error.message) : undefined,
     });
   }
+
+  // The client cache holds the RSC payload of every screen visited in
+  // this session, and Next.js reuses it for browser back/forward without
+  // asking the server — so without this, Back after signing out can show
+  // the day screen as the person who just left it. Deleting a cookie
+  // through cookies() already invalidates that cache, and signOut() does
+  // delete the session cookies through the same adapter; this says it
+  // outright instead of depending on a side effect of how the Supabase
+  // client happens to write them. Signing out happens once a session, so
+  // the cost does not matter. Before redirect(), which never returns.
+  revalidatePath("/", "layout");
 
   // Outside the try on purpose: redirect() works by throwing a
   // NEXT_REDIRECT error that the framework catches, so a catch block
