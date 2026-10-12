@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(31);
+select plan(34);
 
 -- The enum, not text: a typo in a role must fail on insert rather than
 -- surface later as a failed permission check.
@@ -101,6 +101,38 @@ select is(
     where id = '22222222-2222-2222-2222-222222222222'),
   'naomi',
   'the trigger falls back to the local part of the email'
+);
+
+-- A name must never be the reason an account cannot exist. Each case
+-- below made the insert into auth.users fail before migration
+-- 20261012165606 — the trigger raised, the whole insert rolled back, and
+-- the only thing visible from the outside was a 500 from GoTrue.
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('33333333-3333-3333-3333-333333333333', 'esther@example.com', '{"display_name": "   "}'::jsonb);
+select is(
+  (select display_name from public.profiles
+    where id = '33333333-3333-3333-3333-333333333333'),
+  'esther',
+  'a display_name of nothing but spaces falls through to the address'
+);
+
+-- An account with no address at all: a phone signup, or
+-- auth.admin.createUser called without one.
+insert into auth.users (id) values ('44444444-4444-4444-4444-444444444444');
+select is(
+  (select display_name from public.profiles
+    where id = '44444444-4444-4444-4444-444444444444'),
+  '44444444',
+  'an account with no address still gets a profile, named after its id'
+);
+
+insert into auth.users (id, email) values
+  ('55555555-5555-5555-5555-555555555555', '@example.com');
+select is(
+  (select display_name from public.profiles
+    where id = '55555555-5555-5555-5555-555555555555'),
+  '55555555',
+  'an address with an empty local part does not produce an empty name'
 );
 
 -- The policies are the security boundary, so they are exercised as a
