@@ -85,7 +85,13 @@
       "about": "About",
       "privacy": "Privacy & cookies",
       "signOut": "Sign out",
-      "newUser": "Create a user"
+      "newUser": "Create a user",
+      "signOutConfirm": {
+        "title": "Sign out?",
+        "body": "You will need your email and password to get back in.",
+        "confirm": "Sign out",
+        "cancel": "Stay signed in"
+      }
     },
     "adminNewUser": {
       "metadata": {

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { RecheckGateOnRestore } from "@/features/gate-recheck";
 import { BottomNav } from "@/widgets/bottom-nav";
 
 type WithBottomNavLayoutProps = {
@@ -20,6 +21,12 @@ export const WithBottomNavLayout = ({ children }: WithBottomNavLayoutProps) => (
   <div className="flex min-h-dvh flex-col pb-[calc(--spacing(26)+env(safe-area-inset-bottom))]">
     {children}
     <BottomNav />
+    {/* Renders nothing. These five screens all require a session, so a
+        page the browser restores from its own cache — after a sign-out in
+        another tab, or after an outage longer than the token's hour — has
+        to ask the server again instead of being trusted. The mirror image
+        of the same component on /login. */}
+    <RecheckGateOnRestore />
   </div>
 );
 

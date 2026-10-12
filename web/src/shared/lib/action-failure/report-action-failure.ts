@@ -1,5 +1,7 @@
 import "server-only";
 
+import { unstable_rethrow } from "next/navigation";
+
 import * as Sentry from "@sentry/nextjs";
 
 import { redactEmails } from "../observability";
@@ -46,6 +48,22 @@ type ReportActionFailureInput = {
 export const reportActionFailure = (
   { scope, error, outcome = "rejected", context }: ReportActionFailureInput,
 ): void => {
+  // Not every throw is a failure. Next.js signals control flow by
+  // throwing: redirect(), notFound(), and — the one that caught me out —
+  // the dynamic-usage error raised when a route reads cookies during
+  // static generation. A catch that swallows those turns a framework
+  // signal into a Sentry event and, worse, hides it from the framework.
+  // It showed up in the build log as `[session] failed … "Dynamic server
+  // usage: Route /profile couldn't be rendered statically because it used
+  // cookies"` — reported as an application error when it was Next.js
+  // telling itself to render that route on demand.
+  //
+  // unstable_rethrow re-throws exactly those and returns for everything
+  // else. The name is Next's, not a judgement about stability: it is the
+  // documented way to do this, and the alternative is matching on error
+  // messages.
+  unstable_rethrow(error);
+
   Sentry.captureException(error);
 
   console.warn(`[${scope}] ${outcome}`, {

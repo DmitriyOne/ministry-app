@@ -76,7 +76,15 @@ export const ProfileScreen = async () => {
         <TextLink href={routes.privacy}>{t("privacy")}</TextLink>
       </nav>
 
-      <SignOutButton label={t("signOut")} />
+      <SignOutButton
+        label={t("signOut")}
+        confirm={{
+          title: t("signOutConfirm.title"),
+          body: t("signOutConfirm.body"),
+          confirm: t("signOutConfirm.confirm"),
+          cancel: t("signOutConfirm.cancel"),
+        }}
+      />
     </CenteredState>
   );
 };

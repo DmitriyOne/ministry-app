@@ -104,7 +104,17 @@ export const proxy = async (request: NextRequest) => {
   try {
     const { data } = await supabase.auth.getClaims();
     claims = parseSessionClaims(data?.claims ?? null);
-  } catch {
+  } catch (error) {
+    // Nothing from next/navigation can be thrown here — the proxy neither
+    // redirects by throwing nor renders, so there is no framework signal
+    // to swallow (unlike a Server Action or a screen, see
+    // shared/lib/action-failure). The log line is the whole point: without
+    // it, a verification that cannot reach the JWKS endpoint looks exactly
+    // like a visitor who is not signed in.
+    console.warn("[proxy] claims unavailable", {
+      error: error instanceof Error ? error.name : typeof error,
+    });
+
     claims = null;
   }
 

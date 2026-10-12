@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
@@ -77,6 +78,18 @@ export const signIn = async (
     stage = "profile";
 
     const { data: profile } = await supabase.from("profiles").select("display_name").maybeSingle();
+
+    // The client cache still holds what this person saw while signed out
+    // — above all the login screen itself. Next.js reuses that cache for
+    // browser back/forward without asking the server, so without this a
+    // swipe back lands on /login behind a live session. Signing out does
+    // the same thing for the mirror-image reason.
+    //
+    // Setting a cookie through cookies() is documented to invalidate the
+    // cache too, and signInWithPassword does set the session cookies
+    // through our adapter — this says it outright instead of depending on
+    // that side effect, for a path that runs once per sign-in.
+    revalidatePath("/", "layout");
 
     return { status: "success", displayName: profile?.display_name };
   } catch (error) {

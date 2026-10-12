@@ -420,8 +420,31 @@
     filter: blur(0);
   }
 }
+/*
+ * NO `forwards`, and the class is removed as soon as the phase reaches
+ * "ready" (ui/launch-gate.tsx) — both on purpose, and not a style
+ * preference. The keyframes animate `filter`, and an element with any
+ * filter other than `none` becomes the containing block for every
+ * `position: fixed` descendant. `blur(0)` is still a filter. With
+ * `animation-fill-mode: forwards` the last keyframe stayed applied for
+ * the life of the page, so this wrapper — which contains the whole app,
+ * the toaster and the bottom navigation included — permanently
+ * positioned them against ITSELF instead of the viewport: toasts landed
+ * at the top of the document rather than the top of the screen (invisible
+ * once scrolled) and the navigation bar sat against the end of the
+ * content. Found on a real iPhone, and invisible under DEV_MODE=true,
+ * where LaunchGate is not mounted at all and the wrapper carries no
+ * animation.
+ *
+ * Dropping `forwards` is safe because the final keyframe (opacity 1,
+ * blur 0) is identical to this element's base style, so there is nothing
+ * to hold: the animation ends and the element keeps looking exactly the
+ * same, minus the filter. The containing block therefore exists only
+ * while the animation runs — and for that moment the loading overlay is
+ * still on top of everything anyway.
+ */
 .shell-content-enter {
-  animation: shell-content-enter var(--shell-transition-duration) var(--shell-transition-easing) forwards;
+  animation: shell-content-enter var(--shell-transition-duration) var(--shell-transition-easing);
 }
 @media (prefers-reduced-motion: reduce) {
   /* Defence in depth — LaunchGate's own effect already checks

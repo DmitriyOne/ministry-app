@@ -10,7 +10,7 @@ import { BottomNavItem } from "./BottomNavItem";
 // The bottom offset carries env(safe-area-inset-bottom) on top of the
 // prototype's 24px, so the bar clears the home indicator
 // (viewport-fit=cover, ADR 0020). The space it occupies is reserved by
-// app/(app-shell)/layout.tsx, not here — a fixed element is out of flow
+// app/(with-bottom-nav)/layout.tsx, not here — a fixed element is out of flow
 // and cannot push content up by itself.
 export const BottomNav = async () => {
   const t = await getTranslations("nav");

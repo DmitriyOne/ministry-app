@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { RecheckGateOnRestore } from "@/features/gate-recheck";
 import { ScreenBackHeader } from "@/features/screen-back";
 import { AppMark } from "@/shared/ui/app-mark";
 import { BodyText } from "@/shared/ui/body-text";
@@ -47,6 +48,10 @@ export const ForgotPasswordScreen = async () => {
         </div>
 
         <PasswordResetForm />
+
+        {/* Same reason as on the login screen: a page the browser brings
+            back from its cache has to be re-checked against the session. */}
+        <RecheckGateOnRestore />
       </CenteredState>
     </div>
   );

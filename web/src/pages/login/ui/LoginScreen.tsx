@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { RecheckGateOnRestore } from "@/features/gate-recheck";
 import { AppMark } from "@/shared/ui/app-mark";
 import { BodyText } from "@/shared/ui/body-text";
 import { CenteredState } from "@/shared/ui/centered-state";
@@ -29,6 +30,11 @@ export const LoginScreen = async () => {
       </div>
 
       <SignInForm />
+
+      {/* Renders nothing: if the browser brings this page back from its own
+          cache after a sign-in, it asks the server again — and the proxy,
+          seeing a session, sends the person on to /day. */}
+      <RecheckGateOnRestore />
     </CenteredState>
   );
 };
