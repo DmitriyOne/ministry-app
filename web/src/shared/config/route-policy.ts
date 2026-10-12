@@ -89,9 +89,13 @@ const ADMIN_FAMILY_POLICY: RoutePolicy = { ...APP_SCREEN, adminOnly: true };
 // null means "not one of this app's addresses": the proxy leaves it
 // alone, so /qwerty gives a real 404 instead of a device placeholder.
 export const resolveRoutePolicy = (pathname: string): RoutePolicy | null => {
-  const known: RoutePolicy | undefined = ROUTE_POLICY[pathname as AppRoute];
-
-  if (known) return known;
+  // Object.hasOwn, not a plain lookup: `ROUTE_POLICY["constructor"]` would
+  // hand back Object's constructor, and a function is truthy — a "policy"
+  // whose every field is undefined, which reads as "no shield, no session
+  // needed". Today no pathname can reach it (they all start with "/", and
+  // no inherited key does), so this is not a bug being fixed; it is a
+  // guard that does not depend on that still being true.
+  if (Object.hasOwn(ROUTE_POLICY, pathname)) return ROUTE_POLICY[pathname as AppRoute];
 
   if (pathname === ADMIN_FAMILY_PREFIX || pathname.startsWith(`${ADMIN_FAMILY_PREFIX}/`)) {
     return ADMIN_FAMILY_POLICY;

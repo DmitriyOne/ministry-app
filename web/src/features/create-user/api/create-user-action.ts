@@ -95,9 +95,8 @@ export const createUser = async (
     //   user_roles — is the role still what the token claims?
     //
     // Twice over a path that runs once per issued account.
-    const { data: userData, error: userError } = await (
-      await createServerSupabaseClient()
-    ).auth.getUser();
+    const supabase = await createServerSupabaseClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
 
     // 401/403 is the auth server saying this session is no longer good
     // enough — banned, signed out elsewhere, token no longer accepted.

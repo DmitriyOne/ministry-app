@@ -33,5 +33,7 @@ export const useRequestPasswordReset = () => {
     defaultValues: { email: "" },
   });
 
-  return { ...form, isSent: state.status === "success" };
+  const isSent = state.status === "success";
+
+  return { ...form, isSent };
 };

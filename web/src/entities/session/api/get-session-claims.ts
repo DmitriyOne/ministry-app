@@ -2,6 +2,7 @@ import "server-only";
 
 import { createServerSupabaseClient } from "@/shared/api";
 import { parseSessionClaims, type SessionClaims } from "@/shared/lib/auth";
+import { reportActionFailure } from "@/shared/lib/action-failure";
 
 // Who is signed in, for Server Components. getClaims(), not getUser()
 // (ADR 0044): it verifies the token's signature and expiry locally,
@@ -9,25 +10,44 @@ import { parseSessionClaims, type SessionClaims } from "@/shared/lib/auth";
 // the auth server on every navigation and only buys detection of a
 // session revoked on another device.
 //
-// An error is not distinguished from "nobody is signed in" on purpose:
-// both mean this request has no identity to act on, and the only place
-// that could do anything with the difference is the gate, which would
-// send the person to /login either way.
+// `null` means the same thing to the caller whatever caused it — "this
+// request has no identity to act on" — and both callers (ProfileScreen,
+// AdminNewUserScreen) answer it with redirect(). That is on purpose: a
+// screen that reads an identity must not render without one.
 //
-// Which is why the try/catch is here and not only in web/proxy.ts. The
-// SDK hands most failures back as `error` rather than throwing, so the
-// line above covered them — but creating the client reads the cookie
-// store, and a verification that cannot reach the JWKS endpoint can
-// throw outright. Without this, an outage on a screen that reads the
-// session (/profile, the admin screen) would render the 500 screen
-// instead of sending the person to /login.
+// But the two causes are not the same thing to US, so they are no longer
+// indistinguishable in the log. "no-claims" is the ordinary case, a
+// visitor without a session; the other two mean the check itself did not
+// work, and a person with a perfectly good session was sent to /login
+// (where, their cookie still being valid, the gate sends them on to
+// /day — a bounce, not a loop). Without a line in the log that looks
+// exactly like signing out by itself.
 export const getSessionClaims = async (): Promise<SessionClaims | null> => {
   try {
     const supabase = await createServerSupabaseClient();
-    const { data } = await supabase.auth.getClaims();
+    const { data, error } = await supabase.auth.getClaims();
 
-    return parseSessionClaims(data?.claims ?? null);
-  } catch {
+    if (error) {
+      console.warn("[session] claims unavailable", {
+        reason: "auth-error",
+        status: error.status,
+      });
+
+      return null;
+    }
+
+    const claims = parseSessionClaims(data?.claims ?? null);
+
+    if (!claims) console.info("[session] no claims", { reason: "no-session-or-unreadable" });
+
+    return claims;
+  } catch (error) {
+    // Creating the client reads the cookie store, and verifying can reach
+    // for the JWKS endpoint — both can throw rather than answer. Reported
+    // like any other unexpected exception (Sentry + a line with no
+    // personal data), and still answered with null.
+    reportActionFailure({ scope: "session", error, outcome: "failed" });
+
     return null;
   }
 };

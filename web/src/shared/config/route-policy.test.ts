@@ -57,6 +57,15 @@ describe("ROUTE_POLICY", () => {
     }
   });
 
+  // A plain object lookup would answer these with something inherited from
+  // Object.prototype — a truthy "policy" with every field undefined, which
+  // reads as "no shield, nothing required".
+  it("treats an inherited property name as an unknown address", () => {
+    for (const pathname of ["constructor", "__proto__", "toString", "hasOwnProperty"]) {
+      expect(resolveRoutePolicy(pathname), pathname).toBeNull();
+    }
+  });
+
   it("asks for the home-screen icon on no address that opens in a tab", () => {
     // The public side is reached BEFORE the app is installed, so
     // requiring the icon there would make it unreachable.

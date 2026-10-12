@@ -96,23 +96,26 @@ export const useActionForm = <
     }
   }, [state, unavailableMessage]);
 
-  return {
-    control,
-    reset,
-    // A second submit while the first is in flight would send the same
-    // values twice: the button is disabled while pending, but Enter in a
-    // field submits the form without going through the button.
-    //
-    // startTransition is required because submitAction is called directly
-    // rather than through a form action — without it isPending never
-    // updates, and React warns about it at runtime.
-    onSubmit: () => {
-      if (isPending) return;
+  // Everything the caller gets is decided here, above the return, so the
+  // returned object is a list of names and nothing else.
+  //
+  // A second submit while the first is in flight would send the same
+  // values twice: the button is disabled while pending, but Enter in a
+  // field submits the form without going through the button.
+  //
+  // startTransition is required because submitAction is called directly
+  // rather than through a form action — without it isPending never
+  // updates, and React warns about it at runtime.
+  const submit = (values: TValues) => startTransition(() => submitAction(values));
 
-      handleSubmit((values) => startTransition(() => submitAction(values)))();
-    },
-    hasErrors: Object.keys(errors).length > 0,
-    isPending,
-    formError: state.status === "error" ? state.formError : undefined,
+  const onSubmit = () => {
+    if (isPending) return;
+
+    handleSubmit(submit)();
   };
+
+  const hasErrors = Object.keys(errors).length > 0;
+  const formError = state.status === "error" ? state.formError : undefined;
+
+  return { control, reset, onSubmit, hasErrors, isPending, formError };
 };
