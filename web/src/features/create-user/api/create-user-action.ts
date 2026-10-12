@@ -7,7 +7,7 @@ import { z } from "zod";
 import * as Sentry from "@sentry/nextjs";
 
 import { getSessionClaims } from "@/entities/session";
-import { createAdminSupabaseClient } from "@/shared/api";
+import { createAdminSupabaseClient, createServerSupabaseClient } from "@/shared/api";
 import { hasRole } from "@/shared/lib/auth";
 import { reportActionFailure } from "@/shared/lib/action-failure";
 import { getClientIp } from "@/shared/lib/rate-limit";
@@ -77,17 +77,53 @@ export const createUser = async (
     // does not do is the check above.
     const admin = createAdminSupabaseClient();
 
-    // The second half of the authorisation check, and the reason it is
-    // not enough to read the token: the role lives in the access token
-    // for an hour (`jwt_expiry`), so an admin whose role was taken away
-    // — or whose account was banned — keeps a token that still says
-    // "admin" until it expires. For navigation that gap is acceptable
-    // and deliberate (ADR 0044: the gate must not cost a round trip per
-    // screen). For creating an account it is not: Supabase's own
-    // guidance is to re-read the authoritative record for a critical
-    // mutation rather than trust the claim, and here the record is one
-    // query on a path that runs once per issued account.
+    // The second half of the authorisation check, and the reason the
+    // token is not enough on its own: both halves of what it says go
+    // stale. It carries the role for an hour (`jwt_expiry`), and it keeps
+    // verifying for that hour even after the account behind it is banned
+    // — measured on a live database, not assumed: after a ban, GoTrue
+    // answers 403 but PostgREST still serves the same token, because all
+    // it checks is the signature.
     //
+    // For navigation that gap is deliberate (ADR 0044: the gate must not
+    // cost a round trip per screen). For issuing an account it is not, so
+    // this path pays for two answers it cannot get from the token:
+    //
+    //   getUser()  — is this session still real? One call to the auth
+    //                server, which is the only thing that knows about a
+    //                ban or a sign-out elsewhere.
+    //   user_roles — is the role still what the token claims?
+    //
+    // Twice over a path that runs once per issued account.
+    const { data: userData, error: userError } = await (
+      await createServerSupabaseClient()
+    ).auth.getUser();
+
+    // 401/403 is the auth server saying this session is no longer good
+    // enough — banned, signed out elsewhere, token no longer accepted.
+    // Anything else (no answer, a 5xx) says nothing about the session, and
+    // "we could not ask" must not be reported as "you may not": one is an
+    // outage the admin waits out, the other is a refusal they would go
+    // looking for an explanation of (ADR 0046).
+    if (userError) {
+      const isRefusal = userError.status === 401 || userError.status === 403;
+
+      console.warn("[create-user] rejected", {
+        reason: isRefusal ? "session-not-live" : "session-check-failed",
+        status: userError.status,
+      });
+
+      return isRefusal
+        ? { status: "error", formError: t("notAllowed") }
+        : { status: "unavailable" };
+    }
+
+    if (!userData.user) {
+      console.warn("[create-user] rejected", { reason: "session-not-live" });
+
+      return { status: "error", formError: t("notAllowed") };
+    }
+
     // `deleted_at is null` for the same reason it is in every policy
     // (ADR 0047): a row marked deleted must not grant anything.
     const { data: currentRole, error: roleReadError } = await admin
