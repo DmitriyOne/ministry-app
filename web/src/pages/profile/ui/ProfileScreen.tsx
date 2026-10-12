@@ -9,9 +9,10 @@ import { hasRole } from "@/shared/lib/auth";
 import { getInitials } from "@/shared/lib/display-name";
 import { LinkButton } from "@/shared/ui/button";
 import { CenteredState } from "@/shared/ui/centered-state";
+import { Eyebrow } from "@/shared/ui/eyebrow";
+import { ChevronRightIcon } from "@/shared/ui/icons";
 import { ListCard } from "@/shared/ui/list-card";
 import { ListRow } from "@/shared/ui/list-row";
-import { TextLink } from "@/shared/ui/text-link";
 import { Title } from "@/shared/ui/title";
 
 export const ProfileScreen = async () => {
@@ -44,47 +45,74 @@ export const ProfileScreen = async () => {
   const roleLabel = isAdmin ? t("roleAdmin") : t("roleUser");
 
   return (
-    <CenteredState fill className="items-stretch justify-start gap-6 px-5 pt-14 text-left">
-      <Title>{t("title")}</Title>
+    <CenteredState fill className="items-stretch justify-start gap-0 px-0 pt-2 pb-0 text-left">
+      {/* Variant A1 of the profile mockups: the top of the screen is the
+          person, not a list row. A plain div, not <header> — CenteredState
+          already gives the screen its <main>, and <header> is reserved for
+          navigation (CLAUDE.md). */}
+      <div className="mx-3 flex flex-col gap-3.5 rounded-4xl bg-hero px-5 pt-6 pb-5.5 text-hero-foreground">
+        <Eyebrow as="span" className="text-positive-hero">{t("title")}</Eyebrow>
 
-      <ListCard>
-        <ListRow
-          divided={false}
-          // Letters from the name instead of a generic figure: there are
-          // no uploaded pictures in this app, and one person's badge
-          // should not look like everyone else's.
-          icon={<span className="text-caption font-620 text-ink">{initials}</span>}
-          title={displayName || t("nameUnknown")}
-          text={roleLabel}
+        {/* Letters from the name instead of a generic figure: there are no
+            uploaded pictures in this app, and one person's badge should not
+            look like everyone else's. Decorative — the name is right under
+            it, so a screen reader would only say it twice. */}
+        <span
+          aria-hidden="true"
+          className="flex size-18 items-center justify-center rounded-full bg-white/10 text-day-title font-620"
+        >
+          {initials}
+        </span>
+
+        <div className="flex flex-col gap-2">
+          <Title tone="hero">{displayName || t("nameUnknown")}</Title>
+          {/* Mint on deep green — the one place the palette allows it
+              (ADR 0011). */}
+          <span className="self-start rounded-sm bg-white/10 px-3 py-1.5 text-caption font-600 text-positive-hero">
+            {roleLabel}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 px-5 pt-4">
+        <nav aria-label={t("linksLabel")}>
+          <ListCard>
+            <ListRow
+              href={routes.about}
+              title={t("about")}
+              trailing={<ChevronRightIcon size={20} className="shrink-0 text-ink-faint" />}
+            />
+            <ListRow
+              href={routes.privacy}
+              title={t("privacy")}
+              divided={false}
+              trailing={<ChevronRightIcon size={20} className="shrink-0 text-ink-faint" />}
+            />
+          </ListCard>
+        </nav>
+
+        {/* Shown to an admin only. This is presentation, not protection:
+            the path is gated in proxy.ts and the action checks the role
+            again, so hiding the link is about not offering a door that
+            would shut in your face. */}
+        {isAdmin
+          ? (
+              <LinkButton href={routes.adminNewUser} variant="action" size="role-lg">
+                {t("newUser")}
+              </LinkButton>
+            )
+          : null}
+
+        <SignOutButton
+          label={t("signOut")}
+          confirm={{
+            title: t("signOutConfirm.title"),
+            body: t("signOutConfirm.body"),
+            confirm: t("signOutConfirm.confirm"),
+            cancel: t("signOutConfirm.cancel"),
+          }}
         />
-      </ListCard>
-
-      {/* Shown to an admin only. This is presentation, not protection:
-          the path is gated in proxy.ts and the action checks the role
-          again, so hiding the link is about not offering a door that
-          would shut in your face. */}
-      {isAdmin
-        ? (
-            <LinkButton href={routes.adminNewUser} variant="action" size="role-lg">
-              {t("newUser")}
-            </LinkButton>
-          )
-        : null}
-
-      <nav aria-label={t("linksLabel")} className="flex gap-4 px-1">
-        <TextLink href={routes.about}>{t("about")}</TextLink>
-        <TextLink href={routes.privacy}>{t("privacy")}</TextLink>
-      </nav>
-
-      <SignOutButton
-        label={t("signOut")}
-        confirm={{
-          title: t("signOutConfirm.title"),
-          body: t("signOutConfirm.body"),
-          confirm: t("signOutConfirm.confirm"),
-          cancel: t("signOutConfirm.cancel"),
-        }}
-      />
+      </div>
     </CenteredState>
   );
 };

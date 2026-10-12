@@ -524,3 +524,37 @@ input:is(:autofill, :-webkit-autofill) {
   -webkit-text-fill-color: var(--autofill-ink, var(--ink));
   caret-color: var(--autofill-ink, var(--ink));
 }
+
+/*
+ * The colour of the status-bar area in the installed app, and of the
+ * overscroll rubber-band.
+ *
+ * Measured on a real iPhone: on /login the strip behind the clock came
+ * out the warm grey of --background while the screen itself is deep
+ * green. Neither <main> nor any element in the page paints that strip —
+ * the system does, and it takes the colour from the DOCUMENT (<html>/
+ * <body>), which @layer base paints --background for every screen. The
+ * same colour is what shows when the page is dragged past its top edge.
+ *
+ * So the document follows the screen: a screen that declares itself deep
+ * (CenteredState's `background="deep"`, which emits the attribute below)
+ * paints the document deep too. :has() does this at first paint, on the
+ * server-rendered markup — doing it from JavaScript would mean a flash of
+ * the wrong colour on every launch.
+ *
+ * Unlayered on purpose, like the autofill rule above: `body` is painted
+ * inside @layer base, and an unlayered declaration beats a layered one
+ * whatever the specificity.
+ *
+ * Two things this does NOT fix, both outside CSS: iOS reads the
+ * theme-color/apple-mobile-web-app-* tags ONCE, when the icon is added to
+ * the Home Screen, and caches them with it — an icon added before a change
+ * keeps the old behaviour until it is deleted and re-added; and on iOS 26
+ * `theme-color` is no longer what tints the bar in a browser tab at all
+ * (the system samples the page instead), which is why the fix lives in the
+ * page's own colours rather than in a meta tag.
+ */
+html:has([data-screen-tone="hero"]),
+body:has([data-screen-tone="hero"]) {
+  background-color: var(--hero);
+}

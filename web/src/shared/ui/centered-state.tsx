@@ -31,6 +31,13 @@ export const CenteredState = ({
   fill = false,
 }: CenteredStateProps) => (
   <main
+    // Read by one rule in globals.css, which paints the DOCUMENT in the
+    // same colour. That rule is what fills the status-bar area of the
+    // installed app and the overscroll rubber-band: neither of them is
+    // this element, and both take their colour from <html>/<body>.
+    // Emitted from the `background` prop rather than from a new one, so a
+    // screen cannot say "deep" and forget to say it twice.
+    data-screen-tone={background === "deep" ? "hero" : undefined}
     className={cn(
       "flex flex-col items-center justify-center gap-6.5 px-8 py-10 text-center",
       fill ? "flex-1" : "min-h-dvh",

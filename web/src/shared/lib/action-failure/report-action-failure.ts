@@ -49,19 +49,26 @@ export const reportActionFailure = (
   { scope, error, outcome = "rejected", context }: ReportActionFailureInput,
 ): void => {
   // Not every throw is a failure. Next.js signals control flow by
-  // throwing: redirect(), notFound(), and — the one that caught me out —
-  // the dynamic-usage error raised when a route reads cookies during
-  // static generation. A catch that swallows those turns a framework
-  // signal into a Sentry event and, worse, hides it from the framework.
-  // It showed up in the build log as `[session] failed … "Dynamic server
-  // usage: Route /profile couldn't be rendered statically because it used
-  // cookies"` — reported as an application error when it was Next.js
-  // telling itself to render that route on demand.
+  // throwing: redirect(), notFound(), and the dynamic-usage error raised
+  // when a route reads cookies during static generation. A catch that
+  // swallows those turns a framework signal into a Sentry event and hides
+  // it from the framework.
   //
-  // unstable_rethrow re-throws exactly those and returns for everything
-  // else. The name is Next's, not a judgement about stability: it is the
-  // documented way to do this, and the alternative is matching on error
-  // messages.
+  // On the `unstable_` prefix, which is a fair thing to object to in
+  // production code: it marks the API as subject to change, not as
+  // unfinished — it is the documented escape hatch, with its own page in
+  // the Next.js docs, and its whole body is a list of the framework's own
+  // error predicates (isNextRouterError, isDynamicServerError, …) that
+  // are NOT exported. Doing this by hand means matching on error digests
+  // and keeping that list in sync with a framework we do not control.
+  // The failure mode if Next renames it is a build error — loud, at
+  // upgrade time — which is the cheap kind.
+  //
+  // It is also, deliberately, the second line of defence rather than the
+  // first: the one place this bit (getSessionClaims) was fixed by moving
+  // the cookie read out of the try instead, so nothing framework-shaped
+  // is inside it any more. This stays for the next caller, who will not
+  // know that rule.
   unstable_rethrow(error);
 
   Sentry.captureException(error);
