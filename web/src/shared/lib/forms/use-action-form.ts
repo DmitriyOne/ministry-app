@@ -87,6 +87,12 @@ export const useActionForm = <
     // defaultValues is an object literal at the call site, so it is new on
     // every render and cannot be a dependency. Only its KEYS are read
     // here, and those are fixed by the schema's type.
+    //
+    // The keys are taken as top-level field names, which every form here
+    // has. A form with a nested value (`{ address: { city } }`) would need
+    // dotted paths — `Object.keys` would hand back "address", and the
+    // error for "address.city" would have nowhere to go. Flatten the
+    // values or walk the paths; do not leave it to be discovered.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, setError]);
 
