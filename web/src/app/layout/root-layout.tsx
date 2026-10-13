@@ -7,6 +7,7 @@ import { LaunchGate, LaunchLoading, LaunchNoscriptFallback } from "@/features/la
 import { env, getSiteUrl, locale } from "@/shared/config";
 import { buildSocialMetadata } from "@/shared/lib/metadata";
 
+import { KeyboardInsetSync } from "./keyboard-inset-sync";
 import { Providers } from "./providers";
 
 import "../styles/globals.css";
@@ -87,6 +88,7 @@ export const RootLayout = ({ children }: RootLayoutProps) => (
   <html lang={locale} className="h-full antialiased" suppressHydrationWarning>
     <body className="min-h-full flex flex-col">
       <LaunchNoscriptFallback />
+      <KeyboardInsetSync />
       <SerwistProvider
         swUrl="/serwist/sw.js"
         disable={process.env.NODE_ENV === "development"}

@@ -20,7 +20,7 @@ export const ForgotPasswordScreen = async () => {
   const t = await getTranslations("screens.forgotPassword");
 
   return (
-    <div className="flex min-h-dvh flex-col bg-hero text-hero-foreground">
+    <div className="flex min-h-app flex-col bg-hero text-hero-foreground">
       {/* The same back scenario the about and privacy screens use: go
           back in history if there is anywhere to go, otherwise a full
           navigation to "/" — which, with no session, the proxy sends on

@@ -57,6 +57,12 @@ export const cn = createCn({
       "font-weight": [{ font: [...FONT_WEIGHT_NAMES] }],
       "rounded": [{ rounded: [...RADIUS_NAMES] }],
       "shadow": [{ shadow: [...SHADOW_NAMES] }],
+      // `min-h-app` is a custom @utility (globals.css), not a theme token,
+      // so the snapshot does not know it conflicts with `min-h-dvh` and
+      // friends. Registered here for the same reason as the tokens above:
+      // a screen that overrides the height via className should win, not
+      // end up with two min-heights and whichever CSS order decides.
+      "min-h": [{ "min-h": ["app"] }],
     },
   },
 });

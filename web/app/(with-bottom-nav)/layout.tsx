@@ -21,7 +21,7 @@ type WithBottomNavLayoutProps = {
 // now that the bar is 68. Leaving it too large is exactly the empty space
 // at the bottom the owner asked to remove.
 export const WithBottomNavLayout = ({ children }: WithBottomNavLayoutProps) => (
-  <div className="flex min-h-dvh flex-col pb-[calc(--spacing(23)+env(safe-area-inset-bottom))]">
+  <div className="flex min-h-app flex-col pb-[calc(--spacing(23)+env(safe-area-inset-bottom))]">
     {children}
     <BottomNav />
     {/* Renders nothing. These five screens all require a session, so a

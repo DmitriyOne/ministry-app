@@ -608,6 +608,18 @@ Aria `Link`'s `render`-проп) — не обычной перезагрузк�
   лимита, неверные креды. Недоступность бэкенда и успех — тосты
   (`showToast` из `shared/ui/sonner`), они ничего не требуют и уходят
   сами (ADR 0046).
+- **Экран подстраивается под клавиатуру через `min-h-app`, не
+  `min-h-dvh`** (ADR 0053). iOS не уменьшает layout viewport при открытии
+  клавиатуры — `100dvh` до и после одно и то же число, и экран на
+  `min-h-dvh` спокойно раскладывает форму туда, где уже клавиатура.
+  `interactive-widget=resizes-content` и `env(keyboard-inset-height)` —
+  только Chromium, так что высота **измеряется**: `KeyboardInsetSync`
+  (`app/layout/`) пишет разницу `innerHeight − visualViewport.height` в
+  `--keyboard-inset`, а `@utility min-h-app` её вычитает. Новый экран с
+  полем ввода, который сам назначает себе высоту, берёт `min-h-app`;
+  экран внутри route group высоту не назначает вовсе — её уже назначил
+  layout. Нет `visualViewport` или нет JS — действует `0px`, то есть
+  прежнее поведение.
 - **Автозаполнение не красится браузером.** Одно правило в
   `globals.css` (`input:is(:autofill, :-webkit-autofill)`) закрывает
   браузерный фон внутренней тенью и задаёт `-webkit-text-fill-color` —

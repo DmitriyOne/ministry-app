@@ -347,6 +347,31 @@
 }
 
 /*
+ * The on-screen keyboard, as a length the layout can use.
+ *
+ * iOS does not shrink the layout viewport when the keyboard opens — 100dvh
+ * is the same number before and after — so a screen sized at full height
+ * keeps claiming the whole phone while the bottom of it sits behind the
+ * keyboard. Safari supports neither `interactive-widget=resizes-content`
+ * (Chrome only) nor `env(keyboard-inset-height)` (the VirtualKeyboard API,
+ * Chrome only), so the height is measured from the visual viewport by
+ * KeyboardInsetSync (src/app/layout/keyboard-inset-sync.tsx) and written
+ * here. Without JavaScript, or in a browser with no visualViewport, the
+ * declaration below is what applies and nothing changes.
+ *
+ * `min-h-app` is min-height, not height, on purpose: content taller than
+ * the space left over keeps its own height and the page scrolls to it,
+ * instead of being clipped into a band it does not fit.
+ */
+:root {
+  --keyboard-inset: 0px;
+}
+
+@utility min-h-app {
+  min-height: calc(100dvh - var(--keyboard-inset));
+}
+
+/*
  * Shell gate transition — the "unfocus" effect (ADR 0019). Ownership
  * moved from CSS to React (LaunchGate, web/src/features/launch-gate/ui/launch-gate.tsx):
  * the loading overlay and the app content are mounted/unmounted by React
