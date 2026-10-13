@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { getSessionClaims } from "@/entities/session";
+import { PushNotificationsToggle } from "@/features/push-notifications";
 import { SignOutButton } from "@/features/sign-out";
 import { createServerSupabaseClient } from "@/shared/api";
 import { routes } from "@/shared/config";
@@ -75,6 +76,12 @@ export const ProfileScreen = async () => {
       </div>
 
       <div className="flex flex-col gap-3 px-5 pt-4">
+        <ListCard>
+          {/* Renders nothing in a browser tab or on a device without Web
+              Push — iOS delivers it only to an installed app. */}
+          <PushNotificationsToggle />
+        </ListCard>
+
         <nav aria-label={t("linksLabel")}>
           <ListCard>
             <ListRow

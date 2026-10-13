@@ -31,7 +31,13 @@ const { data: subscriptions, error } = await supabase
   .from("push_subscriptions")
   .select("id, endpoint, p256dh, auth")
   // Soft-deleted subscriptions must not be messaged (ADR 0047).
-  .is("deleted_at", null);
+  .is("deleted_at", null)
+  // Waitlist devices only. Since migration 20261013094149 the same table
+  // also holds subscriptions made from the profile screen by people who
+  // already have an account — the launch announcement is not for them,
+  // and without this filter they would be told about a launch they are
+  // already past.
+  .not("waitlist_signup_id", "is", null);
 
 if (error) {
   throw error;

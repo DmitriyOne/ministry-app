@@ -32,6 +32,12 @@
         "title": "You're on the list",
         "body": "We'll let you know the moment the app is ready."
       }
+    },
+    "push": {
+      "title": "Notifications",
+      "description": "Reminders about your report on this iPhone.",
+      "deniedDescription": "Turned off in Settings → Notifications for this app.",
+      "saveFailed": "Couldn't save that. Try again in a moment."
     }
   },
   "a11y": {

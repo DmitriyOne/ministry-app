@@ -36,11 +36,13 @@ type ListRowProps = {
   divided?: boolean;
 };
 
-// items-start when there is a description under the title, so the icon
-// tile lines up with the first line rather than floating beside two —
-// which is how the about screen's rows have always looked. A row with
-// only a title centres instead, or the chevron would sit high.
-const rowAlignment = (hasText: boolean) => (hasText ? "items-start" : "items-center");
+// items-start only when an icon tile sits beside a two-line block, so the
+// tile lines up with the first line rather than floating between them —
+// which is how the about screen's rows have always looked. Everything
+// else centres: a chevron or a switch at the end of a row belongs on the
+// row's middle line, not at the top of it.
+const rowAlignment = (hasIcon: boolean, hasText: boolean) =>
+  hasIcon && hasText ? "items-start" : "items-center";
 
 export const ListRow = ({
   icon,
@@ -72,7 +74,7 @@ export const ListRow = ({
 
   const className = cn(
     "flex gap-3.5 py-4",
-    rowAlignment(Boolean(text)),
+    rowAlignment(Boolean(icon), Boolean(text)),
     divided && "border-b border-ink-a07",
   );
 

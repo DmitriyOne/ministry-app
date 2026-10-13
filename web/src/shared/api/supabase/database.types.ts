@@ -67,7 +67,8 @@ export type Database = {
           id: number
           p256dh: string
           updated_at: string
-          waitlist_signup_id: number
+          user_id: string | null
+          waitlist_signup_id: number | null
         }
         Insert: {
           auth: string
@@ -77,7 +78,8 @@ export type Database = {
           id?: never
           p256dh: string
           updated_at?: string
-          waitlist_signup_id: number
+          user_id?: string | null
+          waitlist_signup_id?: number | null
         }
         Update: {
           auth?: string
@@ -87,7 +89,8 @@ export type Database = {
           id?: never
           p256dh?: string
           updated_at?: string
-          waitlist_signup_id?: number
+          user_id?: string | null
+          waitlist_signup_id?: number | null
         }
         Relationships: [
           {
@@ -150,6 +153,10 @@ export type Database = {
     }
     Functions: {
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      forget_user_push_subscription: {
+        Args: { p_endpoint: string; p_user_id: string }
+        Returns: boolean
+      }
       join_waitlist: {
         Args: { p_email: string }
         Returns: {
@@ -157,6 +164,15 @@ export type Database = {
           list_position: number
           push_enrollment_token: string
         }[]
+      }
+      register_user_push_subscription: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_p256dh: string
+          p_user_id: string
+        }
+        Returns: boolean
       }
       register_waitlist_push_subscription: {
         Args: {
