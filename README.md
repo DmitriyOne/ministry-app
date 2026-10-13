@@ -6,17 +6,27 @@ project and utility scripts).
 
 ## Status
 
-Pre-launch. At the moment one live screen is open in production: Coming
-soon (`/soon`) with a waitlist form: a person leaves an email, gets a
-position in the list and, if they opened the installed app, can turn on a
-push notification about the launch. The app screen itself (`/day`) is a
-skeleton; there are no real tracking screens yet. The "launched / not yet"
-switch is `LAUNCH_MODE` in `web/src/app/config/launch-mode.ts`.
+Pre-launch. Two things exist side by side.
 
-Access in v1 is iPhone in Safari only (and the app installed from the home
+**Public, and finished:** Coming soon (`/soon`) with a waitlist form — a
+person leaves an email, gets a position in the list and, if they opened
+the installed app, can turn on a push notification about the launch.
+
+**Behind a sign-in, and a skeleton:** v2 added email-and-password sign-in,
+roles, bottom navigation and the screens behind a session — `/day`,
+`/calendar`, `/month`, `/year` are still placeholders carrying a title
+each, `/profile` is real (name, role, push toggle, sign-out) and
+`/admin/users/new` creates an account. There is no sign-up: the owner
+hands out accounts. The real ministry tables are the next piece of work.
+
+`LAUNCH_MODE` is gone — `/soon` is simply a public landing page now, and
+what `/day` shows is decided by whether there is a session.
+
+Access is iPhone in Safari only (and the app installed from the home
 screen); the server redirects other devices to the `/access/*` placeholder
-screens. Details are in [`CLAUDE.md`](./CLAUDE.md), the "Доступ v1"
-section.
+screens, and then a second shield decides what the session allows. Details
+are in [`CLAUDE.md`](./CLAUDE.md), the "Доступ v2" section — what every
+address requires is one typed map, not a list per shield.
 
 Known defect before launch: the `pnpm push:launch` mailing script does not
 page past 1000 subscribers and is not idempotent. Do not run it against a
@@ -93,8 +103,29 @@ All from the root.
 
 Deploying to cloud Supabase (`db:login`, `db:link`, `db:push`,
 `functions:deploy`) is a separate section in [`CLAUDE.md`](./CLAUDE.md#деплой-миграций-в-облачный-supabase);
-**read the warnings there before the first run**. There is no CI
-(`.github/workflows/`) yet; migrations and functions are deployed by hand.
+**read the warnings there before the first run**. The supported path is
+the `supabase-deploy.yml` workflow (manual trigger, confirmation
+checkbox, pgTAP before anything is written to production); running the
+commands from a machine checks none of that.
+
+## CI
+
+`.github/workflows/` holds three workflows: `ci.yml` (lint, types, unit
+tests), `db-test.yml` (pgTAP plus a check that the committed Supabase
+types still match the schema) and `supabase-deploy.yml` (manual
+deployment).
+
+The first two deliberately do **not** run on every commit — only on the
+merges the owner named: into a release branch when the pull request is
+opened, into `develop` from a release branch and into `master` from
+`develop` or `hotfix/*` on every commit, plus a push to `master`. The
+table and the reasoning are in
+[ADR 0052](./docs/decisions/0052-ci-only-on-named-merges.md); the branch
+protection it asks for has to be switched on by hand in GitHub Settings.
+
+A pull request into a release branch is therefore checked once, when it
+is opened. After pushing more commits to one, re-run the checks with the
+"Run workflow" button.
 
 ## Where things live
 
@@ -103,8 +134,13 @@ Deploying to cloud Supabase (`db:login`, `db:link`, `db:push`,
 - [`docs/decisions/`](./docs/decisions) — ADRs, one per architectural
   decision, with the options and the reasons for the choice. Decisions are
   recorded there, not in conversations.
-- `docs/plans/` — working plans.
+- `docs/superpowers/plans/` — working plans and review plans.
+
+- [`CHANGELOG.md`](./CHANGELOG.md) — what each version added, in Russian,
+  in Keep a Changelog format.
+- [`AGENTS.md`](./AGENTS.md) — the entry point for AI coding agents; it
+  points at `CLAUDE.md` rather than repeating it.
 
 Language: the interface and code comments are in British English, as is
-this file; ADRs and `CLAUDE.md` are in Russian — they are the project
-owner's own working notes, not part of the product.
+this file; ADRs, `CLAUDE.md` and `CHANGELOG.md` are in Russian — they are
+the project owner's own working notes, not part of the product.
