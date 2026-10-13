@@ -8,6 +8,7 @@ import { showToast } from "@/shared/ui/sonner";
 
 import { disableUserPush } from "../api/disable-user-push-action";
 import { enableUserPush } from "../api/enable-user-push-action";
+import { sendTestPush } from "../api/send-test-push-action";
 import { readClaimedEndpoint, writeClaimedEndpoint } from "../lib/claimed-endpoint";
 import { readPushSubscription } from "../lib/read-push-subscription";
 import { PushSubscriptionError, subscribeToPush } from "../lib/subscribe-to-push";
@@ -17,9 +18,31 @@ import { unsubscribeFromPush } from "../lib/unsubscribe-from-push";
 // disabled rather than guessing a position and then jumping.
 export type PushToggleState = "unknown" | "unsupported" | "denied" | "on" | "off";
 
+// What the browser answered last time, kept for the life of the tab.
+//
+// Without it the switch starts at "unknown" — disabled, position
+// unresolved — on every single mount, and the profile is a tab people
+// come back to: leaving the screen and returning made the control blink
+// and settle again, which reads as the app re-deciding something.
+//
+// A module-level variable rather than a cache library: this is ONE value,
+// read from a browser API rather than from a server, and it lives exactly
+// as long as the JavaScript context that read it. React Query would bring
+// a provider, a dependency and a second model of "where state lives" to a
+// project whose data otherwise comes from Server Components and Server
+// Actions — a real cost against a flicker that twelve lines remove.
+let lastKnownState: PushToggleState | null = null;
+
 export const usePushToggle = () => {
   const t = useTranslations("notifications.push");
-  const [state, setState] = useState<PushToggleState>("unknown");
+  // Starts from what the tab already learned, so coming back to this
+  // screen shows the switch where it was while the browser is asked
+  // again in the background.
+  const [state, setStateInternal] = useState<PushToggleState>(lastKnownState ?? "unknown");
+  const setState = useCallback((next: PushToggleState) => {
+    lastKnownState = next;
+    setStateInternal(next);
+  }, []);
   const [isBusy, setIsBusy] = useState(false);
 
   useEffect(() => {
@@ -91,6 +114,15 @@ export const usePushToggle = () => {
       }
 
       setState("on");
+
+      // The proof that it worked, and the only kind that can be trusted:
+      // a notification actually arriving on this phone. A toast would only
+      // repeat what the switch already shows.
+      const test = await sendTestPush({ endpoint: subscription.endpoint });
+
+      if (test.status !== "success") {
+        showToast({ message: t("testFailed"), tone: "negative" });
+      }
     } catch (error) {
       if (error instanceof PushSubscriptionError && error.code === "permission-denied") {
         // Nothing in the page can undo this — iOS keeps the answer, and
@@ -115,7 +147,10 @@ export const usePushToggle = () => {
     setState("off");
 
     if (endpoint) await disableUserPush({ endpoint });
-  }, []);
+
+    // Nothing will arrive to say this worked, so the app says it.
+    showToast({ message: t("disabled"), tone: "neutral" });
+  }, [t]);
 
   const toggle = useCallback(
     async (next: boolean) => {

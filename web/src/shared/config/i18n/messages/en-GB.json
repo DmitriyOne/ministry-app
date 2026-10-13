@@ -37,7 +37,11 @@
       "title": "Notifications",
       "description": "Reminders about your report on this iPhone.",
       "deniedDescription": "Turned off in Settings → Notifications for this app.",
-      "saveFailed": "Couldn't save that. Try again in a moment."
+      "saveFailed": "Couldn't save that. Try again in a moment.",
+      "testTitle": "Notifications are on",
+      "testBody": "This is the test. Reminders about your report will arrive here.",
+      "testFailed": "Saved, but the test notification didn't go out.",
+      "disabled": "Notifications are off on this iPhone."
     }
   },
   "a11y": {
