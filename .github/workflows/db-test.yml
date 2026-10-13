@@ -17,8 +17,32 @@
 # (ubuntu-latest already ships Docker).
 name: Database tests
 
+# WHICH PULL REQUESTS RUN THIS (owner's rule, 2026-10-13)
+#
+#   base release*  — only when the pull request is OPENED (or reopened).
+#                    Later commits on the same request do not re-run it.
+#   base develop   — opened, reopened AND every new commit, and only from a
+#                    release branch (that is the only thing that merges
+#                    into develop).
+#   base master    — the same, and only from develop.
+#   anything else  — not run at all.
+#
+# The condition lives on the job rather than in `on:`, because `on:` cannot
+# say "these event types for this base branch and those for that one".
+# A job skipped by `if:` costs no runner.
+#
+# KNOWN HOLE, deliberate: a request into a release branch is tested once,
+# at the moment it is opened. Commits pushed afterwards are not tested, so
+# a green check on such a request can be stale. If these checks are made
+# required for merging, GitHub will accept that stale result. Re-run by
+# hand (the "Run workflow" button, below) after pushing to a request into
+# a release branch.
+#
+# The path filter still applies on top of all of this: a front-end-only
+# change does not start a database.
 on:
   pull_request:
+    types: [opened, reopened, synchronize]
     paths:
       - "backend/**"
       # A hand-edited types file must be checked against the schema too.
@@ -31,6 +55,7 @@ on:
       - "backend/**"
       - "web/src/shared/api/supabase/database.types.ts"
       - ".github/workflows/db-test.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -42,6 +67,12 @@ concurrency:
 jobs:
   pgtap:
     name: pgTAP and generated types
+    # See the note above the triggers.
+    if: >-
+      github.event_name != 'pull_request'
+      || (github.base_ref == 'develop' && startsWith(github.head_ref, 'release'))
+      || (github.base_ref == 'master' && github.head_ref == 'develop')
+      || (contains(github.base_ref, 'release') && github.event.action != 'synchronize')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
