@@ -7,7 +7,7 @@ import { createAdminSupabaseClient } from "@/shared/api";
 import { reportActionFailure } from "@/shared/lib/action-failure";
 import { getClientIp } from "@/shared/lib/rate-limit";
 
-import { checkPushRegistrationRateLimit } from "./rate-limit";
+import { checkUserPushRateLimit } from "./user-push-rate-limit";
 import { enableUserPushSchema, type UserPushResult } from "../model/user-push-schema";
 
 // Links this browser's subscription to the person who is signed in.
@@ -30,10 +30,9 @@ export const enableUserPush = async (input: unknown): Promise<UserPushResult> =>
   }
 
   const ip = getClientIp(await headers());
-  const rateLimit = checkPushRegistrationRateLimit(ip);
 
-  if (!rateLimit.success) {
-    console.warn("[push] rate limit exceeded", { scope: rateLimit.scope });
+  if (!checkUserPushRateLimit(ip).success) {
+    console.warn("[push] rate limit exceeded", { reason: "user-push" });
 
     return { status: "error" };
   }

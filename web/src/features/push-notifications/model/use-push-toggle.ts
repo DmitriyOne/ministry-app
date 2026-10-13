@@ -8,6 +8,7 @@ import { showToast } from "@/shared/ui/sonner";
 
 import { disableUserPush } from "../api/disable-user-push-action";
 import { enableUserPush } from "../api/enable-user-push-action";
+import { readClaimedEndpoint, writeClaimedEndpoint } from "../lib/claimed-endpoint";
 import { readPushSubscription } from "../lib/read-push-subscription";
 import { PushSubscriptionError, subscribeToPush } from "../lib/subscribe-to-push";
 import { unsubscribeFromPush } from "../lib/unsubscribe-from-push";
@@ -51,10 +52,19 @@ export const usePushToggle = () => {
 
       // The device is subscribed, but this account may never have claimed
       // it — the usual way that happens is saying yes from the waitlist
-      // before having an account at all. Claiming is an upsert on the
-      // endpoint, so doing it on every open is free, and without it the
-      // switch would say "on" while nothing could address this person.
-      void enableUserPush(subscription);
+      // before having an account at all. Without the claim the switch
+      // would say "on" while nothing could address this person.
+      //
+      // Once per tab, not once per open: the profile is a tab in the
+      // bottom navigation, and a server call on every visit is a request
+      // that says nothing new in all but the first case. The flag is
+      // keyed by endpoint, so a subscription that changes underneath
+      // (a new one issued after a re-subscribe) is claimed again.
+      if (readClaimedEndpoint() !== subscription.endpoint) {
+        void enableUserPush(subscription).then((result) => {
+          if (result.status === "success") writeClaimedEndpoint(subscription.endpoint);
+        });
+      }
     };
 
     void read();

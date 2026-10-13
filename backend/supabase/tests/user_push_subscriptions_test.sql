@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(13);
+select plan(17);
 
 select has_function(
   'public', 'register_user_push_subscription', 'the register function exists');
@@ -87,6 +87,38 @@ select is(
     '66666666-6666-6666-6666-666666666666', 'https://push.example.com/aaa'),
   true,
   'the owner forgets their own subscription'
+);
+
+-- The case the whole shape of this table exists for: the same device
+-- subscribed from the waitlist first, then signed in. One row, two
+-- owners — not two rows and two sends.
+-- Through join_waitlist, not a plain insert: the enrolment token is
+-- issued by that function, and a row inserted by hand has none — which is
+-- exactly how this test failed the first time it was written.
+select is(
+  public.register_waitlist_push_subscription(
+    (select push_enrollment_token from public.join_waitlist('both@example.com')),
+    'https://push.example.com/both', 'key-w', 'auth-w'),
+  true,
+  'the same device can subscribe from the waitlist first'
+);
+select is(
+  public.register_user_push_subscription(
+    '66666666-6666-6666-6666-666666666666',
+    'https://push.example.com/both', 'key-u', 'auth-u'),
+  true,
+  'and then claim that subscription for an account'
+);
+select is(
+  (select count(*)::int from public.push_subscriptions
+    where endpoint = 'https://push.example.com/both'),
+  1,
+  'one device is still one row'
+);
+select ok(
+  (select waitlist_signup_id is not null and user_id is not null
+     from public.push_subscriptions where endpoint = 'https://push.example.com/both'),
+  'the row carries both owners — the waitlist link is not overwritten'
 );
 
 select * from finish();

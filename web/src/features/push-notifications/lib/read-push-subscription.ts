@@ -14,6 +14,8 @@ import type { SerializablePushSubscription } from "./subscribe-to-push";
 // turned notifications on from the waitlist, in this same installed app,
 // already has a subscription, and the switch must open showing that
 // rather than offering to do it again.
+const SERVICE_WORKER_TIMEOUT_MS = 3000;
+
 export type PushPermission = "unsupported" | "default" | "granted" | "denied";
 
 export type PushState = {
@@ -39,7 +41,21 @@ export const readPushSubscription = async (): Promise<PushState> => {
   }
 
   try {
-    const registration = await navigator.serviceWorker.ready;
+    // navigator.serviceWorker.ready never rejects and never times out: with
+    // no registration at all it simply waits for one, for ever. That is
+    // the state in development, where SerwistProvider is disabled
+    // (root-layout.tsx), and it is also what a worker that fails to
+    // activate looks like in production. Without this race the row would
+    // sit with a permanently disabled switch and no explanation. Three
+    // seconds is far longer than an already-active worker needs.
+    const registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<null>((resolve) => {
+        globalThis.setTimeout(() => resolve(null), SERVICE_WORKER_TIMEOUT_MS);
+      }),
+    ]);
+
+    if (!registration) return { permission: "unsupported", subscription: null };
     const subscription = await registration.pushManager.getSubscription();
     const json = subscription?.toJSON();
 
