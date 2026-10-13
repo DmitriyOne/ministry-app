@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { resolveRoutePolicy, routes } from "@/shared/config";
 import { isStandaloneDisplayMode } from "@/shared/lib/display-mode";
 
+import { resolveSplashDelay } from "./resolve-splash-delay";
+
 // Require launching from a home-screen icon (ADR 0017), otherwise → /install.
 // WHICH addresses those are comes from ROUTE_POLICY (shared/config/
 // route-policy.ts, the launchGate flag), not from a list kept here: this
@@ -69,6 +71,14 @@ export const useLaunchGate = (): UseLaunchGateResult => {
   // no earlier signal, since display-mode/standalone are unreadable until
   // the client has mounted regardless of which effect hook reads them.
   useEffect(() => {
+    // Both guards are for the same situation: the decision below is
+    // asynchronous (a microtask, then possibly a timer), so it can still
+    // be in flight when this component goes away. `cancelled` stops a
+    // setState on an unmounted tree, and the timer handle is what the
+    // cleanup has to clear.
+    let cancelled = false;
+    let dwellTimer: number | undefined;
+
     // The whole decision runs inside a microtask, not directly in the
     // effect body — eslint-plugin-react-hooks' `set-state-in-effect`
     // flags a bare `setPhase(...)` call as a possible cascading render;
@@ -77,6 +87,8 @@ export const useLaunchGate = (): UseLaunchGateResult => {
     // rule without changing timing in any way that matters here — this
     // still resolves within the same task, well before the next paint.
     queueMicrotask(() => {
+      if (cancelled) return;
+
       try {
         const standalone = isStandaloneDisplayMode();
         const path = window.location.pathname;
@@ -102,7 +114,24 @@ export const useLaunchGate = (): UseLaunchGateResult => {
         }
 
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        setPhase(reducedMotion ? "ready" : "exiting");
+        if (reducedMotion) {
+          setPhase("ready");
+          return;
+        }
+
+        // Neither redirect above waits: nobody should be held on a splash
+        // on their way to a different page. The floor applies only to the
+        // one case where the splash is the thing being looked at — this
+        // page is staying, and it is about to be revealed.
+        const dwell = resolveSplashDelay({ elapsedMs: performance.now() });
+        if (dwell === 0) {
+          setPhase("exiting");
+          return;
+        }
+
+        dwellTimer = window.setTimeout(() => {
+          if (!cancelled) setPhase("exiting");
+        }, dwell);
       } catch {
         // Whatever failed above, don't leave the app stuck behind the
         // loading overlay — skip straight to ready, no redirect, no
@@ -110,6 +139,11 @@ export const useLaunchGate = (): UseLaunchGateResult => {
         setPhase("ready");
       }
     });
+
+    return () => {
+      cancelled = true;
+      if (dwellTimer !== undefined) window.clearTimeout(dwellTimer);
+    };
   }, []);
 
   useEffect(() => {

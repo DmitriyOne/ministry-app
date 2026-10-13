@@ -6,6 +6,7 @@
   },
   "common": {
     "back": "Back",
+    "appName": "MinistryApp",
     "loading": "Loading",
     "noscriptRequired": "MinistryApp needs JavaScript enabled to run.",
     "aboutLink": "About",

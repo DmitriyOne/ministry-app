@@ -411,15 +411,24 @@
  * on these elements.
  */
 :root {
-  --shell-transition-duration: 3000ms;
+  /* 600ms, down from the 3000ms this shipped with (ADR 0019, update). The
+     launch decision resolves in a microtask, so those three seconds were
+     not spent loading anything — the app was ready and being withheld.
+     Three seconds also outlasts the gesture that started it, which is what
+     made the app feel unresponsive rather than calm. */
+  --shell-transition-duration: 600ms;
   /* Both variables live on :root, not on .shell-loading: .shell-content-
      enter isn't its descendant, and an invalid var() inside the
      `animation`/`transition` shorthand silently kills the whole thing
      (ADR 0019). */
-  --shell-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  /* ease-out-expo, not the material-style ease-in-out that was here: it
+     spends almost all of its travel in the first third, so the overlay is
+     visually gone well before the transition formally ends. That is the
+     iOS timing, and the one the owner picked from the comparison. */
+  --shell-transition-easing: cubic-bezier(0.16, 1, 0.3, 1);
 }
 .shell-loading {
-  --shell-loading-exit-blur: 9px;
+  --shell-loading-exit-blur: 10px;
   opacity: 1;
   filter: blur(0);
   transition:
@@ -434,6 +443,49 @@
      still mounted and visually fading out, it must not intercept a tap
      meant for the content emerging underneath it. */
   pointer-events: none;
+}
+/*
+ * The splash's own entrance (LaunchLoading: the mark, then the app's
+ * name). Pure CSS with no JavaScript behind it, because the overlay is
+ * server-rendered and in the document from the first paint — the animation
+ * starts when the browser paints it, not when React hydrates, so the mark
+ * is already settling while the bundle is still being parsed.
+ *
+ * The 220ms stagger on the wordmark is the whole effect: mark and name
+ * arriving together read as one image fading in, arriving in sequence
+ * reads as an app opening.
+ *
+ * `both`, unlike .shell-content-enter: these elements animate transform
+ * and opacity, never a filter, so holding the final frame creates no
+ * containing block for fixed descendants — the trap documented below does
+ * not apply here. Holding it is required, since the overlay stays on
+ * screen after the entrance finishes.
+ */
+@keyframes shell-mark-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes shell-wordmark-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.shell-mark {
+  animation: shell-mark-enter 520ms var(--shell-transition-easing) both;
+}
+.shell-wordmark {
+  animation: shell-wordmark-enter 420ms var(--shell-transition-easing) 220ms both;
 }
 @keyframes shell-content-enter {
   from {
@@ -483,6 +535,15 @@
     transition: none;
   }
   .shell-content-enter {
+    animation: none;
+  }
+  /* These two are NOT defence in depth, unlike the rules above: the splash
+     is server-rendered and its entrance plays from the first paint, before
+     any JavaScript has run and therefore before LaunchGate's own
+     reduced-motion check can skip anything. This is the only thing that
+     stops it. */
+  .shell-mark,
+  .shell-wordmark {
     animation: none;
   }
 }
