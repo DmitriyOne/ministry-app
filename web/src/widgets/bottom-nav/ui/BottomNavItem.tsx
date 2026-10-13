@@ -48,19 +48,27 @@ export const BottomNavItem = ({ href, label, children, isPrimary = false }: Bott
           // shadow-nav-primary is what makes the lift read as deliberate
           // rather than as a misplaced circle.
           ? "size-14 -translate-y-2 rounded-full bg-primary text-hero-foreground/85 shadow-nav-primary [--press-scale:0.94]"
-          // rounded-md (18px) under the bar's rounded-xl (22): radii
-          // that sit inside one another have to be concentric, inner =
-          // outer − gap, and the item clears the bar's edge by 5. The
-          // pair of values is the owner's; what matters here is that
-          // they stay a pair — changing the bar's radius without this
-          // one brings back the pasted-on look.
-          : "h-13.5 w-14.5 rounded-md",
+          // No radius and no background: the item is a tap target, not a
+          // shape. That is how the concentric-radius problem went away
+          // rather than being solved again — there is no inner rectangle
+          // left to keep in step with the bar's 28.
+          : "h-13 w-14.5",
         // The inactive colour is --ink-faint, not the prototype's 0.42
-        // opacity: that is the level ADR 0011 rejected as failing AA. The
-        // active one is --primary with a tint behind it — full ink next to
-        // faint ink was a difference you had to look for, and the one
-        // thing a navigation bar must say at a glance is where you are.
-        !isPrimary && (isCurrent ? "bg-primary/10 text-primary" : "text-ink-faint"),
+        // opacity: that is the level ADR 0011 rejected as failing AA.
+        //
+        // The active marker, variant N2: the icon's own shape fills with
+        // the primary colour at 15%, and nothing sits behind it. The
+        // plate is gone deliberately — a tinted rectangle under one of
+        // five items was what the owner disliked, and a filled shape
+        // says the same thing without adding furniture to a 56px bar.
+        //
+        // The fill lands on the <svg> through a descendant selector
+        // because the icon is rendered on the server, by BottomNav, and
+        // handed here as a finished element: this component cannot pass
+        // it a prop, but it can style it.
+        !isPrimary && (isCurrent
+          ? "font-640 text-primary [&_svg]:fill-primary/15"
+          : "text-ink-faint"),
       )}
     >
       {children}

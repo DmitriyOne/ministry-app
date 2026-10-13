@@ -4,12 +4,12 @@ import type { getTranslations } from "next-intl/server";
 
 import { routes, type AppRoute } from "@/shared/config";
 import {
-  CalendarIcon,
+  CalendarMonthIcon,
+  CalendarWeekIcon,
+  ChartBarIcon,
   type IconProps,
-  MonthIcon,
   PlusIcon,
-  ProfileIcon,
-  YearIcon,
+  UserIcon,
 } from "@/shared/ui/icons";
 
 // Key type derived from the actual translator, not hand-typed — the same
@@ -32,10 +32,15 @@ export type NavItem = {
 
 // The order is the order on screen. A sixth item is added here, not in
 // ui/BottomNav.tsx — same approach as the footer's link list.
+// The icons are the N2 family (Tabler, MIT, copied in as components —
+// see shared/ui/icons/calendar-week-icon.tsx): one grid, one stroke
+// weight, and shapes closed enough to be filled, which is what marks the
+// active item. The project's older drawings stay where they are used, on
+// the about screen.
 export const navItems: NavItem[] = [
-  { href: routes.calendar, labelKey: "calendar", Icon: CalendarIcon },
-  { href: routes.month, labelKey: "month", Icon: MonthIcon },
+  { href: routes.calendar, labelKey: "calendar", Icon: CalendarWeekIcon },
+  { href: routes.month, labelKey: "month", Icon: CalendarMonthIcon },
   { href: routes.day, labelKey: "day", Icon: PlusIcon, isPrimary: true },
-  { href: routes.year, labelKey: "year", Icon: YearIcon },
-  { href: routes.profile, labelKey: "profile", Icon: ProfileIcon },
+  { href: routes.year, labelKey: "year", Icon: ChartBarIcon },
+  { href: routes.profile, labelKey: "profile", Icon: UserIcon },
 ];

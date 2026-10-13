@@ -18,13 +18,16 @@ export const BottomNav = async () => {
   return (
     <nav
       aria-label={t("label")}
-      className="fixed bottom-[calc(--spacing(6)+env(safe-area-inset-bottom))] left-1/2 z-40 flex h-16 -translate-x-1/2 items-center gap-1 rounded-xl border border-nav-border bg-nav-surface px-2 shadow-nav backdrop-blur-[26px] backdrop-saturate-[1.8]"
+      className="fixed bottom-[calc(--spacing(1)+env(safe-area-inset-bottom))] left-1/2 z-40 flex h-14 -translate-x-1/2 items-center gap-1 rounded-3xl border border-nav-border bg-nav-surface px-2.5 shadow-nav backdrop-blur-[26px] backdrop-saturate-[1.8]"
     >
       {navItems.map(({ href, labelKey, Icon, isPrimary }) => (
         <BottomNavItem key={href} href={href} label={t(labelKey)} isPrimary={isPrimary}>
           {/* aria-hidden by default in every icon of ours: the label next
               to it already says the same thing. */}
-          <Icon size={isPrimary ? 20 : 18} />
+          {/* The primary button keeps its own size and a heavier stroke
+              than our older PlusIcon draws by default, so the one icon
+              that is not from the N2 family still reads as part of it. */}
+          <Icon size={isPrimary ? 20 : 26} strokeWidth={2} />
         </BottomNavItem>
       ))}
     </nav>

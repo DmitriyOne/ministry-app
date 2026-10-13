@@ -14,11 +14,13 @@ type WithBottomNavLayoutProps = {
 //
 // The bar is fixed, so it is out of flow and cannot push anything: the
 // padding below is what keeps the last line of a screen from hiding
-// underneath it. 26 spacing steps = the prototype's 24px offset + the
-// 64px bar + the 12px the Day button is lifted by, plus the safe-area
-// inset underneath all three.
+// underneath it. 20 spacing steps = the bar's 4px offset + its 56px + the
+// 8px the Day button is lifted by + ~12 of air, plus the safe-area inset
+// underneath all four. It shrank with the bar when the menu moved to
+// variant N2 — leaving the old 26 would have put back exactly the empty
+// space at the bottom the owner asked to remove.
 export const WithBottomNavLayout = ({ children }: WithBottomNavLayoutProps) => (
-  <div className="flex min-h-dvh flex-col pb-[calc(--spacing(26)+env(safe-area-inset-bottom))]">
+  <div className="flex min-h-dvh flex-col pb-[calc(--spacing(20)+env(safe-area-inset-bottom))]">
     {children}
     <BottomNav />
     {/* Renders nothing. These five screens all require a session, so a
