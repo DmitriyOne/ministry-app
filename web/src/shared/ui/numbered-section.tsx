@@ -27,7 +27,7 @@ type NumberedSectionProps = {
 export const NumberedSection = ({ id, number, title, children }: NumberedSectionProps) => (
   <section
     id={id}
-    className="flex scroll-mt-[calc(env(safe-area-inset-top)+92px)] flex-col gap-2"
+    className="flex scroll-mt-screen-header flex-col gap-2"
   >
     <h2 className="flex items-baseline gap-2 text-list-row font-600 tracking-list-row text-ink">
       <span aria-hidden="true" className="text-caption font-620 tabular-nums text-ink-faint">

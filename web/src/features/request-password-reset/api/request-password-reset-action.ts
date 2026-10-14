@@ -2,8 +2,8 @@
 
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
-import { z } from "zod";
 
+import { firstFieldErrors } from "@/shared/lib/forms";
 import { getClientIp } from "@/shared/lib/rate-limit";
 
 import { checkRequestPasswordResetRateLimit } from "./rate-limit";
@@ -42,9 +42,7 @@ export const requestPasswordReset = async (
     // A malformed address says nothing about who has an account, so this
     // one case may answer honestly — and has to, or a typo would look like
     // a request that went through.
-    const { email } = z.flattenError(result.error).fieldErrors;
-
-    return { status: "error", fieldErrors: { email: email?.[0] } };
+    return { status: "error", fieldErrors: firstFieldErrors(result.error) };
   }
 
   // No mail is sent yet (that waits for a mail sender), so this log IS the

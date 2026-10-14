@@ -1,6 +1,8 @@
-import { isStandaloneDisplayMode } from "@/shared/lib/display-mode";
-
-import type { SerializablePushSubscription } from "./subscribe-to-push";
+import {
+  canUseWebPush,
+  toSerializableSubscription,
+  type SerializablePushSubscription,
+} from "./push-capability";
 
 // What the browser currently thinks, without asking the person anything.
 //
@@ -28,15 +30,10 @@ export type PushState = {
 };
 
 export const readPushSubscription = async (): Promise<PushState> => {
-  if (
-    !("serviceWorker" in navigator)
-    || !("PushManager" in window)
-    || !("Notification" in window)
-    // iOS delivers Web Push only to a Home Screen app. In a tab the APIs
-    // exist and the subscription would fail later, so the honest answer
-    // here is that this browser cannot do it at all.
-    || !isStandaloneDisplayMode()
-  ) {
+  // Same judgement as subscribeToPush, from the same place
+  // (push-capability.ts): a browser this says no to is one where the
+  // subscription would fail later anyway.
+  if (!canUseWebPush()) {
     return { permission: "unsupported", subscription: null };
   }
 
@@ -57,17 +54,10 @@ export const readPushSubscription = async (): Promise<PushState> => {
 
     if (!registration) return { permission: "unsupported", subscription: null };
     const subscription = await registration.pushManager.getSubscription();
-    const json = subscription?.toJSON();
 
     return {
       permission: Notification.permission,
-      // A subscription missing either key is unusable for sending, so it
-      // counts as not having one — the same judgement subscribeToPush
-      // makes about what it produces.
-      subscription:
-        json?.endpoint && json.keys?.p256dh && json.keys.auth
-          ? { endpoint: json.endpoint, keys: { p256dh: json.keys.p256dh, auth: json.keys.auth } }
-          : null,
+      subscription: toSerializableSubscription(subscription),
     };
   } catch {
     // The worker never became ready, or the push manager refused to
