@@ -5,7 +5,7 @@ import { getSessionClaims } from "@/entities/session";
 import { PushNotificationsToggle } from "@/features/push-notifications";
 import { SignOutButton } from "@/features/sign-out";
 import { createServerSupabaseClient } from "@/shared/api";
-import { APP_VERSION, routes } from "@/shared/config";
+import { APP_VERSION, hasUnreadVersion, routes } from "@/shared/config";
 import { hasRole } from "@/shared/lib/auth";
 import { getInitials } from "@/shared/lib/display-name";
 import { LinkButton } from "@/shared/ui/button";
@@ -43,12 +43,18 @@ export const ProfileScreen = async () => {
   // string, and the row still reads correctly.
   const initials = getInitials(displayName);
 
-  // The dot on the What's New row. It is lit whenever the version this
-  // person last opened that screen for is not the version now running —
-  // null (nobody has opened it yet) included, which is why it shows on a
-  // first visit. The known cost of comparing against the whole version is
-  // in ADR 0057: a release with nothing worth reading lights it too.
-  const hasUnreadWhatsNew = profile?.whats_new_seen !== APP_VERSION;
+  // The dot on the What's New row, lit when this person has opened that
+  // screen for nothing, or for a version older than the one running.
+  //
+  // A profile that did not load is a separate case and gets no dot: it
+  // means the read failed, not that there is news, and a database problem
+  // should not reach the screen as a claim about new features.
+  //
+  // The known cost of keying this to the whole version is in ADR 0057: a
+  // release with nothing worth reading lights the dot as well.
+  const hasUnreadWhatsNew = profile
+    ? hasUnreadVersion(profile.whats_new_seen, APP_VERSION)
+    : false;
 
   // The only use of the role guard in v2 (ADR 0044): nothing branches on
   // the role, the screen just names it.
