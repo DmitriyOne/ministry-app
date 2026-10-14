@@ -11,10 +11,9 @@ import { OfflineScreen } from "@/pages/offline";
 
 type NetworkGateProps = {
   children: ReactNode;
-  checking: ReactNode;
 };
 
-export const NetworkGate = ({ children, checking }: NetworkGateProps) => {
+export const NetworkGate = ({ children }: NetworkGateProps) => {
   const {
     status,
     isChecking,
@@ -27,30 +26,26 @@ export const NetworkGate = ({ children, checking }: NetworkGateProps) => {
   // session).
   useRefreshOnReconnect(status);
 
-  let content: ReactNode;
-
-  if (status === "checking") {
-    content = (
-      <main
-        role="status"
-        aria-live="polite"
-        className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-background"
-      >
-        {checking}
-      </main>
-    );
-  } else if (status === "offline") {
-    content = (
-      <OfflineScreen
-        retrying={isChecking}
-        onRetry={() => {
-          void retry();
-        }}
-      />
-    );
-  } else {
-    content = children;
-  }
+  // "checking" renders the app, not a waiting screen. It used to render a
+  // spinner, which meant the first paint of every launch was a spinner and
+  // the real screen waited for hydration plus a round trip to
+  // /api/v1/health — on a static page, the whole point of it being static.
+  // Nothing is actually being waited for: check-connectivity answers
+  // immediately when navigator.onLine is false, so a genuinely offline
+  // device reaches the branch below within a tick. The 5s timeout only
+  // applies to the online-but-unreachable case, and holding the app
+  // hostage for five seconds on the chance of that is the wrong trade
+  // (release review, 2026-10-14 — ADR 0055).
+  const content: ReactNode = status === "offline"
+    ? (
+        <OfflineScreen
+          retrying={isChecking}
+          onRetry={() => {
+            void retry();
+          }}
+        />
+      )
+    : children;
 
   return (
     <>
