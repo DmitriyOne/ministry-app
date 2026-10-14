@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, ElementType } from "react";
+import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react";
 import { cn } from "@/shared/lib/cn";
 
 // The component catalogue described 4 sizes (26/30/32/36) for four
@@ -14,7 +14,14 @@ const TONE = {
   hero: "text-hero-foreground",
 } as const;
 
+// `children` is required on purpose. Everything here is spread onto the
+// tag, so `<Title title="Privacy" />` used to compile into an empty
+// `<h1 title="Privacy">`: `title` is a valid attribute on any element, so
+// neither TypeScript nor the linter saw anything wrong, and the screen
+// simply had no visible heading (found on /privacy). Demanding children
+// turns that spelling into a compile error.
 type TitleProps = ComponentPropsWithoutRef<"h1"> & {
+  children: ReactNode;
   as?: ElementType;
   size?: keyof typeof SIZE;
   tone?: keyof typeof TONE;
