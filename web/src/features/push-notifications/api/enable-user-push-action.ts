@@ -57,6 +57,15 @@ export const enableUserPush = async (input: unknown): Promise<UserPushResult> =>
     );
 
     if (error || data !== true) {
+      // The switch is about to say "off" while the browser holds a live
+      // subscription. supabase-js does not throw on a failed query, so
+      // this never reaches the catch below.
+      reportActionFailure({
+        scope: "push",
+        error: error ?? new Error("register_user_push_subscription returned false"),
+        outcome: "failed",
+        context: { reason: "supabase-error", code: error?.code },
+      });
       console.warn("[push] could not register subscription", { code: error?.code });
 
       return { status: "error" };
