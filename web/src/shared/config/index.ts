@@ -5,3 +5,5 @@ export { locale } from "./i18n";
 export type { AppLocale } from "./i18n";
 export { routes } from "./routes";
 export type { AppRoute } from "./routes";
+export { resolveRoutePolicy } from "./route-policy";
+export type { RoutePolicy, RouteSessionRule } from "./route-policy";

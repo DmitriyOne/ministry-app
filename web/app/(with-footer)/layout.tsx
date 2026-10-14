@@ -14,20 +14,20 @@ import { ScreenFooter } from "@/widgets/screen-footer";
 //
 // This wrapper is what makes the footer fit on the first screen instead
 // of trailing off below the fold: it — not each screen — reserves the
-// full viewport height (`min-h-dvh`) and lays it out as a column, so the
+// full viewport height (`min-h-app`) and lays it out as a column, so the
 // footer (natural height, last) and the screen's content (`flex-1` via
 // CenteredState's `fill` prop) share it instead of the content claiming
 // the whole viewport and pushing the footer past the bottom edge. On
 // tall content (e.g. /soon with the keyboard open and a validation
 // error) `flex-1` doesn't clip it — flex items don't shrink below their
 // content's natural height by default — so the column grows past
-// `min-h-dvh` and the page scrolls, same as before.
+// `min-h-app` and the page scrolls, same as before.
 type WithFooterLayoutProps = {
   children: ReactNode;
 };
 
 const WithFooterLayout = ({ children }: WithFooterLayoutProps) => (
-  <div className="flex min-h-dvh flex-col">
+  <div className="flex min-h-app flex-col">
     {children}
     <ScreenFooter />
   </div>

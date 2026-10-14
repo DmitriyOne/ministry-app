@@ -48,7 +48,22 @@ export const LaunchGate = ({ loading, children }: LaunchGateProps) => {
         </div>
       )}
       {phase !== "loading" && (
-        <div className="shell-content-enter flex min-h-full flex-1 flex-col">{children}</div>
+        <div
+          className={cn(
+            "flex min-h-full flex-1 flex-col",
+            // Only while the overlay is on its way out. The animation
+            // blurs this element, and a filter — `blur(0)` included —
+            // makes it the containing block for every fixed descendant,
+            // which here means the toaster and the navigation bar (see
+            // the note on .shell-content-enter in globals.css). Keeping
+            // the class after the animation has served its purpose is
+            // what put the toasts at the top of the document instead of
+            // the top of the screen.
+            phase === "exiting" && "shell-content-enter",
+          )}
+        >
+          {children}
+        </div>
       )}
     </>
   );

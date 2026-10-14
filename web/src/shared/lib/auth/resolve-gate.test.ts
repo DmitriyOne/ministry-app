@@ -86,4 +86,31 @@ describe("resolveGate", () => {
       expect(resolveGate({ pathname, hasSession: true })).toEqual({ action: "pass" });
     }
   });
+
+  // An address this app does not own is not the gate's business: the
+  // proxy leaves it alone so Next.js can answer with a real 404.
+  it("leaves an unknown address alone", () => {
+    expect(resolveGate({ pathname: "/qwerty", hasSession: false })).toEqual({ action: "pass" });
+  });
+
+  // The whole /admin family is gated, not just the one path that has a
+  // route constant today. A screen added under /admin is shielded from
+  // its first request rather than from the commit that remembers to list
+  // it — which is the mistake that already shipped once (the screen was
+  // missing from LaunchGate's list of app screens).
+  it("gates an admin path that is not in the route map", () => {
+    for (const pathname of ["/admin", "/admin/users", "/admin/users/42/edit"]) {
+      expect(resolveGate({ pathname, hasSession: false })).toEqual({
+        action: "redirect",
+        to: "/login",
+      });
+      expect(resolveGate({ pathname, hasSession: true, role: "user" })).toEqual({
+        action: "redirect",
+        to: "/profile",
+      });
+      expect(resolveGate({ pathname, hasSession: true, role: "admin" })).toEqual({
+        action: "pass",
+      });
+    }
+  });
 });

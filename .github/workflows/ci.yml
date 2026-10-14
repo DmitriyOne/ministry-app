@@ -1,4 +1,5 @@
-# Fast checks on every pull request and every push to the long-lived branches:
+# Fast checks on the merges the owner named (see the trigger note below) and
+# on every push to master:
 # lint (ESLint + steiger FSD boundaries), type check and unit tests (vitest).
 #
 # Deliberately NOT here: `pnpm build`. The root script is
@@ -11,10 +12,45 @@
 # No secrets or variables are needed.
 name: CI
 
+# WHICH PULL REQUESTS RUN THIS (owner's rule, 2026-10-13)
+#
+#   base release*  — only when the pull request is OPENED (or reopened).
+#                    Later commits on the same request do not re-run it.
+#   base develop   — opened, reopened AND every new commit, and only from a
+#                    release branch (that is the only thing that merges
+#                    into develop).
+#   base master    — the same, from develop and from hotfix/*. A hotfix
+#                    skips develop by definition, so without it the one
+#                    change that reaches production fastest would be the
+#                    only one nothing checks.
+#   anything else  — not run at all.
+#
+# The condition lives on the job rather than in `on:`, because `on:` cannot
+# say "these event types for this base branch and those for that one".
+# A job skipped by `if:` costs no runner.
+#
+# KNOWN HOLE, deliberate: a request into a release branch is tested once,
+# at the moment it is opened. Commits pushed afterwards are not tested, so
+# a green check on such a request can be stale. This is exactly why these
+# checks are required in branch protection for develop and master but NOT
+# for a release branch (ADR 0052): a required check that accepts a stale
+# result looks like a lock and is not one. Re-run by hand (the "Run
+# workflow" button, below) after pushing to a request into a release branch.
+#
+# `push` runs on master only. Its job is to check the RESULT of a merge
+# rather than the branch before it — two requests can each be green and
+# still break once combined. On develop that duplicated a check the pull
+# request had just run against the same code (nothing merges into develop
+# except a release branch, which is tested commit by commit), so the owner
+# kept it where a bad merge actually costs something.
+# `workflow_dispatch` is the way to re-run the checks on a request into a
+# release branch without closing and reopening it.
 on:
   pull_request:
+    types: [opened, reopened, synchronize]
   push:
-    branches: [develop, master]
+    branches: [master]
+  workflow_dispatch:
 
 # Least privilege: the checks only read the repository.
 permissions:
@@ -29,6 +65,13 @@ concurrency:
 jobs:
   checks:
     name: Lint, types, tests
+    # See the note above the triggers.
+    if: >-
+      github.event_name != 'pull_request'
+      || (github.base_ref == 'develop' && startsWith(github.head_ref, 'release'))
+      || (github.base_ref == 'master' && github.head_ref == 'develop')
+      || (github.base_ref == 'master' && startsWith(github.head_ref, 'hotfix/'))
+      || (contains(github.base_ref, 'release') && github.event.action != 'synchronize')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

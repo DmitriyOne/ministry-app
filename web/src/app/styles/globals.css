@@ -347,6 +347,31 @@
 }
 
 /*
+ * The on-screen keyboard, as a length the layout can use.
+ *
+ * iOS does not shrink the layout viewport when the keyboard opens — 100dvh
+ * is the same number before and after — so a screen sized at full height
+ * keeps claiming the whole phone while the bottom of it sits behind the
+ * keyboard. Safari supports neither `interactive-widget=resizes-content`
+ * (Chrome only) nor `env(keyboard-inset-height)` (the VirtualKeyboard API,
+ * Chrome only), so the height is measured from the visual viewport by
+ * KeyboardInsetSync (src/app/layout/keyboard-inset-sync.tsx) and written
+ * here. Without JavaScript, or in a browser with no visualViewport, the
+ * declaration below is what applies and nothing changes.
+ *
+ * `min-h-app` is min-height, not height, on purpose: content taller than
+ * the space left over keeps its own height and the page scrolls to it,
+ * instead of being clipped into a band it does not fit.
+ */
+:root {
+  --keyboard-inset: 0px;
+}
+
+@utility min-h-app {
+  min-height: calc(100dvh - var(--keyboard-inset));
+}
+
+/*
  * Shell gate transition — the "unfocus" effect (ADR 0019). Ownership
  * moved from CSS to React (LaunchGate, web/src/features/launch-gate/ui/launch-gate.tsx):
  * the loading overlay and the app content are mounted/unmounted by React
@@ -385,16 +410,66 @@
  * и специфичность" pitfall), in case competing utility classes ever land
  * on these elements.
  */
+/*
+ * ---------------------------------------------------------------------
+ * THE LAUNCH SPLASH'S TIMING — all of it, and the only place to edit it.
+ * ---------------------------------------------------------------------
+ * Five numbers, in the order they happen. Change them here and nowhere
+ * else: the animations below read them, and so does the JavaScript (the
+ * dwell, via getComputedStyle in features/launch-gate/model/
+ * use-launch-gate.ts). There is no second copy in TypeScript.
+ *
+ *   0ms                    first paint — the mark starts arriving
+ *   --shell-splash-mark-duration           mark has arrived
+ *   --shell-splash-wordmark-delay          name starts arriving
+ *     + --shell-splash-wordmark-duration   name has arrived
+ *   --shell-splash-dwell   measured from first paint — exit begins
+ *   + --shell-transition-duration          overlay is gone
+ *
+ * The one rule: --shell-splash-dwell must be LONGER than the entrance it
+ * waits for (mark-duration, and wordmark-delay + wordmark-duration,
+ * whichever ends later), or the splash starts leaving before it has
+ * finished arriving. That was the bug the owner reported as "the
+ * animation is so short you can't see it at all" — ADR 0019, update
+ * 2026-10-14. The spare time between the two is how long the finished
+ * splash is simply held, which is what makes it readable rather than a
+ * flicker.
+ *
+ * Why 1100ms of dwell: the entrance finishes at 720ms (260 + 460), and a
+ * held beat of ~380ms is what reads as deliberate. Total visible is about
+ * 1.5s including the exit, against the 3s this started at — the
+ * complaint then was the opposite one.
+ *
+ * To watch the effect of a change without rebuilding and reinstalling the
+ * app on a phone, the tuner has the same five numbers on sliders and
+ * prints the values to paste back here (see ADR 0019, update).
+ */
 :root {
-  --shell-transition-duration: 3000ms;
+  /* Exit: how long the overlay takes to fade and blur away. Reads as
+     shorter than it is — see the easing below. */
+  --shell-transition-duration: 700ms;
   /* Both variables live on :root, not on .shell-loading: .shell-content-
      enter isn't its descendant, and an invalid var() inside the
      `animation`/`transition` shorthand silently kills the whole thing
      (ADR 0019). */
-  --shell-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  /* ease-out-expo, not the material-style ease-in-out that was here: it
+     spends almost all of its travel in the first third, so the overlay is
+     visually gone well before the transition formally ends. That is the
+     iOS timing, and the one the owner picked from the comparison. */
+  --shell-transition-easing: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Entrance, played from the first paint — see the block above. */
+  --shell-splash-mark-duration: 560ms;
+  --shell-splash-wordmark-delay: 260ms;
+  --shell-splash-wordmark-duration: 460ms;
+
+  /* How long the splash stays before it starts leaving, measured from the
+     first paint. Read by JavaScript, not by any rule in this file —
+     a value CSS cannot express a wait with. Must outlast the entrance. */
+  --shell-splash-dwell: 1100ms;
 }
 .shell-loading {
-  --shell-loading-exit-blur: 9px;
+  --shell-loading-exit-blur: 10px;
   opacity: 1;
   filter: blur(0);
   transition:
@@ -410,6 +485,50 @@
      meant for the content emerging underneath it. */
   pointer-events: none;
 }
+/*
+ * The splash's own entrance (LaunchLoading: the mark, then the app's
+ * name). Pure CSS with no JavaScript behind it, because the overlay is
+ * server-rendered and in the document from the first paint — the animation
+ * starts when the browser paints it, not when React hydrates, so the mark
+ * is already settling while the bundle is still being parsed.
+ *
+ * The stagger on the wordmark (--shell-splash-wordmark-delay) is the
+ * whole effect: mark and name arriving together read as one image fading
+ * in, arriving in sequence reads as an app opening.
+ *
+ * `both`, unlike .shell-content-enter: these elements animate transform
+ * and opacity, never a filter, so holding the final frame creates no
+ * containing block for fixed descendants — the trap documented below does
+ * not apply here. Holding it is required, since the overlay stays on
+ * screen after the entrance finishes.
+ */
+@keyframes shell-mark-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes shell-wordmark-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.shell-mark {
+  animation: shell-mark-enter var(--shell-splash-mark-duration) var(--shell-transition-easing) both;
+}
+.shell-wordmark {
+  animation: shell-wordmark-enter var(--shell-splash-wordmark-duration)
+    var(--shell-transition-easing) var(--shell-splash-wordmark-delay) both;
+}
 @keyframes shell-content-enter {
   from {
     opacity: 0;
@@ -420,8 +539,31 @@
     filter: blur(0);
   }
 }
+/*
+ * NO `forwards`, and the class is removed as soon as the phase reaches
+ * "ready" (ui/launch-gate.tsx) — both on purpose, and not a style
+ * preference. The keyframes animate `filter`, and an element with any
+ * filter other than `none` becomes the containing block for every
+ * `position: fixed` descendant. `blur(0)` is still a filter. With
+ * `animation-fill-mode: forwards` the last keyframe stayed applied for
+ * the life of the page, so this wrapper — which contains the whole app,
+ * the toaster and the bottom navigation included — permanently
+ * positioned them against ITSELF instead of the viewport: toasts landed
+ * at the top of the document rather than the top of the screen (invisible
+ * once scrolled) and the navigation bar sat against the end of the
+ * content. Found on a real iPhone, and invisible under DEV_MODE=true,
+ * where LaunchGate is not mounted at all and the wrapper carries no
+ * animation.
+ *
+ * Dropping `forwards` is safe because the final keyframe (opacity 1,
+ * blur 0) is identical to this element's base style, so there is nothing
+ * to hold: the animation ends and the element keeps looking exactly the
+ * same, minus the filter. The containing block therefore exists only
+ * while the animation runs — and for that moment the loading overlay is
+ * still on top of everything anyway.
+ */
 .shell-content-enter {
-  animation: shell-content-enter var(--shell-transition-duration) var(--shell-transition-easing) forwards;
+  animation: shell-content-enter var(--shell-transition-duration) var(--shell-transition-easing);
 }
 @media (prefers-reduced-motion: reduce) {
   /* Defence in depth — LaunchGate's own effect already checks
@@ -435,6 +577,15 @@
     transition: none;
   }
   .shell-content-enter {
+    animation: none;
+  }
+  /* These two are NOT defence in depth, unlike the rules above: the splash
+     is server-rendered and its entrance plays from the first paint, before
+     any JavaScript has run and therefore before LaunchGate's own
+     reduced-motion check can skip anything. This is the only thing that
+     stops it. */
+  .shell-mark,
+  .shell-wordmark {
     animation: none;
   }
 }
@@ -500,4 +651,38 @@ input:is(:autofill, :-webkit-autofill) {
   box-shadow: inset 0 0 0 1000px var(--autofill-surface, var(--background));
   -webkit-text-fill-color: var(--autofill-ink, var(--ink));
   caret-color: var(--autofill-ink, var(--ink));
+}
+
+/*
+ * The colour of the status-bar area in the installed app, and of the
+ * overscroll rubber-band.
+ *
+ * Measured on a real iPhone: on /login the strip behind the clock came
+ * out the warm grey of --background while the screen itself is deep
+ * green. Neither <main> nor any element in the page paints that strip —
+ * the system does, and it takes the colour from the DOCUMENT (<html>/
+ * <body>), which @layer base paints --background for every screen. The
+ * same colour is what shows when the page is dragged past its top edge.
+ *
+ * So the document follows the screen: a screen that declares itself deep
+ * (CenteredState's `background="deep"`, which emits the attribute below)
+ * paints the document deep too. :has() does this at first paint, on the
+ * server-rendered markup — doing it from JavaScript would mean a flash of
+ * the wrong colour on every launch.
+ *
+ * Unlayered on purpose, like the autofill rule above: `body` is painted
+ * inside @layer base, and an unlayered declaration beats a layered one
+ * whatever the specificity.
+ *
+ * Two things this does NOT fix, both outside CSS: iOS reads the
+ * theme-color/apple-mobile-web-app-* tags ONCE, when the icon is added to
+ * the Home Screen, and caches them with it — an icon added before a change
+ * keeps the old behaviour until it is deleted and re-added; and on iOS 26
+ * `theme-color` is no longer what tints the bar in a browser tab at all
+ * (the system samples the page instead), which is why the fix lives in the
+ * page's own colours rather than in a meta tag.
+ */
+html:has([data-screen-tone="hero"]),
+body:has([data-screen-tone="hero"]) {
+  background-color: var(--hero);
 }

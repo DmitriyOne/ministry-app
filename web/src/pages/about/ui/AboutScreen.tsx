@@ -3,16 +3,16 @@ import { getTranslations } from "next-intl/server";
 import { ScreenBackHeader } from "@/features/screen-back";
 import { AppMark } from "@/shared/ui/app-mark";
 import {
-  CalendarIcon,
+  CalendarWeekIcon,
   ChartArrowIcon,
   CompassIcon,
   LockClosedIcon,
   LockOpenIcon,
-  MonthIcon,
+  CalendarMonthIcon,
   PlusIcon,
-  ProfileIcon,
+  UserIcon,
   TargetIcon,
-  YearIcon,
+  ChartBarIcon,
 } from "@/shared/ui/icons";
 import { ListCard } from "@/shared/ui/list-card";
 import { ListRow } from "@/shared/ui/list-row";
@@ -86,23 +86,23 @@ export const AboutScreen = async () => {
             text={t("screens.day.text")}
           />
           <ListRow
-            icon={<CalendarIcon size={18} />}
+            icon={<CalendarWeekIcon size={18} />}
             title={t("screens.calendar.title")}
             text={t("screens.calendar.text")}
           />
           <ListRow
-            icon={<MonthIcon size={18} />}
+            icon={<CalendarMonthIcon size={18} />}
             title={t("screens.month.title")}
             text={t("screens.month.text")}
           />
           <ListRow
-            icon={<YearIcon size={18} />}
+            icon={<ChartBarIcon size={18} />}
             title={t("screens.year.title")}
             text={t("screens.year.text")}
           />
           <ListRow
             divided={false}
-            icon={<ProfileIcon size={18} />}
+            icon={<UserIcon size={18} />}
             title={t("screens.profile.title")}
             text={t("screens.profile.text")}
           />

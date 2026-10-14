@@ -9,7 +9,7 @@ import type { NextRequest } from "next/server";
 import { createSupabaseClientWithCookies } from "@/shared/api/supabase/create-client-with-cookies";
 import { classifyAccess } from "@/shared/lib/access";
 import { parseSessionClaims, resolveGate } from "@/shared/lib/auth";
-import { env, routes } from "@/shared/config";
+import { env, resolveRoutePolicy, routes } from "@/shared/config";
 
 // redirect, not rewrite — the address bar DOES change (ADR 0017's
 // "Обновление: redirect вместо rewrite для /access/*" explains why a
@@ -21,38 +21,23 @@ const BLOCKED_SCREEN_PATH: Record<"desktop" | "android" | "ios-not-safari", stri
   "ios-not-safari": routes.accessIosBrowser,
 };
 
-// Only these paths go through classification — otherwise non-existent
-// addresses would get a device placeholder instead of a real 404.
-// "/about" and "/privacy" are both in the list (device shield applies —
-// desktop/Android still get a placeholder) but deliberately NOT in
-// LaunchGate's APP_SCREEN_PATHS (features/launch-gate/model/
-// use-launch-gate.ts): both open in an ordinary Safari tab, not only
-// from the home-screen icon — see ADR 0029 (about) and ADR 0031
-// (privacy). All paths come from shared/config/routes.ts (ADR 0030) —
-// the single place these literals are written down.
-const APP_ROUTES: string[] = [
-  routes.root,
-  routes.day,
-  routes.soon,
-  routes.install,
-  routes.about,
-  routes.privacy,
-  routes.login,
-  routes.forgotPassword,
-  routes.calendar,
-  routes.month,
-  routes.year,
-  routes.profile,
-  routes.adminNewUser,
-];
-
+// WHICH addresses this proxy touches at all is decided by ROUTE_POLICY
+// (shared/config/route-policy.ts), not by a list kept here: an address
+// missing from a list like that is not shielded at all, and that failure
+// is silent. The map is typed `Record<AppRoute, …>`, so a new entry in
+// routes.ts does not compile until it has been classified, and everything
+// under /admin is admin-only even before it is listed.
+//
+// An address with no policy is left alone on purpose — otherwise a
+// non-existent address (/qwerty) would get a device placeholder instead
+// of a real 404.
 // The server can't see display-mode (standalone/fullscreen) — that check
 // is done by LaunchGate on the client (ADR 0017/0019/0028). What the server
 // decides is the device class and, for v2, whether there is a session.
 //
 // The order of the checks below is load-bearing:
 //   1. DEV_MODE bypasses everything;
-//   2. paths outside APP_ROUTES are left alone, so /qwerty is a real 404;
+//   2. an address with no policy is left alone, so /qwerty is a real 404;
 //   3. the device shield runs before the session is even read, so a
 //      desktop visitor never reaches /login;
 //   4. only then does the session decide (resolveGate).
@@ -60,10 +45,11 @@ export const proxy = async (request: NextRequest) => {
   if (env.DEV_MODE) return NextResponse.next();
 
   const { pathname } = request.nextUrl;
-  if (!APP_ROUTES.includes(pathname)) return NextResponse.next();
+  const policy = resolveRoutePolicy(pathname);
+  if (!policy) return NextResponse.next();
 
   const access = classifyAccess(request.headers.get("user-agent") ?? "");
-  if (access !== "ios-safari") {
+  if (policy.deviceShield && access !== "ios-safari") {
     const url = request.nextUrl.clone();
     url.pathname = BLOCKED_SCREEN_PATH[access];
     // 307 Temporary Redirect, not 308/permanent: the device class is
@@ -77,6 +63,15 @@ export const proxy = async (request: NextRequest) => {
     // though every request through this proxy is a GET in practice.
     return NextResponse.redirect(url, 307);
   }
+
+  // Nothing left to decide for an address that needs neither a session
+  // nor the absence of one: the public landing, the install instructions,
+  // the two documents and the /access/* screens themselves. Reading the
+  // session there would cost a signature check (and, on a project signing
+  // symmetrically, a call to the auth server) to reach the same answer.
+  // Skipping the refresh on those pages loses nothing — the next gated
+  // navigation refreshes the token before the screen renders.
+  if (policy.session === "any" && !policy.adminOnly) return NextResponse.next();
 
   // Cookies come from the request here, not from next/headers, so this
   // client is built inline instead of through shared/api/supabase/server.
@@ -109,7 +104,17 @@ export const proxy = async (request: NextRequest) => {
   try {
     const { data } = await supabase.auth.getClaims();
     claims = parseSessionClaims(data?.claims ?? null);
-  } catch {
+  } catch (error) {
+    // Nothing from next/navigation can be thrown here — the proxy neither
+    // redirects by throwing nor renders, so there is no framework signal
+    // to swallow (unlike a Server Action or a screen, see
+    // shared/lib/action-failure). The log line is the whole point: without
+    // it, a verification that cannot reach the JWKS endpoint looks exactly
+    // like a visitor who is not signed in.
+    console.warn("[proxy] claims unavailable", {
+      error: error instanceof Error ? error.name : typeof error,
+    });
+
     claims = null;
   }
 
@@ -141,7 +146,8 @@ export const proxy = async (request: NextRequest) => {
 };
 
 // "monitoring" is Sentry's tunnel route (next.config.ts). The proxy already
-// ignores every path outside APP_ROUTES, but that is a side effect; Sentry's
+// ignores every address with no route policy, but that is a side effect;
+// Sentry's
 // docs require excluding the route explicitly when building with Turbopack.
 // The tunnel is currently switched off (ADR 0041, update), so this entry
 // guards nothing today — it is kept so that turning the tunnel back on does

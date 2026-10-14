@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import {
   NetworkReconnectFeedback,
   useNetworkStatus,
+  useRefreshOnReconnect,
 } from "@/features/network-status";
 import { OfflineScreen } from "@/pages/offline";
 
@@ -19,6 +20,12 @@ export const NetworkGate = ({ children, checking }: NetworkGateProps) => {
     isChecking,
     retry,
   } = useNetworkStatus();
+
+  // The connection coming back re-renders this screen from the server, so a
+  // session that expired during the outage is noticed now rather than at
+  // the first tap (see the hook for why "online" says nothing about the
+  // session).
+  useRefreshOnReconnect(status);
 
   let content: ReactNode;
 

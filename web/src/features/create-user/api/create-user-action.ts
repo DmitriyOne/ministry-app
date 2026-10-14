@@ -7,9 +7,9 @@ import { z } from "zod";
 import * as Sentry from "@sentry/nextjs";
 
 import { getSessionClaims } from "@/entities/session";
-import { createAdminSupabaseClient } from "@/shared/api";
+import { createAdminSupabaseClient, createServerSupabaseClient } from "@/shared/api";
 import { hasRole } from "@/shared/lib/auth";
-import { redactEmails } from "@/shared/lib/observability";
+import { reportActionFailure } from "@/shared/lib/action-failure";
 import { getClientIp } from "@/shared/lib/rate-limit";
 
 import { checkCreateUserRateLimit } from "./rate-limit";
@@ -30,6 +30,11 @@ export const createUser = async (
   // is reachable by anyone who can craft the request, whatever screen
   // they can or cannot open. The screen's gate protects the screen; this
   // line protects the account table.
+  //
+  // This is the cheap half of the check: the role as the token claims it,
+  // verified without leaving the process. It rejects everyone who is not
+  // an admin at all. The second half — is that claim still true — is
+  // further down, once there is a client to ask the database with.
   const claims = await getSessionClaims();
 
   if (!hasRole(claims, "admin")) {
@@ -71,6 +76,77 @@ export const createUser = async (
     // exactly the kind of thing it exists for, and the authorisation it
     // does not do is the check above.
     const admin = createAdminSupabaseClient();
+
+    // The second half of the authorisation check, and the reason the
+    // token is not enough on its own: both halves of what it says go
+    // stale. It carries the role for an hour (`jwt_expiry`), and it keeps
+    // verifying for that hour even after the account behind it is banned
+    // — measured on a live database, not assumed: after a ban, GoTrue
+    // answers 403 but PostgREST still serves the same token, because all
+    // it checks is the signature.
+    //
+    // For navigation that gap is deliberate (ADR 0044: the gate must not
+    // cost a round trip per screen). For issuing an account it is not, so
+    // this path pays for two answers it cannot get from the token:
+    //
+    //   getUser()  — is this session still real? One call to the auth
+    //                server, which is the only thing that knows about a
+    //                ban or a sign-out elsewhere.
+    //   user_roles — is the role still what the token claims?
+    //
+    // Twice over a path that runs once per issued account.
+    const supabase = await createServerSupabaseClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    // 401/403 is the auth server saying this session is no longer good
+    // enough — banned, signed out elsewhere, token no longer accepted.
+    // Anything else (no answer, a 5xx) says nothing about the session, and
+    // "we could not ask" must not be reported as "you may not": one is an
+    // outage the admin waits out, the other is a refusal they would go
+    // looking for an explanation of (ADR 0046).
+    if (userError) {
+      const isRefusal = userError.status === 401 || userError.status === 403;
+
+      console.warn("[create-user] rejected", {
+        reason: isRefusal ? "session-not-live" : "session-check-failed",
+        status: userError.status,
+      });
+
+      return isRefusal
+        ? { status: "error", formError: t("notAllowed") }
+        : { status: "unavailable" };
+    }
+
+    if (!userData.user) {
+      console.warn("[create-user] rejected", { reason: "session-not-live" });
+
+      return { status: "error", formError: t("notAllowed") };
+    }
+
+    // `deleted_at is null` for the same reason it is in every policy
+    // (ADR 0047): a row marked deleted must not grant anything.
+    const { data: currentRole, error: roleReadError } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", claims.userId)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (roleReadError) {
+      // The database could not answer, so whether this person may act is
+      // unknown — and unknown is not permission. Reported as an outage
+      // rather than as "not allowed", because that is what it is.
+      Sentry.captureException(roleReadError);
+      console.warn("[create-user] rejected", { reason: "role-read", code: roleReadError.code });
+
+      return { status: "unavailable" };
+    }
+
+    if (currentRole?.role !== "admin") {
+      console.warn("[create-user] rejected", { reason: "role-revoked" });
+
+      return { status: "error", formError: t("notAllowed") };
+    }
 
     const { data, error } = await admin.auth.admin.createUser({
       email,
@@ -121,13 +197,7 @@ export const createUser = async (
 
     return { status: "success", createdEmail: email };
   } catch (error) {
-    Sentry.captureException(error);
-
-    console.warn("[create-user] rejected", {
-      reason: "threw",
-      error: error instanceof Error ? error.name : typeof error,
-      message: error instanceof Error ? redactEmails(error.message) : undefined,
-    });
+    reportActionFailure({ scope: "create-user", error });
 
     return { status: "unavailable" };
   }

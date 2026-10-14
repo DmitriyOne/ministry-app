@@ -6,6 +6,7 @@
   },
   "common": {
     "back": "Back",
+    "appName": "MinistryApp",
     "loading": "Loading",
     "noscriptRequired": "MinistryApp needs JavaScript enabled to run.",
     "aboutLink": "About",
@@ -32,6 +33,16 @@
         "title": "You're on the list",
         "body": "We'll let you know the moment the app is ready."
       }
+    },
+    "push": {
+      "title": "Notifications",
+      "description": "Reminders about your report on this iPhone.",
+      "deniedDescription": "Turned off in Settings → Notifications for this app.",
+      "saveFailed": "Couldn't save that. Try again in a moment.",
+      "testTitle": "Notifications are on",
+      "testBody": "This is the test. Reminders about your report will arrive here.",
+      "testFailed": "Saved, but the test notification didn't go out.",
+      "disabled": "Notifications are off on this iPhone."
     }
   },
   "a11y": {
@@ -85,7 +96,13 @@
       "about": "About",
       "privacy": "Privacy & cookies",
       "signOut": "Sign out",
-      "newUser": "Create a user"
+      "newUser": "Create a user",
+      "signOutConfirm": {
+        "title": "Sign out?",
+        "body": "You will need your email and password to get back in.",
+        "confirm": "Sign out",
+        "cancel": "Stay signed in"
+      }
     },
     "adminNewUser": {
       "metadata": {

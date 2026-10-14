@@ -8,11 +8,10 @@ import { useCreateUser } from "@/features/create-user";
 import { APP_ROLES } from "@/shared/lib/auth";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
-import { CARD_FIELD_CONTROL_CLASS, CardField } from "@/shared/ui/card-field";
+import { CardTextField } from "@/shared/ui/card-text-field";
 import { FieldCard } from "@/shared/ui/field-card";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { AlertCircleIcon } from "@/shared/ui/icons";
-import { InputGroupInput } from "@/shared/ui/input-group";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import { Spinner } from "@/shared/ui/spinner";
 
@@ -39,44 +38,32 @@ export const CreateUserForm = () => {
           name="displayName"
           control={control}
           render={({ field, fieldState }) => (
-            <CardField label={t("nameLabel")} errors={fieldState.error && [fieldState.error]}>
-              {({ id, describedBy, isInvalid }) => (
-                <InputGroupInput
-                  {...field}
-                  id={id}
-                  type="text"
-                  autoComplete="off"
-                  placeholder={t("namePlaceholder")}
-                  aria-invalid={isInvalid || undefined}
-                  aria-describedby={describedBy}
-                  className={CARD_FIELD_CONTROL_CLASS}
-                />
-              )}
-            </CardField>
+            <CardTextField
+              {...field}
+              label={t("nameLabel")}
+              placeholder={t("namePlaceholder")}
+              type="text"
+              autoComplete="off"
+              errors={fieldState.error && [fieldState.error]}
+            />
           )}
         />
         <Controller
           name="email"
           control={control}
           render={({ field, fieldState }) => (
-            <CardField label={t("emailLabel")} errors={fieldState.error && [fieldState.error]}>
-              {({ id, describedBy, isInvalid }) => (
-                <InputGroupInput
-                  {...field}
-                  id={id}
-                  type="email"
-                  inputMode="email"
-                  // Not "email": this is someone else's address, and the
-                  // browser offering the admin's own is a way to create an
-                  // account for the wrong person.
-                  autoComplete="off"
-                  placeholder={t("emailPlaceholder")}
-                  aria-invalid={isInvalid || undefined}
-                  aria-describedby={describedBy}
-                  className={CARD_FIELD_CONTROL_CLASS}
-                />
-              )}
-            </CardField>
+            <CardTextField
+              {...field}
+              label={t("emailLabel")}
+              placeholder={t("emailPlaceholder")}
+              type="email"
+              inputMode="email"
+              // Not "email": this is someone else's address, and the browser
+              // offering the admin's own is a way to create an account for
+              // the wrong person.
+              autoComplete="off"
+              errors={fieldState.error && [fieldState.error]}
+            />
           )}
         />
         <Controller
