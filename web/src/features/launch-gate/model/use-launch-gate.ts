@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { resolveRoutePolicy, routes } from "@/shared/config";
 import { isStandaloneDisplayMode } from "@/shared/lib/display-mode";
 
+import { parseCssDuration } from "./parse-css-duration";
 import { resolveSplashDelay } from "./resolve-splash-delay";
 
 // Require launching from a home-screen icon (ADR 0017), otherwise → /install.
@@ -26,6 +27,34 @@ const APP_ENTRY_PATH = routes.day;
 // from the CSS variable — it only exists to catch a genuinely unexpected
 // failure, not to time the animation.
 const EXIT_FAILSAFE_MS = 4000;
+
+// The splash's dwell is declared in CSS, next to the durations of the
+// animations it has to outlast (--shell-splash-* in globals.css), so all
+// of the timing can be tuned in one block. This is the fallback for the
+// variable being unreadable — a number this code must have, not a second
+// opinion about the right length.
+const DWELL_FALLBACK_MS = 1100;
+
+// Milliseconds from the navigation to the first paint, which is when the
+// server-rendered overlay actually appeared on screen. "first-contentful-
+// paint" is the entry Safari reports (16.4+); "first-paint" is the older
+// name and is checked as well. null means neither was available, which
+// resolveSplashDelay handles as its own case rather than guessing.
+const readFirstPaint = (): number | null => {
+  const entries = performance.getEntriesByType("paint");
+  const paint = entries.find((entry) => entry.name === "first-contentful-paint")
+    ?? entries.find((entry) => entry.name === "first-paint");
+
+  return paint ? paint.startTime : null;
+};
+
+const readDwell = (): number => {
+  const declared = parseCssDuration(
+    getComputedStyle(document.documentElement).getPropertyValue("--shell-splash-dwell"),
+  );
+
+  return declared ?? DWELL_FALLBACK_MS;
+};
 
 export type LaunchGatePhase = "loading" | "exiting" | "ready";
 
@@ -123,7 +152,11 @@ export const useLaunchGate = (): UseLaunchGateResult => {
         // on their way to a different page. The floor applies only to the
         // one case where the splash is the thing being looked at — this
         // page is staying, and it is about to be revealed.
-        const dwell = resolveSplashDelay({ elapsedMs: performance.now() });
+        const dwell = resolveSplashDelay({
+          nowMs: performance.now(),
+          firstPaintMs: readFirstPaint(),
+          dwellMs: readDwell(),
+        });
         if (dwell === 0) {
           setPhase("exiting");
           return;
