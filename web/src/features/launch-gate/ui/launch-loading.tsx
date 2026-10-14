@@ -11,9 +11,9 @@ import { AppMark } from "@/shared/ui/app-mark";
 //
 // No spinner (ADR 0019, update): a spinner means "wait", and nothing is
 // being waited for — the launch decision resolves in a microtask. What is
-// happening is the app opening, which is what a brand mark says. The
-// waiting indicator still exists for the one place that genuinely waits
-// on a reply: features/network-status' NetworkChecking.
+// happening is the app opening, which is what a brand mark says. There is
+// no waiting screen anywhere else either: the connectivity probe no longer
+// holds the app back while it runs (ADR 0055).
 //
 // The same glyph as /install and /soon (AppMark 88, solid, elevated), not
 // a splash-only variant: this is the first thing seen on every launch, and

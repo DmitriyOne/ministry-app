@@ -7,11 +7,12 @@ import { PasswordField } from "@/entities/password-field";
 import { useSignIn } from "@/features/sign-in";
 import { routes } from "@/shared/config";
 import { BodyText } from "@/shared/ui/body-text";
-import { Button, LinkButton } from "@/shared/ui/button";
+import { ActionForm } from "@/shared/ui/action-form";
+import { LinkButton } from "@/shared/ui/button";
 import { CardTextField } from "@/shared/ui/card-text-field";
 import { FieldCard } from "@/shared/ui/field-card";
 import { InlineError } from "@/shared/ui/inline-error";
-import { Spinner } from "@/shared/ui/spinner";
+import { SubmitButton } from "@/shared/ui/submit-button";
 
 // Same split as widgets/waitlist-form: the block that wires a feature's
 // hook to shared controls is a widget, and the screen in pages/ only
@@ -23,14 +24,7 @@ export const SignInForm = () => {
   const { control, onSubmit, hasErrors, isPending, formError } = useSignIn();
 
   return (
-    <form
-      noValidate
-      className="flex flex-col gap-3.5"
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit();
-      }}
-    >
+    <ActionForm onSubmit={onSubmit}>
       <FieldCard>
         <Controller
           name="email"
@@ -64,16 +58,15 @@ export const SignInForm = () => {
 
       {formError ? <InlineError>{formError}</InlineError> : null}
 
-      <Button type="submit" variant="action" size="role-lg" isDisabled={hasErrors || isPending}>
-        {isPending ? <Spinner className="size-5" /> : null}
+      <SubmitButton isPending={isPending} isBlocked={hasErrors}>
         {t("submit")}
-      </Button>
+      </SubmitButton>
       <LinkButton href={routes.forgotPassword} variant="heroGhost" size="role">
         {t("forgotPassword")}
       </LinkButton>
       <BodyText tone="hero" className="px-3 pt-1.5 text-center text-caption text-hero-foreground/40">
         {t("footnote")}
       </BodyText>
-    </form>
+    </ActionForm>
   );
 };

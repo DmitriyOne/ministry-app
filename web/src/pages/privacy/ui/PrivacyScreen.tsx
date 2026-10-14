@@ -66,12 +66,12 @@ export const PrivacyScreen = async () => {
           future caller of that component will want a sticky header. */}
       <ScreenBackHeader
         eyebrow={t("eyebrow")}
-        className="sticky top-0 z-10 bg-background pt-[calc(--spacing(6)+env(safe-area-inset-top))]"
+        className="screen-header-sticky"
       />
 
       <main className="flex flex-1 flex-col gap-5 px-5 pt-1.5 pb-10">
         <div className="flex flex-col gap-1.5">
-          <Title title={t("title")} />
+          <Title>{t("title")}</Title>
           <Caption>{t("updated")}</Caption>
         </div>
 

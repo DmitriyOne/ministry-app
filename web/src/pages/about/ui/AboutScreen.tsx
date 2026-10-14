@@ -53,7 +53,7 @@ export const AboutScreen = async () => {
           future caller of that component will want a sticky header. */}
       <ScreenBackHeader
         eyebrow={t("eyebrow")}
-        className="sticky top-0 z-10 bg-background pt-[calc(--spacing(6)+env(safe-area-inset-top))]"
+        className="screen-header-sticky"
       />
 
       <main className="flex flex-1 flex-col gap-4 px-5 pt-1.5 pb-10">

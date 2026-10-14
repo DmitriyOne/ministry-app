@@ -6,14 +6,14 @@ import { Controller } from "react-hook-form";
 import { PasswordField } from "@/entities/password-field";
 import { useCreateUser } from "@/features/create-user";
 import { APP_ROLES } from "@/shared/lib/auth";
-import { Alert, AlertDescription } from "@/shared/ui/alert";
-import { Button } from "@/shared/ui/button";
 import { CardTextField } from "@/shared/ui/card-text-field";
+import { ActionForm } from "@/shared/ui/action-form";
 import { FieldCard } from "@/shared/ui/field-card";
+import { SubmitButton } from "@/shared/ui/submit-button";
+import { Notice } from "@/shared/ui/notice";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { AlertCircleIcon } from "@/shared/ui/icons";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
-import { Spinner } from "@/shared/ui/spinner";
 
 import { cn } from "@/shared/lib/cn";
 
@@ -25,14 +25,7 @@ export const CreateUserForm = () => {
   const { control, onSubmit, hasErrors, isPending, formError } = useCreateUser();
 
   return (
-    <form
-      noValidate
-      className="flex flex-col gap-3.5"
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit();
-      }}
-    >
+    <ActionForm onSubmit={onSubmit}>
       <FieldCard>
         <Controller
           name="displayName"
@@ -137,19 +130,15 @@ export const CreateUserForm = () => {
           which is built for the deep green background. */}
       {formError
         ? (
-            <Alert variant="destructive" className="rounded-xl border-0 px-4 py-3.5 shadow-card">
-              <AlertCircleIcon className="size-5" />
-              <AlertDescription className="text-caption font-540 text-negative">
-                {formError}
-              </AlertDescription>
-            </Alert>
+            <Notice tone="negative" icon={<AlertCircleIcon className="size-5" />}>
+              {formError}
+            </Notice>
           )
         : null}
 
-      <Button type="submit" variant="action" size="role-lg" isDisabled={hasErrors || isPending}>
-        {isPending ? <Spinner className="size-5" /> : null}
+      <SubmitButton isPending={isPending} isBlocked={hasErrors}>
         {t("submit")}
-      </Button>
-    </form>
+      </SubmitButton>
+    </ActionForm>
   );
 };

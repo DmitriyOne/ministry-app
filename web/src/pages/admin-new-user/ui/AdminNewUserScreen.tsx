@@ -5,9 +5,8 @@ import { getSessionClaims } from "@/entities/session";
 import { ScreenBackHeader } from "@/features/screen-back";
 import { routes } from "@/shared/config";
 import { hasRole } from "@/shared/lib/auth";
-import { BodyText } from "@/shared/ui/body-text";
 import { CenteredState } from "@/shared/ui/centered-state";
-import { Title } from "@/shared/ui/title";
+import { TextBlock } from "@/shared/ui/text-block";
 import { CreateUserForm } from "@/widgets/create-user-form";
 
 // The admin's screen for issuing credentials (D1: there is no
@@ -39,14 +38,11 @@ export const AdminNewUserScreen = async () => {
           under the status bar (viewport-fit=cover, ADR 0020). */}
       <ScreenBackHeader
         eyebrow={t("eyebrow")}
-        className="sticky top-[env(safe-area-inset-top)] z-10 bg-background pt-[calc(--spacing(6)+env(safe-area-inset-top))]"
+        className="screen-header-sticky"
       />
 
       <CenteredState fill className="items-stretch justify-start gap-6 px-5 pt-2 text-left">
-        <div className="flex flex-col gap-2 px-1">
-          <Title>{t("title")}</Title>
-          <BodyText>{t("subtitle")}</BodyText>
-        </div>
+        <TextBlock title={t("title")} text={t("subtitle")} className="px-1" />
 
         <CreateUserForm />
       </CenteredState>

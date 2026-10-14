@@ -2,10 +2,8 @@ import { getTranslations } from "next-intl/server";
 
 import { RecheckGateOnRestore } from "@/features/gate-recheck";
 import { ScreenBackHeader } from "@/features/screen-back";
-import { AppMark } from "@/shared/ui/app-mark";
-import { BodyText } from "@/shared/ui/body-text";
 import { CenteredState } from "@/shared/ui/centered-state";
-import { Title } from "@/shared/ui/title";
+import { ScreenIntro } from "@/shared/ui/screen-intro";
 import { PasswordResetForm } from "@/widgets/password-reset-form";
 
 // Deliberately the same frame as LoginScreen: the two screens are one
@@ -31,7 +29,7 @@ export const ForgotPasswordScreen = async () => {
       <ScreenBackHeader
         tone="hero"
         eyebrow={t("eyebrow")}
-        className="pt-[calc(--spacing(6)+env(safe-area-inset-top))]"
+        className="pt-screen-header"
       />
 
       <CenteredState
@@ -39,13 +37,7 @@ export const ForgotPasswordScreen = async () => {
         background="deep"
         className="items-stretch justify-between gap-8 px-6 pt-10 pb-10 text-left"
       >
-        <div className="flex flex-col gap-3.5 px-2">
-          <AppMark size={56} tone="translucent" />
-          <div className="flex flex-col gap-2">
-            <Title tone="hero">{t("title")}</Title>
-            <BodyText tone="hero">{t("subtitle")}</BodyText>
-          </div>
-        </div>
+        <ScreenIntro title={t("title")} text={t("subtitle")} />
 
         <PasswordResetForm />
 

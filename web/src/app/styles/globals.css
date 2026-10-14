@@ -372,6 +372,45 @@
 }
 
 /*
+ * The back-header's top inset, and the one number that depends on it.
+ *
+ * Four screens used to repeat
+ * `pt-[calc(--spacing(6)+env(safe-area-inset-top))]` by hand, and
+ * NumberedSection kept a FIFTH copy of the same geometry as
+ * `scroll-mt-[calc(env(safe-area-inset-top)+92px)]` — the height of that
+ * header, written as a magic number. Change the padding and the anchors
+ * on /privacy silently scroll under the header; neither tsc nor the
+ * linter can see the connection. Naming both ends is what makes the
+ * dependency visible (release review, 2026-10-14).
+ *
+ * --screen-header-height is the rendered height of ScreenBackHeader
+ * INCLUDING the padding above: measure it again if the header's content
+ * changes.
+ */
+@utility pt-screen-header {
+  padding-top: calc(--spacing(6) + env(safe-area-inset-top));
+}
+
+/*
+ * `top: 0` with the safe area in the PADDING, never `top: env(...)`:
+ * pinned at zero the header owns the strip under the status bar, so
+ * content scrolls behind an opaque background. Pinned at the inset it
+ * leaves a transparent gap and the text slides through it — which is
+ * what /admin/users/new did before this.
+ */
+@utility screen-header-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--background);
+  padding-top: calc(--spacing(6) + env(safe-area-inset-top));
+}
+
+@utility scroll-mt-screen-header {
+  scroll-margin-top: calc(env(safe-area-inset-top) + var(--screen-header-height));
+}
+
+/*
  * Shell gate transition — the "unfocus" effect (ADR 0019). Ownership
  * moved from CSS to React (LaunchGate, web/src/features/launch-gate/ui/launch-gate.tsx):
  * the loading overlay and the app content are mounted/unmounted by React
@@ -466,6 +505,8 @@
   /* How long the splash stays before it starts leaving, measured from the
      first paint. Read by JavaScript, not by any rule in this file —
      a value CSS cannot express a wait with. Must outlast the entrance. */
+  /* Rendered height of ScreenBackHeader, used by scroll-mt-screen-header. */
+  --screen-header-height: 92px;
   --shell-splash-dwell: 1100ms;
 }
 .shell-loading {

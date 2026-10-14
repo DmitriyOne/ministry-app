@@ -2,13 +2,13 @@
 
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
-import { z } from "zod";
 
 import * as Sentry from "@sentry/nextjs";
 
 import { getSessionClaims } from "@/entities/session";
 import { createAdminSupabaseClient, createServerSupabaseClient } from "@/shared/api";
 import { hasRole } from "@/shared/lib/auth";
+import { firstFieldErrors } from "@/shared/lib/forms";
 import { reportActionFailure } from "@/shared/lib/action-failure";
 import { getClientIp } from "@/shared/lib/rate-limit";
 
@@ -55,18 +55,7 @@ export const createUser = async (
   const result = createCreateUserSchema(t).safeParse(values);
 
   if (!result.success) {
-    const { email, displayName, password, passwordConfirm }
-      = z.flattenError(result.error).fieldErrors;
-
-    return {
-      status: "error",
-      fieldErrors: {
-        email: email?.[0],
-        displayName: displayName?.[0],
-        password: password?.[0],
-        passwordConfirm: passwordConfirm?.[0],
-      },
-    };
+    return { status: "error", fieldErrors: firstFieldErrors(result.error) };
   }
 
   const { email, displayName, password, role } = result.data;

@@ -1,14 +1,11 @@
-import { isStandaloneDisplayMode } from "@/shared/lib/display-mode";
-
+import {
+  canUseWebPush,
+  toSerializableSubscription,
+  type SerializablePushSubscription,
+} from "./push-capability";
 import { urlBase64ToUint8Array } from "./url-base64-to-uint8-array";
 
-export type SerializablePushSubscription = {
-  endpoint: string;
-  keys: {
-    p256dh: string;
-    auth: string;
-  };
-};
+export type { SerializablePushSubscription };
 
 export type PushSubscriptionFailure
   = | "unsupported"
@@ -53,15 +50,9 @@ const classifyRejection = async <T>(operation: () => Promise<T>): Promise<T> => 
 export const subscribeToPush = async (
   publicVapidKey: string,
 ): Promise<SerializablePushSubscription> => {
-  if (
-    !("serviceWorker" in navigator)
-    || !("PushManager" in window)
-    || !("Notification" in window)
-    // iOS only delivers Web Push to a Home Screen app; in a Safari tab the
-    // APIs above exist but the subscription fails, after the one-shot
-    // permission prompt has already been spent.
-    || !isStandaloneDisplayMode()
-  ) {
+  // Shared with readPushSubscription (push-capability.ts) so the prompt
+  // is never spent on a browser the switch considers unsupported.
+  if (!canUseWebPush()) {
     throw new PushSubscriptionError("unsupported");
   }
 
@@ -93,17 +84,11 @@ export const subscribeToPush = async (
     );
   }
 
-  const json = subscription.toJSON();
+  const serialized = toSerializableSubscription(subscription);
 
-  if (!json.endpoint || !json.keys?.p256dh || !json.keys.auth) {
+  if (!serialized) {
     throw new PushSubscriptionError("invalid-subscription");
   }
 
-  return {
-    endpoint: json.endpoint,
-    keys: {
-      p256dh: json.keys.p256dh,
-      auth: json.keys.auth,
-    },
-  };
+  return serialized;
 };

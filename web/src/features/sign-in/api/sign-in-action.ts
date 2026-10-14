@@ -3,9 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
-import { z } from "zod";
 
 import { createServerSupabaseClient } from "@/shared/api";
+import { firstFieldErrors } from "@/shared/lib/forms";
 import { reportActionFailure } from "@/shared/lib/action-failure";
 import { getClientIp } from "@/shared/lib/rate-limit";
 
@@ -30,9 +30,7 @@ export const signIn = async (
   const result = createSignInSchema(t).safeParse(values);
 
   if (!result.success) {
-    const { email, password } = z.flattenError(result.error).fieldErrors;
-
-    return { status: "error", fieldErrors: { email: email?.[0], password: password?.[0] } };
+    return { status: "error", fieldErrors: firstFieldErrors(result.error) };
   }
 
   // Everything that talks to Supabase sits inside this try. signInWithPassword
