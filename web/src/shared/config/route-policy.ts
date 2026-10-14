@@ -58,6 +58,10 @@ export const ROUTE_POLICY: Record<AppRoute, RoutePolicy> = {
   [routes.month]: APP_SCREEN,
   [routes.year]: APP_SCREEN,
   [routes.profile]: APP_SCREEN,
+  // Reached from the profile, and it marks itself read against the
+  // signed-in person's row — so it needs a session, unlike /about and
+  // /privacy, which anyone may read from the footer before signing in.
+  [routes.whatsNew]: APP_SCREEN,
   [routes.adminNewUser]: { ...APP_SCREEN, adminOnly: true },
   // Reachable only without a session, but still only from the installed
   // app: signing in happens inside the app, not in a browser tab.

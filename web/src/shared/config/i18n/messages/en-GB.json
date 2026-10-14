@@ -102,6 +102,61 @@
         "body": "You will need your email and password to get back in.",
         "confirm": "Sign out",
         "cancel": "Stay signed in"
+      },
+      "whatsNew": "What's new",
+      "whatsNewUnread": "Unread"
+    },
+    "whatsNew": {
+      "metadata": {
+        "title": "What's new",
+        "description": "What the app has gained in each version."
+      },
+      "eyebrow": "What's new",
+      "hero": {
+        "title": "What's new",
+        "text": "Everything the app has gained since it opened, newest first."
+      },
+      "currentPill": "Current",
+      "releasedPill": "Released",
+      "v2": {
+        "name": "Version 2",
+        "date": "14 October 2026",
+        "account": {
+          "title": "Sign in with your own account",
+          "text": "Your records stay yours, on every device you install the app on. Accounts are handed out by the owner."
+        },
+        "screens": {
+          "title": "Day, Calendar, Month and Year",
+          "text": "The four screens of the app, with the bottom bar to move between them."
+        },
+        "profile": {
+          "title": "Your profile",
+          "text": "Your name and role, the notifications switch, the links to About and Privacy, and the way out of the account."
+        },
+        "notifications": {
+          "title": "Notifications you can switch off",
+          "text": "Turn them on from the profile. A test notification arrives straight away, so you know they work."
+        }
+      },
+      "v1": {
+        "name": "Version 1",
+        "date": "September 2026",
+        "iosOnly": {
+          "title": "iPhone and Safari only",
+          "text": "The app is built for one phone and one browser, so it can be made to feel right there. A computer, an Android phone or a tablet is met with a short explanation instead."
+        },
+        "install": {
+          "title": "Install to the Home Screen",
+          "text": "Five steps, and the app opens from its own icon, without the browser's address bar."
+        },
+        "waitlist": {
+          "title": "The waiting list",
+          "text": "Leave an address, hear once when it opens. Nothing else is ever sent there."
+        },
+        "connection": {
+          "title": "It notices when the connection drops",
+          "text": "The app keeps an eye on your connection and says so plainly when there isn't one, instead of leaving you with a screen that quietly does nothing."
+        }
       }
     },
     "adminNewUser": {
