@@ -12,6 +12,10 @@
 # every time before 'send' — it costs one run and answers the only question
 # that matters, "how many people and what will they read".
 #
+# A send with 'only' filled in needs no confirmation box: it reaches the
+# one row named in the form. The box guards the broadcast, which is the
+# run that cannot be taken back.
+#
 # The 'only' field narrows a run to a single row of push_subscriptions:
 # the id from the first column in Studio (one device), or a user id
 # (every live device that person has). That is how a release is tried on
@@ -57,7 +61,7 @@ on:
         required: false
         default: ""
       confirm:
-        description: I understand 'send' notifies every account holder's device
+        description: I understand this notifies EVERY account holder's device (not needed when 'only' is filled in)
         type: boolean
         required: true
         default: false
@@ -103,14 +107,41 @@ jobs:
           fi
           echo "Announcing version ${actual}."
 
-      # An unconfirmed 'send' must FAIL visibly rather than finish green
+      # The box guards the BROADCAST, and only the broadcast. Two runs do
+      # not need it: a dry run, which cannot do anything, and a send with
+      # 'only' filled in, which reaches the single row named in the form.
+      #
+      # This is not a convenience. The box said "notifies every account
+      # holder's device", which is false for a targeted send — and a gate
+      # that asks you to confirm something that is not happening is how
+      # people learn to tick boxes without reading them. Then it stops
+      # guarding the one run that matters. Sending to one named row is the
+      # rehearsal step; it should cost one field, not a ritual.
+      #
+      # An unconfirmed broadcast must FAIL visibly rather than finish green
       # having done nothing: a green tick would read as "it went out".
-      # A dry run needs no confirmation — it cannot do anything.
-      - name: Refuse to send without confirmation
-        if: ${{ inputs.mode == 'send' && !inputs.confirm }}
+      - name: Refuse to notify everyone without confirmation
+        if: ${{ inputs.mode == 'send' && inputs.only == '' && !inputs.confirm }}
         run: |
-          echo "::error::Not confirmed. Re-run with the 'confirm' box ticked, or choose dry-run."
+          echo "::error::This would notify every account holder. Re-run with the 'confirm' box ticked, or name a row in 'only'."
           exit 1
+
+      # Says which of the three runs this is, in the log, before the
+      # production environment's approval prompt. "Send to one row" and
+      # "send to everyone" are one empty field apart.
+      - name: Say what this run will do
+        env:
+          MODE: ${{ inputs.mode }}
+          ONLY: ${{ inputs.only }}
+        run: |
+          set -euo pipefail
+          if [ "${MODE}" != "send" ]; then
+            echo "Dry run: nothing will be sent."
+          elif [ -n "${ONLY}" ]; then
+            echo "Sending to the single row named in 'only'."
+          else
+            echo "Sending to EVERY account holder's device."
+          fi
 
   announce:
     name: ${{ inputs.mode == 'send' && 'Send' || 'Dry run' }}
