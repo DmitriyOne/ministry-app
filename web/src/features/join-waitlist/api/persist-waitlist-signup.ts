@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAdminSupabaseClient } from "@/shared/api";
+import { reportActionFailure } from "@/shared/lib/action-failure";
 
 import type { JoinWaitlistRow } from "../model/map-join-waitlist-row";
 
@@ -28,6 +29,18 @@ export const persistWaitlistSignup = async (email: string): Promise<JoinWaitlist
     // this change exists to get it out of (ADR 0027), while `message`
     // names the constraint without the value. Same rule as the visitor's
     // IP in ADR 0026: the fact, never the value.
+    // Reported, not only logged. supabase-js returns `error` instead of
+    // throwing, so nothing above catches this, and the person has already
+    // been shown a success screen — the address is gone and the only
+    // trace was a log line nobody reads. scrubSentryEvent strips the
+    // address from the text on the way out (ADR 0041), including the
+    // detail line where Postgres quotes the offending value.
+    reportActionFailure({
+      scope: "join-waitlist",
+      error,
+      outcome: "failed",
+      context: { reason: "supabase-error", code: error.code },
+    });
     console.error("[join-waitlist] could not record the signup", {
       code: error.code,
       message: error.message,

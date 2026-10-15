@@ -15,15 +15,14 @@ export const WEB_API_ROUTES = {
   health: `${WEB_API_PREFIX}${WEB_API_VERSION}/health`,
 } as const;
 
-// Edge Functions live under /functions/v1/<name>. `/rest/v1` is PostgREST's
-// prefix and has no business in a function path: concatenating all three
-// produced "/functions/rest/v1/v1/health", which 404s, so the health check on
-// /day reported Supabase unreachable every time.
-const SB_FUNCTIONS_PREFIX = "/functions/v1";
-
-// Supabase endpoints, appended to NEXT_PUBLIC_SUPABASE_URL by the caller.
-export const SB_API_ROUTES = {
-  functions: {
-    health: `${SB_FUNCTIONS_PREFIX}/health`,
-  },
-} as const;
+// SB_API_ROUTES used to live here, holding the path of the Supabase Edge
+// Function `health`. Its only consumer was /day's scaffold probe, removed
+// with the screen's rewrite, so the constant went with it rather than
+// staying as a path nobody requests. The function itself is still
+// deployed (backend/supabase/functions/health).
+//
+// Worth keeping from it, in case something calls an Edge Function again:
+// they live under "/functions/v1/<name>". "/rest/v1" is PostgREST's
+// prefix and has no business in a function path — concatenating all three
+// produced "/functions/rest/v1/v1/health", which 404s, and /day duly
+// reported Supabase unreachable every single time.

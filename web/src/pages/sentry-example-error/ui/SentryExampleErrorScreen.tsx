@@ -8,8 +8,10 @@ import { routes } from "@/shared/config";
 import { BodyText } from "@/shared/ui/body-text";
 import { Button, LinkButton } from "@/shared/ui/button";
 import { CenteredState } from "@/shared/ui/centered-state";
+import { showToast } from "@/shared/ui/sonner";
 import { Title } from "@/shared/ui/title";
 
+import { probeBackendFailure } from "../api/probe-backend-failure";
 import { throwServerError } from "../api/throw-server-error";
 import { SENTRY_PROBE_EMAIL, SENTRY_PROBE_PREFIX } from "../model/probe";
 
@@ -44,6 +46,7 @@ export const SentryExampleErrorScreen = () => {
   const [scrubSent, setScrubSent] = useState(false);
   const [explode, setExplode] = useState(false);
   const [serverCalled, setServerCalled] = useState(false);
+  const [backendProbed, setBackendProbed] = useState(false);
 
   if (explode) return <RenderBomb />;
 
@@ -77,6 +80,27 @@ export const SentryExampleErrorScreen = () => {
     } catch {
       // Expected: the failure is reported on the server side.
     }
+  };
+
+  // The toast path end to end: a server action reaches for a backend that
+  // cannot answer and reports "unavailable", and the UI turns that into a
+  // toast rather than a field error or a 500 (ADR 0046).
+  const probeBackend = async () => {
+    const result = await probeBackendFailure();
+
+    setBackendProbed(true);
+    showToast({
+      message: result.status === "unavailable" ? t("toast.unavailable") : t("toast.reachable"),
+      tone: result.status === "unavailable" ? "negative" : "positive",
+    });
+  };
+
+  // All three tones at once, so the colours can be compared and the way the
+  // region stacks them is visible.
+  const showEveryTone = () => {
+    showToast({ message: t("tones.neutral"), tone: "neutral" });
+    showToast({ message: t("tones.positive"), tone: "positive" });
+    showToast({ message: t("tones.negative"), tone: "negative" });
   };
 
   return (
@@ -120,6 +144,22 @@ export const SentryExampleErrorScreen = () => {
         <Probe title={t("render.title")} hint={t("render.hint")}>
           <Button variant="plain" onPress={() => setExplode(true)}>
             {t("render.button")}
+          </Button>
+        </Probe>
+
+        <Probe
+          title={t("toast.title")}
+          hint={t("toast.hint")}
+          status={backendProbed ? t("toast.done") : undefined}
+        >
+          <Button variant="plain" onPress={() => void probeBackend()}>
+            {t("toast.button")}
+          </Button>
+        </Probe>
+
+        <Probe title={t("tones.title")} hint={t("tones.hint")}>
+          <Button variant="plain" onPress={showEveryTone}>
+            {t("tones.button")}
           </Button>
         </Probe>
 

@@ -42,15 +42,14 @@ export const PrivacyScreen = async () => {
   ];
 
   return (
-    // `flex-1`, not `min-h-dvh`: this screen now lives inside
-    // app/(with-footer) (ADR 0031, amendment to ADR 0029's reasoning),
-    // whose layout.tsx already reserves the full viewport height one
-    // level up (`flex min-h-dvh flex-col`) and appends <ScreenFooter />
-    // after this div as a sibling. A second `min-h-dvh` here would claim
-    // the whole viewport for itself again and push the footer below the
-    // fold — see the matching comment in AboutScreen.tsx for the full
-    // reasoning (same fix, same two screens, kept identical).
-    <div className="flex flex-1 flex-col bg-background text-ink">
+    // `min-h-dvh` again: this screen left app/(with-footer) when the
+    // footer was narrowed to /soon and /install (ADR 0029, amendment
+    // 2026-10-08), so nothing above it reserves the viewport height any
+    // more and it has to claim it itself — otherwise short content would
+    // leave a pale strip of the page's background below it. The <main>
+    // inside keeps `flex-1` and grows past that on long content, so the
+    // document scrolls exactly as before.
+    <div className="flex min-h-dvh flex-col bg-background text-ink">
       {/* The DOCUMENT is the scroll container here (no overflow-y-auto
           on <main> below), so `sticky` on this header is real: it pins
           to the top of the viewport as the page scrolls underneath it,
@@ -67,12 +66,12 @@ export const PrivacyScreen = async () => {
           future caller of that component will want a sticky header. */}
       <ScreenBackHeader
         eyebrow={t("eyebrow")}
-        className="sticky top-0 z-10 bg-background pt-[calc(--spacing(6)+env(safe-area-inset-top))]"
+        className="screen-header-sticky"
       />
 
       <main className="flex flex-1 flex-col gap-5 px-5 pt-1.5 pb-10">
         <div className="flex flex-col gap-1.5">
-          <Title title={t("title")} />
+          <Title>{t("title")}</Title>
           <Caption>{t("updated")}</Caption>
         </div>
 

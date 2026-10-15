@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(45);
+select plan(47);
 
 select ok(
   not has_table_privilege('anon', 'public.waitlist_signups', 'select'),
@@ -25,11 +25,22 @@ select ok(
   (select relrowsecurity from pg_class where oid = 'public.waitlist_signups'::regclass),
   'row level security is enabled on waitlist_signups'
 );
+-- Deny-all, stated rather than implied (ADR 0048). The protection is the
+-- same as it was with no policies at all: every reader of this table
+-- bypasses RLS, so the policy governs nobody — it makes the rule legible
+-- and gives the "RLS enabled, no policy" advisor nothing to report.
 select is(
   (select count(*)::int from pg_policies
     where schemaname = 'public' and tablename = 'waitlist_signups'),
-  0,
-  'waitlist_signups has no policies'
+  1,
+  'waitlist_signups has exactly the one deny-all policy'
+);
+select is(
+  (select array_agg(distinct coalesce(qual, 'null') || '/' || coalesce(with_check, 'null'))
+     from pg_policies
+    where schemaname = 'public' and tablename = 'waitlist_signups'),
+  array['false/false'],
+  'waitlist_signups: the policy denies both reads and writes'
 );
 
 select ok(
@@ -44,11 +55,22 @@ select ok(
   (select relrowsecurity from pg_class where oid = 'public.push_subscriptions'::regclass),
   'row level security is enabled on push_subscriptions'
 );
+-- Deny-all, stated rather than implied (ADR 0048). The protection is the
+-- same as it was with no policies at all: every reader of this table
+-- bypasses RLS, so the policy governs nobody — it makes the rule legible
+-- and gives the "RLS enabled, no policy" advisor nothing to report.
 select is(
   (select count(*)::int from pg_policies
     where schemaname = 'public' and tablename = 'push_subscriptions'),
-  0,
-  'push_subscriptions has no policies'
+  1,
+  'push_subscriptions has exactly the one deny-all policy'
+);
+select is(
+  (select array_agg(distinct coalesce(qual, 'null') || '/' || coalesce(with_check, 'null'))
+     from pg_policies
+    where schemaname = 'public' and tablename = 'push_subscriptions'),
+  array['false/false'],
+  'push_subscriptions: the policy denies both reads and writes'
 );
 -- Secret-key model (ADR 0037): only service_role can execute the functions.
 select ok(

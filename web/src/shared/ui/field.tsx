@@ -44,7 +44,7 @@ export const FieldGroup = ({ className, ...props }: ComponentProps<"div">) => (
   />
 );
 
-const fieldVariants = cva("group/field flex w-full gap-2 data-[invalid=true]:text-destructive", {
+const fieldVariants = cva("group/field flex w-full gap-2 data-[invalid=true]:text-negative", {
   variants: {
     orientation: {
       vertical: "flex-col *:w-full [&>.sr-only]:w-auto",
@@ -171,7 +171,7 @@ export const FieldError = ({ className, children, errors, ...props }: FieldError
     <div
       role="alert"
       data-slot="field-error"
-      className={cn("text-sm font-normal text-destructive", className)}
+      className={cn("text-sm font-normal text-negative", className)}
       {...props}
     >
       {content}

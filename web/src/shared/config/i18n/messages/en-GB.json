@@ -6,11 +6,20 @@
   },
   "common": {
     "back": "Back",
+    "appName": "MinistryApp",
     "loading": "Loading",
     "noscriptRequired": "MinistryApp needs JavaScript enabled to run.",
     "aboutLink": "About",
     "privacyLink": "Privacy & cookies",
     "connectionRestored": "You're back online"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "calendar": "Calendar",
+    "month": "Month",
+    "day": "Day",
+    "year": "Year",
+    "profile": "Profile"
   },
   "notifications": {
     "waitlist": {
@@ -24,22 +33,174 @@
         "title": "You're on the list",
         "body": "We'll let you know the moment the app is ready."
       }
+    },
+    "push": {
+      "title": "Notifications",
+      "description": "Reminders about your report on this iPhone.",
+      "deniedDescription": "Turned off in Settings → Notifications for this app.",
+      "saveFailed": "Couldn't save that. Try again in a moment.",
+      "testTitle": "Notifications are on",
+      "testBody": "This is the test",
+      "testFailed": "Saved, but the test notification didn't go out.",
+      "disabled": "Notifications are off on this iPhone."
     }
   },
   "a11y": {
     "sheet": {
       "close": "Close"
     },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "honeypotLabel": "Leave this field blank"
   },
   "screens": {
     "day": {
       "title": "Day",
-      "supabaseStatusLabel": "Supabase:",
+      "welcomeBack": "Welcome back, {name}",
       "metadata": {
         "title": "Day",
         "description": "Record today's ministry hours and Bible studies in a few taps, and see how you're tracking against your monthly and yearly goal."
       }
+    },
+    "calendar": {
+      "metadata": {
+        "title": "Calendar",
+        "description": "Your ministry month, day by day."
+      },
+      "title": "Calendar"
+    },
+    "month": {
+      "metadata": {
+        "title": "Month",
+        "description": "Totals and entries for the month."
+      },
+      "title": "Month"
+    },
+    "year": {
+      "metadata": {
+        "title": "Year",
+        "description": "Your service year at a glance."
+      },
+      "title": "Year"
+    },
+    "profile": {
+      "metadata": {
+        "title": "Profile",
+        "description": "Your account and the way out of it."
+      },
+      "title": "Profile",
+      "nameUnknown": "Your account",
+      "roleUser": "User",
+      "roleAdmin": "Administrator",
+      "linksLabel": "About this app",
+      "about": "About",
+      "privacy": "Privacy & cookies",
+      "signOut": "Sign out",
+      "newUser": "Create a user",
+      "signOutConfirm": {
+        "title": "Sign out?",
+        "body": "You will need your email and password to get back in.",
+        "confirm": "Sign out",
+        "cancel": "Stay signed in"
+      },
+      "whatsNew": "What's new",
+      "whatsNewUnread": "Unread"
+    },
+    "whatsNew": {
+      "metadata": {
+        "title": "What's new",
+        "description": "What the app has gained in each version."
+      },
+      "eyebrow": "What's new",
+      "hero": {
+        "title": "What's new",
+        "text": "Everything the app has gained since it opened, newest first."
+      },
+      "currentPill": "Current",
+      "releasedPill": "Released",
+      "v2": {
+        "name": "Version 2",
+        "date": "14 October 2026",
+        "account": {
+          "title": "Sign in with your own account",
+          "text": "Your records stay yours, on every device you install the app on. Accounts are handed out by the owner."
+        },
+        "screens": {
+          "title": "Day, Calendar, Month and Year",
+          "text": "The four screens of the app, with the bottom bar to move between them."
+        },
+        "profile": {
+          "title": "Your profile",
+          "text": "Your name and role, the notifications switch, the links to About and Privacy, and the way out of the account."
+        },
+        "notifications": {
+          "title": "Notifications you can switch off",
+          "text": "Turn them on from the profile. A test notification arrives straight away, so you know they work."
+        },
+        "thisPage": {
+          "title": "This page",
+          "text": "Every version from now on is written up here, so nothing new slips past you. The row in your profile carries a dot until you have read the latest one."
+        }
+      },
+      "v1": {
+        "name": "Version 1",
+        "date": "September 2026",
+        "iosOnly": {
+          "title": "iPhone and Safari only",
+          "text": "The app is built for one phone and one browser, so it can be made to feel right there. A computer, an Android phone or a tablet is met with a short explanation instead."
+        },
+        "install": {
+          "title": "Install to the Home Screen",
+          "text": "Five steps, and the app opens from its own icon, without the browser's address bar."
+        },
+        "waitlist": {
+          "title": "The waiting list",
+          "text": "Leave an address, hear once when it opens. Nothing else is ever sent there."
+        },
+        "connection": {
+          "title": "It notices when the connection drops",
+          "text": "The app keeps an eye on your connection and says so plainly when there isn't one, instead of leaving you with a screen that quietly does nothing."
+        }
+      }
+    },
+    "adminNewUser": {
+      "metadata": {
+        "title": "New user",
+        "description": "Issue credentials for a new account."
+      },
+      "eyebrow": "Admin",
+      "title": "New user",
+      "subtitle": "Accounts are issued here. Hand the credentials over yourself — no email is sent.",
+      "nameLabel": "Name",
+      "namePlaceholder": "Ruth Fenko",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "passwordConfirmLabel": "Repeat password",
+      "passwordConfirmPlaceholder": "The same password again",
+      "roleLabel": "Role",
+      "roleUser": "User",
+      "roleAdmin": "Administrator",
+      "submit": "Create account",
+      "created": "Account created for {email}.",
+      "nameRequired": "Enter a name",
+      "nameTooLong": "That name is too long",
+      "emailRequired": "Enter an email",
+      "emailInvalid": "Enter a valid email address",
+      "emailTooLong": "That email address is too long",
+      "emailTaken": "An account with that address already exists.",
+      "passwordRequired": "Enter a password",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordNeedsUppercase": "Password must contain at least two capital letters.",
+      "passwordNeedsDigit": "Password must contain at least one digit.",
+      "passwordNeedsSymbol": "Password must contain at least one symbol.",
+      "passwordLatinOnly": "Password must use Latin letters, digits and symbols only.",
+      "passwordMismatch": "The two passwords do not match.",
+      "notAllowed": "Only an administrator can create accounts.",
+      "tooManyRequests": "Too many accounts created. Please wait a while and try again.",
+      "roleNotApplied": "The account was created, but the administrator role was not applied. Set it in Supabase Studio.",
+      "backendUnavailable": "Couldn't reach the server. Please try again in a moment."
     },
     "access": {
       "desktop": {
@@ -366,6 +527,22 @@
         "title": "6. Server Component error",
         "hint": "Opens a page that throws while it renders on the server. You will see the error screen, and Sentry should receive a server-side error.",
         "button": "Open failing page"
+      },
+      "toast": {
+        "title": "6. Backend unavailable",
+        "hint": "Asks Supabase for its health endpoint with a timeout too short to answer, so the call fails the way a real outage fails. The answer comes back as a state, not an exception, and the UI shows it as a toast — not a field error and not the 500 screen.",
+        "button": "Call a backend that cannot answer",
+        "done": "Called. A toast should have appeared at the top.",
+        "unavailable": "The backend is not responding. Please try again later.",
+        "reachable": "The backend answered after all."
+      },
+      "tones": {
+        "title": "7. Every toast tone",
+        "hint": "Shows all three tones at once, so their colours can be compared and the way the region stacks them is visible.",
+        "button": "Show all three tones",
+        "neutral": "Neutral tone — a plain statement",
+        "positive": "Positive tone — something worked",
+        "negative": "Negative tone — something did not"
       }
     },
     "globalError": {
@@ -379,6 +556,51 @@
       "text": "Check your Wi-Fi or mobile data, then try again.",
       "retryButton": "Try again",
       "retryingButton": "Checking…"
+    },
+    "login": {
+      "metadata": {
+        "title": "Sign in",
+        "description": "Sign in to sync your service report across your devices."
+      },
+      "title": "Ministry log",
+      "subtitle": "Sign in so your report syncs between your devices. Your data is visible only to you.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Sign in",
+      "forgotPassword": "Forgot password?",
+      "footnote": "Accounts are created by the admin. You do not need to register in the app.",
+      "emailRequired": "Enter your email",
+      "emailInvalid": "Enter a valid email address",
+      "emailTooLong": "That email address is too long",
+      "passwordRequired": "Enter your password",
+      "invalidCredentials": "Incorrect email or password.",
+      "tooManyRequests": "Too many attempts. Please wait a few minutes and try again.",
+      "backendUnavailable": "Couldn't reach the server. Please try again in a moment.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordNeedsUppercase": "Password must contain at least two capital letters.",
+      "passwordNeedsDigit": "Password must contain at least one digit.",
+      "passwordNeedsSymbol": "Password must contain at least one symbol.",
+      "passwordLatinOnly": "Password must use Latin letters, digits and symbols only."
+    },
+    "forgotPassword": {
+      "metadata": {
+        "title": "Reset password",
+        "description": "Request a password reset for your ministry log account."
+      },
+      "eyebrow": "Password",
+      "title": "Reset password",
+      "subtitle": "Enter the email address for your account and the admin will set a new password for you.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@example.com",
+      "submit": "Send request",
+      "backToSignIn": "Back to sign in",
+      "sent": "If that address has an account, a reset is on its way. Check with the admin if nothing arrives.",
+      "emailRequired": "Enter your email",
+      "emailInvalid": "Enter a valid email address",
+      "emailTooLong": "That email address is too long",
+      "tooManyRequests": "Too many attempts. Please wait a few minutes and try again."
     }
   }
 }

@@ -3,16 +3,16 @@ import { getTranslations } from "next-intl/server";
 import { ScreenBackHeader } from "@/features/screen-back";
 import { AppMark } from "@/shared/ui/app-mark";
 import {
-  CalendarIcon,
+  CalendarWeekIcon,
   ChartArrowIcon,
   CompassIcon,
   LockClosedIcon,
   LockOpenIcon,
-  MonthIcon,
+  CalendarMonthIcon,
   PlusIcon,
-  ProfileIcon,
+  UserIcon,
   TargetIcon,
-  YearIcon,
+  ChartBarIcon,
 } from "@/shared/ui/icons";
 import { ListCard } from "@/shared/ui/list-card";
 import { ListRow } from "@/shared/ui/list-row";
@@ -29,24 +29,14 @@ export const AboutScreen = async () => {
   const t = await getTranslations("screens.about");
 
   return (
-    // `flex-1`, not `min-h-dvh`: this screen now lives inside
-    // app/(with-footer) (ADR 0029, amendment), whose layout.tsx already
-    // reserves the full viewport height one level up
-    // (`flex min-h-dvh flex-col`) and appends <ScreenFooter /> after
-    // this div as a sibling. A second `min-h-dvh` here would claim the
-    // whole viewport for itself again and push the footer below the
-    // fold — the same bug ADR 0029 already fixed once for
-    // DayPage/InstallAppScreen/ComingSoonScreen via CenteredState's
-    // `fill` prop; this screen gets the same fix by hand, since it
-    // doesn't use CenteredState. `flex-1` grows to fill the layout
-    // column's remaining space on a short viewport (`bg-background`
-    // still covers the full page, no pale strip under the content), and
-    // — because a flex item's default `min-height: auto` means it can't
-    // shrink below its content's natural height — grows past that on
-    // this screen's actual long content, so the footer ends up after it
-    // at the bottom of the document, where a numbered/informational
-    // document's footer belongs.
-    <div className="flex flex-1 flex-col bg-background text-ink">
+    // `min-h-dvh` again: this screen left app/(with-footer) when the
+    // footer was narrowed to /soon and /install (ADR 0029, amendment
+    // 2026-10-08), so nothing above it reserves the viewport height any
+    // more and it has to claim it itself — otherwise short content would
+    // leave a pale strip of the page's background below it. The <main>
+    // inside keeps `flex-1` and grows past that on long content, so the
+    // document scrolls exactly as before.
+    <div className="flex min-h-dvh flex-col bg-background text-ink">
       {/* The DOCUMENT is the scroll container here (no overflow-y-auto
           on <main> below), so `sticky` on this header is real: it pins
           to the top of the viewport as the page scrolls underneath it,
@@ -63,7 +53,7 @@ export const AboutScreen = async () => {
           future caller of that component will want a sticky header. */}
       <ScreenBackHeader
         eyebrow={t("eyebrow")}
-        className="sticky top-0 z-10 bg-background pt-[calc(--spacing(6)+env(safe-area-inset-top))]"
+        className="screen-header-sticky"
       />
 
       <main className="flex flex-1 flex-col gap-4 px-5 pt-1.5 pb-10">
@@ -96,23 +86,23 @@ export const AboutScreen = async () => {
             text={t("screens.day.text")}
           />
           <ListRow
-            icon={<CalendarIcon size={18} />}
+            icon={<CalendarWeekIcon size={18} />}
             title={t("screens.calendar.title")}
             text={t("screens.calendar.text")}
           />
           <ListRow
-            icon={<MonthIcon size={18} />}
+            icon={<CalendarMonthIcon size={18} />}
             title={t("screens.month.title")}
             text={t("screens.month.text")}
           />
           <ListRow
-            icon={<YearIcon size={18} />}
+            icon={<ChartBarIcon size={18} />}
             title={t("screens.year.title")}
             text={t("screens.year.text")}
           />
           <ListRow
             divided={false}
-            icon={<ProfileIcon size={18} />}
+            icon={<UserIcon size={18} />}
             title={t("screens.profile.title")}
             text={t("screens.profile.text")}
           />

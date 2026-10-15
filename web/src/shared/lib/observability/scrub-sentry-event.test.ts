@@ -1,7 +1,7 @@
 import type { Event } from "@sentry/nextjs";
 import { describe, expect, it } from "vitest";
 
-import { scrubSentryEvent } from "./scrub-sentry-event";
+import { redactEmails, scrubSentryEvent } from "./scrub-sentry-event";
 
 describe("scrubSentryEvent", () => {
   it("redacts an address in the message", () => {
@@ -84,5 +84,20 @@ describe("scrubSentryEvent", () => {
 
     expect(() => scrubSentryEvent(weird)).not.toThrow();
     expect(scrubSentryEvent(weird)).toBeTruthy();
+  });
+});
+
+// Exported for server logs, not only for Sentry events (sign-in's catch
+// block), so the rule is pinned directly rather than only through the
+// event walker.
+describe("redactEmails", () => {
+  it("removes an address quoted inside an exception message", () => {
+    expect(redactEmails("duplicate key (email)=(ruth@example.com) already exists"))
+      .toBe("duplicate key (email)=([redacted]) already exists");
+  });
+
+  it("leaves text without an address untouched", () => {
+    expect(redactEmails("connect ECONNREFUSED 127.0.0.1:54321"))
+      .toBe("connect ECONNREFUSED 127.0.0.1:54321");
   });
 });

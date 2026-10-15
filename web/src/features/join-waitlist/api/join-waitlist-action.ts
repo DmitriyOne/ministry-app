@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 
+import { reportActionFailure } from "@/shared/lib/action-failure";
 import { getClientIp } from "@/shared/lib/rate-limit";
 
 import { persistWaitlistSignup } from "./persist-waitlist-signup";
@@ -61,7 +62,13 @@ export const joinWaitlist = async (
     }
 
     return mapJoinWaitlistRow(row, t("submitError"));
-  } catch {
+  } catch (error) {
+    // This used to be a bare `catch {}` with nothing but the message to
+    // the person: a failing sign-up left no trace in the log or in
+    // Sentry, so "the form is broken" could only ever be reported by
+    // whoever hit it. The person still sees the same text.
+    reportActionFailure({ scope: "join-waitlist", error });
+
     return { status: "error", formError: t("submitError") };
   }
 };
