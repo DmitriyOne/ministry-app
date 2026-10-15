@@ -12,7 +12,8 @@
     "db:link": "sh -c 'supabase link --project-ref \"${SUPABASE_PROJECT_REF:?Set SUPABASE_PROJECT_REF, e.g. SUPABASE_PROJECT_REF=abcxyz pnpm db:link}\"'",
     "db:push": "supabase db push",
     "functions:deploy": "supabase functions deploy",
-    "push:launch": "node scripts/send-waitlist-launch-push.mjs"
+    "push:launch": "node scripts/send-waitlist-launch-push.mjs",
+    "push:version": "node scripts/send-version-push.mjs"
   },
   "devDependencies": {
     "supabase": "2.117.0"

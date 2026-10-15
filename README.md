@@ -104,6 +104,7 @@ All from the root.
 | `pnpm test` | `vitest run` |
 | `pnpm build` / `pnpm start` | Production build and running it (with env from `envs/web.local.env`) |
 | `pnpm push:launch` | Launch mailing to waitlist subscribers. **Defective, see ADR 0038** |
+| `pnpm push:version` | Announces the current version to account holders. Sends nothing without `--send`; see ADR 0058 |
 
 Deploying to cloud Supabase (`db:login`, `db:link`, `db:push`,
 `functions:deploy`) is a separate section in [`CLAUDE.md`](./CLAUDE.md#деплой-миграций-в-облачный-supabase);
@@ -114,11 +115,14 @@ commands from a machine checks none of that.
 
 ## CI
 
-`.github/workflows/` holds five workflows. Three are about the code:
+`.github/workflows/` holds six workflows. Three are about the code:
 `ci.yml` (lint, types, unit tests, plus a check that a release raises the
 version), `db-test.yml` (pgTAP plus a check that the committed Supabase
 types still match the schema) and `supabase-deploy.yml` (manual
-deployment). Two are about keeping the free tier alive: `health-ping.yml`
+deployment). One announces a release to the people using the app: `version-push.yml`
+(manual, dry run by default, see
+[ADR 0058](./docs/decisions/0058-version-announcement-push.md)). Two are
+about keeping the free tier alive: `health-ping.yml`
 queries the database every three days, because a free Supabase project is
 paused after seven days of inactivity, and `supabase-backup.yml` takes a
 daily dump, because the free tier has no backups of its own. Both are on

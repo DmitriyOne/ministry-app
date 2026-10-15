@@ -20,6 +20,7 @@
     "db:push": "pnpm --filter backend run db:push",
     "functions:deploy": "pnpm --filter backend run functions:deploy",
     "push:launch": "dotenv -e envs/backend.local.env -- pnpm --filter backend run push:launch",
+    "push:version": "dotenv -e envs/backend.local.env -- pnpm --filter backend run push:version",
     "lint": "pnpm --filter web run lint",
     "typecheck": "pnpm --filter web run typecheck",
     "test": "pnpm --filter web run test",
