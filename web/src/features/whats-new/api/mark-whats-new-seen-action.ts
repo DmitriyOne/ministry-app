@@ -1,8 +1,10 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { getSessionClaims } from "@/entities/session";
 import { createServerSupabaseClient } from "@/shared/api";
-import { APP_VERSION } from "@/shared/config";
+import { APP_VERSION, routes } from "@/shared/config";
 import { reportActionFailure } from "@/shared/lib/action-failure";
 
 // Records that this person has opened the What's New screen for the
@@ -47,7 +49,24 @@ export const markWhatsNewSeen = async (): Promise<void> => {
         outcome: "failed",
         context: { reason: "supabase-error", code: error.code },
       });
+      return;
     }
+
+    // Why the write alone is not enough, and why this is not an
+    // optimisation: Next keeps a client-side BFCache of routes already
+    // rendered, and a back navigation reads it with the staleness check
+    // deliberately bypassed (`readFromBFCache` passes -1 instead of the
+    // current time — see node_modules/next/dist/client/components/
+    // segment-cache/bfcache.js). So /profile comes back drawn exactly as
+    // it was left, dot and all, no matter what the database now says.
+    // The one thing that evicts that cache is a revalidation: the action's
+    // response carries `x-action-revalidated`, and the client calls
+    // `invalidateBfCache()` when it does (server-action-reducer.js).
+    //
+    // /profile is dynamic (it reads session cookies), so there is no
+    // cached payload on the server to purge. This call is here for the
+    // signal it sends the client, which is the whole bug.
+    revalidatePath(routes.profile);
   } catch (error) {
     reportActionFailure({ scope: "whats-new", error });
   }
