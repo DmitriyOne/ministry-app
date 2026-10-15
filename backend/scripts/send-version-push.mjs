@@ -5,6 +5,11 @@
 // dry run is the default on purpose — see ADR 0058. The version comes
 // from the root package.json, the single place it lives (ADR 0057).
 //
+// `--only=<id>` sends to one row instead of the whole audience: a
+// subscription id (digits) for one device, or a user id (UUID) for one
+// person. Both forms combine with --send the same way, so the safe
+// rehearsal is `--only=7` on its own first.
+//
 // Deliberately NOT a copy of send-waitlist-launch-push.mjs: that script
 // was written for one day and carries three recorded defects (ADR 0038).
 // This one runs at every release, so repeating them would mean repeating
@@ -31,6 +36,34 @@ for (const name of required) {
 }
 
 const shouldSend = process.argv.includes("--send");
+
+// `--only=<id>` narrows the delivery to a single row, which is how a
+// release is tried on one phone before it reaches everybody.
+//
+// The value is read in two shapes, and they cannot be confused for one
+// another: all digits is a push_subscriptions.id (the first column in
+// Studio, one device), and a UUID is a user_id (every live device that
+// person has). Anything else is refused rather than guessed at — a typo
+// that quietly matched nothing would look exactly like "nobody is
+// subscribed".
+const onlyArgument = process.argv.find((argument) => argument.startsWith("--only="));
+const only = onlyArgument ? onlyArgument.slice("--only=".length).trim() : "";
+
+const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+let target = null;
+
+if (only !== "") {
+  if (/^\d+$/.test(only)) {
+    target = { column: "id", value: Number(only), label: `subscription ${only}` };
+  } else if (UUID_SHAPE.test(only)) {
+    target = { column: "user_id", value: only, label: `user ${only}` };
+  } else {
+    throw new Error(
+      `--only expects a subscription id (digits) or a user id (UUID), got "${only}"`,
+    );
+  }
+}
 
 const { version } = JSON.parse(
   readFileSync(new URL("../../package.json", import.meta.url), "utf8"),
@@ -67,15 +100,28 @@ const supabase = createClient(
 const PAGE_SIZE = 500;
 
 const readPage = async (afterId) => {
-  const { data, error } = await supabase
+  let query = supabase
     .from("push_subscriptions")
     .select("id, endpoint, p256dh, auth")
-    // Soft-deleted subscriptions must not be messaged (ADR 0047).
-    .is("deleted_at", null)
+    // Soft-deleted subscriptions must not be messaged (ADR 0047). This
+    // one holds even for a named target: a row marked deleted means the
+    // push service already rejected that endpoint for good.
+    .is("deleted_at", null);
+
+  if (target === null) {
     // People with an account, which is the mirror image of the launch
     // script's filter. A waitlist device belongs to somebody who has not
     // got in yet; "version 2.1 is out" means nothing to them.
-    .not("user_id", "is", null)
+    query = query.not("user_id", "is", null);
+  } else {
+    // A named row wins over the audience rule. The operator is looking at
+    // the table and pointing at a line; refusing it because that line has
+    // no user_id would make a test send impossible on exactly the devices
+    // that exist today.
+    query = query.eq(target.column, target.value);
+  }
+
+  const { data, error } = await query
     .gt("id", afterId)
     .order("id", { ascending: true })
     .limit(PAGE_SIZE);
@@ -179,9 +225,19 @@ for (;;) {
   }
 }
 
+// A named target that matched nothing is a mistake, not an empty
+// audience: the id was mistyped, or it belongs to a row already marked
+// deleted. Saying "0 devices" and exiting green would read as "nobody is
+// subscribed", which is a different fact entirely.
+if (target !== null && seen === 0) {
+  console.error(`[push] nothing matched --only (${target.label})`);
+  process.exit(1);
+}
+
 if (!shouldSend) {
   console.info("[push] dry run — nothing was sent", {
     version,
+    audience: target === null ? "all account holders" : target.label,
     devices: seen,
     title: `Version ${version} is here`,
     url: "/whats-new",
@@ -193,6 +249,7 @@ if (!shouldSend) {
 
 console.info("[push] version delivery complete", {
   version,
+  audience: target === null ? "all account holders" : target.label,
   devices: seen,
   sent,
   removed,
