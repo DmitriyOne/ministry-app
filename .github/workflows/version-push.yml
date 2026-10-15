@@ -157,16 +157,19 @@ jobs:
           : "${SUPABASE_PROJECT_REF:?Secret SUPABASE_PROJECT_REF is not set}"
           : "${SUPABASE_SECRET_KEY:?Secret SUPABASE_SECRET_KEY is not set}"
           export SUPABASE_URL="https://${SUPABASE_PROJECT_REF}.supabase.co"
-          args=""
+          # An ARRAY, not a string, and every expansion quoted. Built as a
+          # string and expanded unquoted — which is what this was at first
+          # — the shell splits it on whitespace, so "1 --send" typed into
+          # the 'only' field arrives as two arguments and turns a dry run
+          # with the confirmation box untouched into a real delivery. The
+          # guard job cannot catch that: it only demands confirmation when
+          # the MODE input says 'send'. Reproduced before fixing; argv was
+          # [--only=1] [--send].
+          args=()
           if [ "${MODE}" = "send" ]; then
-            args="--send"
+            args+=("--send")
           fi
           if [ -n "${ONLY}" ]; then
-            args="${args} --only=${ONLY}"
+            args+=("--only=${ONLY}")
           fi
-          # Unquoted on purpose: `args` holds zero, one or two flags built
-          # above, and quoting would hand the script one argument that is
-          # the whole string. The value inside --only is checked by the
-          # script, and `set -u` above catches an unset variable.
-          # shellcheck disable=SC2086
-          node scripts/send-version-push.mjs ${args}
+          node scripts/send-version-push.mjs "${args[@]}"
