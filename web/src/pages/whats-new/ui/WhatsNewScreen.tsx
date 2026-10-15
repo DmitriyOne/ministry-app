@@ -4,16 +4,18 @@ import { ScreenBackHeader } from "@/features/screen-back";
 import { MarkWhatsNewSeen } from "@/features/whats-new";
 import { AppMark } from "@/shared/ui/app-mark";
 import { CenteredState } from "@/shared/ui/centered-state";
-// Three of these are stand-ins. The set has no bell, no phone and no
-// envelope, and adding icons is the owner's call, not a detail to slip
-// into a screen: notifications borrow the info circle, "iPhone only"
-// borrows the closed lock (it is a restriction), and the waiting list
-// borrows the tick. Install uses the compass deliberately — the same
-// glyph /about gives that row.
+// Four of these are stand-ins. The set has no bell, no phone, no
+// envelope and no eye-on-a-list, and adding icons is the owner's call,
+// not a detail to slip into a screen: notifications borrow the info
+// circle, "iPhone only" borrows the closed lock (it is a restriction),
+// the waiting list borrows the tick, and this page itself borrows the
+// eye — the glyph the password field uses for "see it". Install uses
+// the compass deliberately — the same glyph /about gives that row.
 import {
   CalendarWeekIcon,
   CheckCircleIcon,
   CompassIcon,
+  EyeIcon,
   InfoCircleIcon,
   LockClosedIcon,
   LockOpenIcon,
@@ -74,10 +76,17 @@ export const WhatsNewScreen = async () => {
             text={t("v2.profile.text")}
           />
           <ListRow
-            divided={false}
             icon={<InfoCircleIcon size={18} />}
             title={t("v2.notifications.title")}
             text={t("v2.notifications.text")}
+          />
+          {/* The screen describing itself, last in its own version: it is
+              the one row a person can act on by simply being here. */}
+          <ListRow
+            divided={false}
+            icon={<EyeIcon size={18} />}
+            title={t("v2.thisPage.title")}
+            text={t("v2.thisPage.text")}
           />
         </ListCard>
 
