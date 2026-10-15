@@ -12,6 +12,13 @@
 # every time before 'send' — it costs one run and answers the only question
 # that matters, "how many people and what will they read".
 #
+# The 'only' field narrows a run to a single row of push_subscriptions:
+# the id from the first column in Studio (one device), or a user id
+# (every live device that person has). That is how a release is tried on
+# one phone first. A named row also bypasses the "account holders only"
+# rule — the operator is pointing at a line in the table, and the waitlist
+# devices are the ones that actually exist before launch.
+#
 # WHAT THIS WORKFLOW HOLDS, and it is the reason to think twice before
 # adding steps to it: SUPABASE_SECRET_KEY bypasses RLS entirely (ADR 0037).
 # In the app it lives on one server module; here it becomes an environment
@@ -44,6 +51,11 @@ on:
         description: Version being announced, e.g. 2.0.0 (must match package.json)
         type: string
         required: true
+      only:
+        description: "Optional: send to one row only — subscription id (digits) or user id (UUID). Empty means everyone"
+        type: string
+        required: false
+        default: ""
       confirm:
         description: I understand 'send' notifies every account holder's device
         type: boolean
@@ -130,6 +142,11 @@ jobs:
         working-directory: backend
         env:
           MODE: ${{ inputs.mode }}
+          # Free text from the dispatch form, so it reaches the shell as a
+          # variable and never as `${{ }}` inside `run:` — that would be
+          # pasted in before the shell runs. The script validates the shape
+          # and refuses anything that is neither digits nor a UUID.
+          ONLY: ${{ inputs.only }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           WEB_PUSH_VAPID_PUBLIC_KEY: ${{ secrets.WEB_PUSH_VAPID_PUBLIC_KEY }}
@@ -140,8 +157,16 @@ jobs:
           : "${SUPABASE_PROJECT_REF:?Secret SUPABASE_PROJECT_REF is not set}"
           : "${SUPABASE_SECRET_KEY:?Secret SUPABASE_SECRET_KEY is not set}"
           export SUPABASE_URL="https://${SUPABASE_PROJECT_REF}.supabase.co"
+          args=""
           if [ "${MODE}" = "send" ]; then
-            node scripts/send-version-push.mjs --send
-          else
-            node scripts/send-version-push.mjs
+            args="--send"
           fi
+          if [ -n "${ONLY}" ]; then
+            args="${args} --only=${ONLY}"
+          fi
+          # Unquoted on purpose: `args` holds zero, one or two flags built
+          # above, and quoting would hand the script one argument that is
+          # the whole string. The value inside --only is checked by the
+          # script, and `set -u` above catches an unset variable.
+          # shellcheck disable=SC2086
+          node scripts/send-version-push.mjs ${args}
