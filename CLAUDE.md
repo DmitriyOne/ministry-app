@@ -3,10 +3,13 @@
 Контекст для AI-агентов и людей, работающих в этом репозитории.
 
 > **Внимание**: `web/CLAUDE.md` и `web/AGENTS.md` — это НЕ этот файл.
-> Next.js 16 (`next dev`) сам создаёт их (`agentRules`, включено по
-> умолчанию — см. `docs/decisions/0005-*.md`) и держит в них свой блок
-> между маркерами `<!-- BEGIN:nextjs-agent-rules -->` и
-> `<!-- END:nextjs-agent-rules -->`. **Внутри маркеров не править**:
+> Содержимое держит `web/AGENTS.md`: Next.js 16 (`next dev`) создаёт его
+> (`agentRules`, включено по умолчанию — см. `docs/decisions/0005-*.md`)
+> и держит там свой блок между маркерами
+> `<!-- BEGIN:nextjs-agent-rules -->` и
+> `<!-- END:nextjs-agent-rules -->`. `web/CLAUDE.md` — одна строка
+> `@AGENTS.md`, то есть импорт соседа; маркеров в нём нет, и править в
+> нём нечего. **Внутри маркеров не править**:
 > `next dev` перепишет. Всё, что лежит за ними, перегенерацию переживает
 > (проверено по `upsertAgentRulesBlock` в
 > `node_modules/next/dist/server/lib/generate-agent-files.js`) — там и
@@ -515,7 +518,7 @@ ministry-app/
 
 Готовые UI-блоки (каркасы экранов, навигация, знаки, текстовые роли,
 кнопки/раскладки действий, поля ввода, карточки) — в `web/src/shared/ui/`,
-каждый в своём файле, без общего барреля (как `button.tsx`/`card.tsx`, а
+каждый в своём файле, без общего барреля (как `button.tsx`/`list-card.tsx`, а
 не как `icons/` со своим `index.ts`). Полный инвентарь с параметрами —
 ADR `docs/decisions/0012-component-library.md` (там же — когда и почему
 удалена витрина `/components`).

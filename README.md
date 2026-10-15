@@ -2,7 +2,9 @@
 
 A ministry tracking app: an iPhone-first PWA built on Next.js with a
 Supabase backend. Monorepo: `web/` (Next.js) and `backend/` (Supabase CLI
-project and utility scripts).
+project and utility scripts). The product's version lives in the root
+`package.json`; the workspace packages carry their own numbers, which
+mean nothing.
 
 ## Status
 
@@ -16,8 +18,10 @@ the installed app, can turn on a push notification about the launch.
 roles, bottom navigation and the screens behind a session — `/day`,
 `/calendar`, `/month`, `/year` are still placeholders carrying a title
 each, `/profile` is real (name, role, push toggle, sign-out) and
-`/admin/users/new` creates an account. There is no sign-up: the owner
-hands out accounts. The real ministry tables are the next piece of work.
+`/admin/users/new` creates an account. `/whats-new` tells a person what
+each version added, with a dot on the profile row while they have not
+read the current one. There is no sign-up: the owner hands out accounts.
+The real ministry tables are the next piece of work.
 
 `LAUNCH_MODE` is gone — `/soon` is simply a public landing page now, and
 what `/day` shows is decided by whether there is a session.
@@ -110,10 +114,16 @@ commands from a machine checks none of that.
 
 ## CI
 
-`.github/workflows/` holds three workflows: `ci.yml` (lint, types, unit
-tests), `db-test.yml` (pgTAP plus a check that the committed Supabase
+`.github/workflows/` holds five workflows. Three are about the code:
+`ci.yml` (lint, types, unit tests, plus a check that a release raises the
+version), `db-test.yml` (pgTAP plus a check that the committed Supabase
 types still match the schema) and `supabase-deploy.yml` (manual
-deployment).
+deployment). Two are about keeping the free tier alive: `health-ping.yml`
+queries the database every three days, because a free Supabase project is
+paused after seven days of inactivity, and `supabase-backup.yml` takes a
+daily dump, because the free tier has no backups of its own. Both are on
+a schedule, and GitHub disables scheduled workflows after sixty days
+without repository activity.
 
 The first two deliberately do **not** run on every commit — only on the
 merges the owner named: into a release branch when the pull request is
@@ -131,6 +141,10 @@ is opened. After pushing more commits to one, re-run the checks with the
 
 - [`CLAUDE.md`](./CLAUDE.md) — repository structure, Feature-Sliced Design
   rules, the design system, the access scheme, conventions. Start there.
+- [`DESIGN.md`](./DESIGN.md) — the visual language: tokens, the type
+  scale, spacing, the inventory of ready components. Read it before
+  writing any markup; the project has twice paid for a component written
+  from scratch next to a ready one.
 - [`docs/decisions/`](./docs/decisions) — ADRs, one per architectural
   decision, with the options and the reasons for the choice. Decisions are
   recorded there, not in conversations.
