@@ -136,6 +136,10 @@
         "notifications": {
           "title": "Notifications you can switch off",
           "text": "Turn them on from the profile. A test notification arrives straight away, so you know they work."
+        },
+        "thisPage": {
+          "title": "This page",
+          "text": "Every version from now on is written up here, so nothing new slips past you. The row in your profile carries a dot until you have read the latest one."
         }
       },
       "v1": {
