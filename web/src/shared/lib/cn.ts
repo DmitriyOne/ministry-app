@@ -29,6 +29,7 @@ const FONT_SIZE_NAMES = [
   "list-row",
   "caption",
   "eyebrow",
+  "tab",
   "title",
   "body",
   "status",
@@ -44,9 +45,10 @@ const FONT_WEIGHT_NAMES = ["500", "520", "540", "560", "580", "600", "620", "640
 // directly and don't produce `rounded-*` utilities.
 const RADIUS_NAMES = ["mark-sm", "mark-md", "mark-lg", "button"] as const;
 
-// `--shadow-card`, `--shadow-mark-elevated` in @theme inline — the
-// `shadow-card`/`shadow-mark-elevated` class suffix.
-const SHADOW_NAMES = ["card", "mark-elevated"] as const;
+// `--shadow-card`, `--shadow-mark-elevated`, `--shadow-nav`,
+// `--shadow-nav-primary` in @theme inline — the `shadow-card` etc. class
+// suffix.
+const SHADOW_NAMES = ["card", "mark-elevated", "nav", "nav-primary"] as const;
 
 export const cn = createCn({
   extend: {
@@ -55,6 +57,12 @@ export const cn = createCn({
       "font-weight": [{ font: [...FONT_WEIGHT_NAMES] }],
       "rounded": [{ rounded: [...RADIUS_NAMES] }],
       "shadow": [{ shadow: [...SHADOW_NAMES] }],
+      // `min-h-app` is a custom @utility (globals.css), not a theme token,
+      // so the snapshot does not know it conflicts with `min-h-dvh` and
+      // friends. Registered here for the same reason as the tokens above:
+      // a screen that overrides the height via className should win, not
+      // end up with two min-heights and whichever CSS order decides.
+      "min-h": [{ "min-h": ["app"] }],
     },
   },
 });

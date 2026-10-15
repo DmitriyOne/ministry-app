@@ -29,7 +29,15 @@ const supabase = createClient(
 
 const { data: subscriptions, error } = await supabase
   .from("push_subscriptions")
-  .select("id, endpoint, p256dh, auth");
+  .select("id, endpoint, p256dh, auth")
+  // Soft-deleted subscriptions must not be messaged (ADR 0047).
+  .is("deleted_at", null)
+  // Waitlist devices only. Since migration 20261013094149 the same table
+  // also holds subscriptions made from the profile screen by people who
+  // already have an account — the launch announcement is not for them,
+  // and without this filter they would be told about a launch they are
+  // already past.
+  .not("waitlist_signup_id", "is", null);
 
 if (error) {
   throw error;
@@ -76,12 +84,15 @@ for (const subscription of subscriptions ?? []) {
         ? sendError.statusCode
         : undefined;
 
-    // 404/410 means the browser/push service says this subscription is gone.
-    // Delete it so later campaigns do not retry a permanently dead endpoint.
+    // 404/410 means the browser/push service says this subscription is
+    // gone. Mark it deleted so later campaigns do not retry a permanently
+    // dead endpoint — a soft delete, not a real one (ADR 0047): no row in
+    // this project is ever removed, and the freed endpoint stays reusable
+    // because its unique index only covers live rows.
     if (statusCode === 404 || statusCode === 410) {
       const { error: deleteError } = await supabase
         .from("push_subscriptions")
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq("id", subscription.id);
 
       if (deleteError) {

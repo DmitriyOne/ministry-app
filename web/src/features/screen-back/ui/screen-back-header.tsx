@@ -11,11 +11,14 @@ import { useScreenBack } from "../model/use-screen-back";
 // (pages/about), but the logic itself doesn't know about /about at all.
 type ScreenBackHeaderProps = {
   eyebrow: string;
+  // Passed straight through to ScreenHeader: which surface the header
+  // sits on is the screen's business, not this scenario's.
+  tone?: "ink" | "hero";
   className?: string;
 };
 
-export const ScreenBackHeader = ({ eyebrow, className }: ScreenBackHeaderProps) => {
+export const ScreenBackHeader = ({ eyebrow, tone, className }: ScreenBackHeaderProps) => {
   const handleBack = useScreenBack();
 
-  return <ScreenHeader eyebrow={eyebrow} onBack={handleBack} className={className} />;
+  return <ScreenHeader eyebrow={eyebrow} onBack={handleBack} tone={tone} className={className} />;
 };

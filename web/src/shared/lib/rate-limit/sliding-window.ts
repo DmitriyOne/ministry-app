@@ -24,6 +24,16 @@ type SlidingWindowOptions = {
   windowMs: number;
 };
 
+export type ConsumeOptions = {
+  // false asks the limiter whether the key is over the limit WITHOUT
+  // counting this call as an attempt. It exists for the case where the
+  // caller only learns afterwards whether the attempt should count at all
+  // — sign-in charges failed password checks, not successful logins or a
+  // backend that did not answer (ADR 0043, update). Default is true, so
+  // every existing caller keeps the check-and-count behaviour.
+  record?: boolean;
+};
+
 const CLEANUP_INTERVAL_CAP_MS = 60_000;
 
 export const createSlidingWindowLimiter = ({ limit, windowMs }: SlidingWindowOptions) => {
@@ -44,7 +54,7 @@ export const createSlidingWindowLimiter = ({ limit, windowMs }: SlidingWindowOpt
   const cleanup = setInterval(sweep, Math.min(windowMs, CLEANUP_INTERVAL_CAP_MS));
   cleanup.unref?.();
 
-  return (key: string): RateLimitResult => {
+  return (key: string, { record = true }: ConsumeOptions = {}): RateLimitResult => {
     const now = Date.now();
     const cutoff = now - windowMs;
     const existing = buckets.get(key) ?? [];
@@ -52,6 +62,18 @@ export const createSlidingWindowLimiter = ({ limit, windowMs }: SlidingWindowOpt
 
     if (fresh.length >= limit) {
       return { success: false, limit, remaining: 0, reset: fresh[0]! + windowMs };
+    }
+
+    if (!record) {
+      return {
+        success: true,
+        limit,
+        remaining: limit - fresh.length,
+        // No attempt stored, so nothing has started counting down yet:
+        // with an empty bucket the window would only begin at the first
+        // recorded attempt, and `now` is the closest honest answer.
+        reset: (fresh[0] ?? now) + windowMs,
+      };
     }
 
     fresh.push(now);

@@ -11,8 +11,19 @@ import {
   type LinkProps as LinkPrimitiveProps,
 } from "react-aria-components";
 
+// Uses --negative, not shadcn's own destructive token. The two resolve to
+// the very same --palette-terracotta (globals.css), so this renames a
+// duplicate rather than changing a colour: the project names that tone
+// --negative everywhere else, and keeping both put a second name for one
+// thing into the generated stylesheet. The dark: variants went with it —
+// there is no dark theme (ADR 0011) and `.dark` is an empty placeholder, so
+// they could never apply.
+//
+// Careful with the wording here: Tailwind scans these files as plain text,
+// so spelling a utility class inside a comment is enough to emit its CSS.
+// That is literally how the rule this change removed came back once.
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-negative aria-invalid:ring-3 aria-invalid:ring-negative/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -23,8 +34,12 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
           "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+        // Same rename as the aria-invalid classes above, and the dark:
+        // variants dropped with it: one name for one colour. The variant
+        // itself has no caller today — it is kept because it is part of the
+        // registry's API, not because anything needs it.
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+          "bg-negative/10 text-negative hover:bg-negative/20 focus-visible:border-negative/40 focus-visible:ring-negative/20",
         link: "text-primary underline-offset-4 hover:underline",
         // Roles from the component catalogue (ADR 0012) — state screens.
         // Radius/height come from size="role"/"role-lg", not the

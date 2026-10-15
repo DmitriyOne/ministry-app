@@ -34,33 +34,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          display_name: string
+          id: string
+          updated_at: string
+          whats_new_seen: string | null
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          display_name: string
+          id: string
+          updated_at?: string
+          whats_new_seen?: string | null
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          display_name?: string
+          id?: string
+          updated_at?: string
+          whats_new_seen?: string | null
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
           created_at: string
+          deleted_at: string | null
           endpoint: string
           id: number
           p256dh: string
           updated_at: string
-          waitlist_signup_id: number
+          user_id: string | null
+          waitlist_signup_id: number | null
         }
         Insert: {
           auth: string
           created_at?: string
+          deleted_at?: string | null
           endpoint: string
           id?: never
           p256dh: string
           updated_at?: string
-          waitlist_signup_id: number
+          user_id?: string | null
+          waitlist_signup_id?: number | null
         }
         Update: {
           auth?: string
           created_at?: string
+          deleted_at?: string | null
           endpoint?: string
           id?: never
           p256dh?: string
           updated_at?: string
-          waitlist_signup_id?: number
+          user_id?: string | null
+          waitlist_signup_id?: number | null
         }
         Relationships: [
           {
@@ -72,9 +105,28 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          deleted_at: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          deleted_at?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          deleted_at?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       waitlist_signups: {
         Row: {
           created_at: string
+          deleted_at: string | null
           email: string
           id: number
           push_enrollment_token: string | null
@@ -82,6 +134,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           email: string
           id?: never
           push_enrollment_token?: string | null
@@ -89,6 +142,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           email?: string
           id?: never
           push_enrollment_token?: string | null
@@ -101,6 +155,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      forget_user_push_subscription: {
+        Args: { p_endpoint: string; p_user_id: string }
+        Returns: boolean
+      }
       join_waitlist: {
         Args: { p_email: string }
         Returns: {
@@ -108,6 +167,15 @@ export type Database = {
           list_position: number
           push_enrollment_token: string
         }[]
+      }
+      register_user_push_subscription: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_p256dh: string
+          p_user_id: string
+        }
+        Returns: boolean
       }
       register_waitlist_push_subscription: {
         Args: {
@@ -120,7 +188,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "user" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -250,7 +318,9 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["user", "admin"],
+    },
   },
 } as const
 

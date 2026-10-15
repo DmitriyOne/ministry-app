@@ -1,1 +1,1 @@
-export { scrubSentryEvent } from "./scrub-sentry-event";
+export { scrubSentryEvent, redactEmails } from "./scrub-sentry-event";

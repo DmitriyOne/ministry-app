@@ -1,0 +1,101 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
+
+import { createServerSupabaseClient } from "@/shared/api";
+import { firstFieldErrors } from "@/shared/lib/forms";
+import { reportActionFailure } from "@/shared/lib/action-failure";
+import { getClientIp } from "@/shared/lib/rate-limit";
+
+import { checkSignInRateLimit, recordSignInFailure } from "./rate-limit";
+import { classifyAuthError } from "../model/classify-auth-error";
+import { createSignInSchema, type SignInActionState, type SignInFormValues } from "../model/schema";
+
+export const signIn = async (
+  _previousState: SignInActionState,
+  values: SignInFormValues,
+): Promise<SignInActionState> => {
+  const t = await getTranslations("screens.login");
+
+  // The IP is only ever a rate-limit key: never logged or persisted.
+  const ip = getClientIp(await headers());
+
+  if (!checkSignInRateLimit(ip).success) {
+    console.warn("[sign-in] rejected", { reason: "rate-limit" });
+    return { status: "error", formError: t("tooManyRequests") };
+  }
+
+  const result = createSignInSchema(t).safeParse(values);
+
+  if (!result.success) {
+    return { status: "error", fieldErrors: firstFieldErrors(result.error) };
+  }
+
+  // Everything that talks to Supabase sits inside this try. signInWithPassword
+  // itself catches its own failures and hands them back as `error` — verified
+  // in the SDK source — but anything that is not an AuthError is rethrown, and
+  // creating the client or reading the profile can throw outright. A server
+  // action that throws reaches app/error.tsx, i.e. the 500 screen, and ADR 0046
+  // is explicit that a backend which did not answer belongs in a toast instead.
+  // Which step threw, so the log says more than "something did". Three
+  // things in here can fail for unrelated reasons and the difference matters
+  // when reading a log: the cookie store, the auth call, the profile read.
+  let stage: "client" | "sign-in" | "profile" = "client";
+
+  try {
+    const supabase = await createServerSupabaseClient();
+
+    stage = "sign-in";
+    const { error } = await supabase.auth.signInWithPassword(result.data);
+
+    if (error) {
+      const failure = classifyAuthError(error);
+
+      // Only the fact, never the address (ADR 0026/0027).
+      console.warn("[sign-in] rejected", { reason: failure });
+
+      // A backend that did not answer is not a guess, so it does not
+      // spend the attempt budget.
+      if (failure === "unavailable") return { status: "unavailable" };
+
+      // This one is a rejected password: the only thing the limiter counts.
+      recordSignInFailure(ip);
+
+      // One text for both fields: saying which of the two was wrong would
+      // turn the form into a check for whether an account exists.
+      return { status: "error", formError: t("invalidCredentials") };
+    }
+
+    // Read under the person's own session; the "read own profile" policy
+    // allows exactly this row, so no id filter is needed. A failed read must
+    // not undo a sign-in that already succeeded, so the name is simply left
+    // out. displayName is carried for the welcome toast (task 10) and has no
+    // consumer yet.
+    stage = "profile";
+
+    const { data: profile } = await supabase.from("profiles").select("display_name").maybeSingle();
+
+    // The client cache still holds what this person saw while signed out
+    // — above all the login screen itself. Next.js reuses that cache for
+    // browser back/forward without asking the server, so without this a
+    // swipe back lands on /login behind a live session. Signing out does
+    // the same thing for the mirror-image reason.
+    //
+    // Setting a cookie through cookies() is documented to invalidate the
+    // cache too, and signInWithPassword does set the session cookies
+    // through our adapter — this says it outright instead of depending on
+    // that side effect, for a path that runs once per sign-in.
+    revalidatePath("/", "layout");
+
+    return { status: "success", displayName: profile?.display_name };
+  } catch (error) {
+    // Which step threw travels with the report: the cookie store, the
+    // auth call and the profile read fail for unrelated reasons, and the
+    // difference is what makes the log worth reading.
+    reportActionFailure({ scope: "sign-in", error, context: { stage } });
+
+    return { status: "unavailable" };
+  }
+};

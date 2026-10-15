@@ -4,12 +4,13 @@ import { FooterLink } from "./FooterLink";
 import { footerLinks } from "../model/footer-links";
 
 // A quiet footer, centred under a screen's content. Rendered by
-// app/(with-footer)/layout.tsx on every screen in that group — day,
-// soon, install, the root redirect, and now about/privacy themselves
-// too (ADR 0029/0031, amendment) — everywhere except /access/* (the
-// person isn't getting into the app regardless, see ADR 0016). The link
-// to the page currently open renders as the active one instead of being
-// omitted — see FooterLink.
+// app/(with-footer)/layout.tsx on every screen in that group, which the
+// owner narrowed to /soon and /install (ADR 0045, update): the screens
+// someone reaches BEFORE signing in. Inside the app the same two links
+// live on /profile, and /about and /privacy carry their own back button.
+// The link to the page currently open renders as the active one instead
+// of being omitted — see FooterLink, which is why that code is currently
+// dormant: neither screen in the group is one the footer links to.
 //
 // Lives in widgets, not shared/ui: it knows the app's concrete routes
 // and pulls its text from the domain dictionary, which is a business

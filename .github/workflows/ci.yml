@@ -1,4 +1,5 @@
-# Fast checks on every pull request and every push to the long-lived branches:
+# Fast checks on the merges the owner named (see the trigger note below) and
+# on every push to master:
 # lint (ESLint + steiger FSD boundaries), type check and unit tests (vitest).
 #
 # Deliberately NOT here: `pnpm build`. The root script is
@@ -11,10 +12,45 @@
 # No secrets or variables are needed.
 name: CI
 
+# WHICH PULL REQUESTS RUN THIS (owner's rule, 2026-10-13)
+#
+#   base release*  — only when the pull request is OPENED (or reopened).
+#                    Later commits on the same request do not re-run it.
+#   base develop   — opened, reopened AND every new commit, and only from a
+#                    release branch (that is the only thing that merges
+#                    into develop).
+#   base master    — the same, from develop and from hotfix/*. A hotfix
+#                    skips develop by definition, so without it the one
+#                    change that reaches production fastest would be the
+#                    only one nothing checks.
+#   anything else  — not run at all.
+#
+# The condition lives on the job rather than in `on:`, because `on:` cannot
+# say "these event types for this base branch and those for that one".
+# A job skipped by `if:` costs no runner.
+#
+# KNOWN HOLE, deliberate: a request into a release branch is tested once,
+# at the moment it is opened. Commits pushed afterwards are not tested, so
+# a green check on such a request can be stale. This is exactly why these
+# checks are required in branch protection for develop and master but NOT
+# for a release branch (ADR 0052): a required check that accepts a stale
+# result looks like a lock and is not one. Re-run by hand (the "Run
+# workflow" button, below) after pushing to a request into a release branch.
+#
+# `push` runs on master only. Its job is to check the RESULT of a merge
+# rather than the branch before it — two requests can each be green and
+# still break once combined. On develop that duplicated a check the pull
+# request had just run against the same code (nothing merges into develop
+# except a release branch, which is tested commit by commit), so the owner
+# kept it where a bad merge actually costs something.
+# `workflow_dispatch` is the way to re-run the checks on a request into a
+# release branch without closing and reopening it.
 on:
   pull_request:
+    types: [opened, reopened, synchronize]
   push:
-    branches: [develop, master]
+    branches: [master]
+  workflow_dispatch:
 
 # Least privilege: the checks only read the repository.
 permissions:
@@ -29,6 +65,13 @@ concurrency:
 jobs:
   checks:
     name: Lint, types, tests
+    # See the note above the triggers.
+    if: >-
+      github.event_name != 'pull_request'
+      || (github.base_ref == 'develop' && startsWith(github.head_ref, 'release'))
+      || (github.base_ref == 'master' && github.head_ref == 'develop')
+      || (github.base_ref == 'master' && startsWith(github.head_ref, 'hotfix/'))
+      || (contains(github.base_ref, 'release') && github.event.action != 'synchronize')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -60,3 +103,83 @@ jobs:
 
       - name: Unit tests
         run: pnpm test
+
+  # Refuses a release that ships the version already on master. The number
+  # is what the What's New screen compares against (ADR 0057) and what a
+  # bug report quotes; shipping twice under one makes both useless.
+  #
+  # Scope, and its honest hole: only a pull request into master, which is
+  # how every release has reached production so far (`git log --merges
+  # master`). A pull request into master from something other than develop
+  # or hotfix/* skips this, exactly as it skips the checks above — the
+  # project's rule, not a separate decision taken here. A release merged
+  # locally and pushed would skip it too; nothing has been, and the push
+  # trigger cannot see which branch a merge came from.
+  version-bump:
+    name: Version was raised
+    if: >-
+      github.event_name == 'pull_request'
+      && github.base_ref == 'master'
+      && (github.head_ref == 'develop' || startsWith(github.head_ref, 'hotfix/'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Compare with the version on the base branch
+        env:
+          # Through the environment, not interpolated into the script.
+          # GitHub's own hardening guidance: a `${{ }}` inside `run:` is
+          # pasted into the shell before it runs, so a branch name is
+          # code. The `if:` above happens to pin this one to "master",
+          # which makes it safe today and a trap for whoever widens the
+          # condition later.
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+
+          # A shallow fetch of just the base branch, rather than
+          # `fetch-depth: 0` on the checkout: the whole history is not
+          # needed to read one file out of one commit.
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+          git show "FETCH_HEAD:package.json" > "$RUNNER_TEMP/base-package.json"
+
+          released=$(node -p "require('$RUNNER_TEMP/base-package.json').version")
+          proposed=$(node -p "require('./package.json').version")
+
+          echo "on $BASE_REF: $released"
+          echo "proposed:  $proposed"
+
+          # Compared in node rather than with `sort -V`, which gets
+          # semver backwards on pre-releases: it sorts 2.0.0 BEFORE
+          # 2.0.0-rc1, so a release candidate would read as newer than
+          # the release it precedes. Rather than reimplement the whole
+          # specification for a case this project does not use, anything
+          # that is not plain x.y.z is refused with a message saying so.
+          node - "$released" "$proposed" <<'NODE'
+          const [released, proposed] = process.argv.slice(2);
+          const plain = /^(\d+)\.(\d+)\.(\d+)$/;
+
+          for (const [name, value] of [["released", released], ["proposed", proposed]]) {
+            if (!plain.test(value)) {
+              console.log(`::error file=package.json::The ${name} version "${value}" is not a plain x.y.z. This check does not order pre-releases; teach it semver before using one.`);
+              process.exit(1);
+            }
+          }
+
+          const parse = (v) => v.split(".").map(Number);
+          const [a, b] = [parse(released), parse(proposed)];
+          const compared = a.findIndex((part, i) => part !== b[i]);
+          const higher = compared === -1 ? 0 : Math.sign(b[compared] - a[compared]);
+
+          if (higher === 0) {
+            console.log(`::error file=package.json::Version ${proposed} is already released. Raise it in the root package.json, add the block to screens.whatsNew in en-GB.json, and give CHANGELOG.md its heading.`);
+            process.exit(1);
+          }
+
+          if (higher < 0) {
+            console.log(`::error file=package.json::Version ${proposed} is lower than ${released}, which is already released. A typo, or a merge that restored an older package.json.`);
+            process.exit(1);
+          }
+          NODE

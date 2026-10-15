@@ -1,0 +1,147 @@
+# Announces a released version to the people who use the app (ADR 0058).
+# Trigger: workflow_dispatch ONLY. The alternative is running `pnpm
+# push:version --send` from a laptop, which means keeping the production
+# secret key in a local env file — this exists so that it does not have to
+# live there.
+#
+# Run it AFTER the frontend deploy: the notification links to /whats-new,
+# and before the deploy that screen still carries the previous history.
+#
+# The default mode is a dry run: it reads the production database, counts
+# the devices and prints the exact notification, and sends nothing. Use it
+# every time before 'send' — it costs one run and answers the only question
+# that matters, "how many people and what will they read".
+#
+# WHAT THIS WORKFLOW HOLDS, and it is the reason to think twice before
+# adding steps to it: SUPABASE_SECRET_KEY bypasses RLS entirely (ADR 0037).
+# In the app it lives on one server module; here it becomes an environment
+# secret, readable by any job in this repository that names the production
+# environment. Two things keep that honest: "Required reviewers" on the
+# production environment (the same setting supabase-deploy.yml asks for),
+# and the fact that nothing else in this file needs that key. Do not reuse
+# this environment for a job that does not.
+#
+# Needs, in the "production" environment: SUPABASE_PROJECT_REF (already
+# there for supabase-deploy.yml — the API URL is derived from it, so there
+# is no second place to configure), SUPABASE_SECRET_KEY, and the VAPID
+# trio WEB_PUSH_VAPID_PUBLIC_KEY / WEB_PUSH_VAPID_PRIVATE_KEY /
+# WEB_PUSH_VAPID_SUBJECT. The VAPID pair MUST be the same one the deployed
+# app subscribed people with, or every push is rejected by the push service.
+name: Version push
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Dry run, or actually send
+        type: choice
+        required: true
+        default: dry-run
+        options:
+          - dry-run
+          - send
+      version:
+        description: Version being announced, e.g. 2.0.0 (must match package.json)
+        type: string
+        required: true
+      confirm:
+        description: I understand 'send' notifies every account holder's device
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+# A second run queues rather than cancelling the first: an interrupted
+# delivery leaves some people told and some not, and the script keeps no
+# record of which (the idempotency debt in ADR 0058).
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  # Stands first so a mistyped version or an unticked box fails in seconds,
+  # before the production environment's approval prompt is answered.
+  guard:
+    name: Confirmation
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Why ask for the version at all when the script reads it itself: the
+      # typing is the point. It pins the run to a commit whose
+      # package.json says what the operator thinks it says, so a dispatch
+      # from the wrong branch — or from before the version bump — stops
+      # here instead of announcing 2.0.0 twice or 2.1.0 early.
+      - name: Check the version matches package.json
+        env:
+          # Through the environment, never interpolated into the script: a
+          # `${{ }}` inside `run:` is pasted into the shell before it runs,
+          # and this input is free text.
+          EXPECTED: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          actual="$(node -p "require('./package.json').version")"
+          if [ "${EXPECTED}" != "${actual}" ]; then
+            echo "::error::Asked to announce '${EXPECTED}', but package.json on this ref says '${actual}'."
+            exit 1
+          fi
+          echo "Announcing version ${actual}."
+
+      # An unconfirmed 'send' must FAIL visibly rather than finish green
+      # having done nothing: a green tick would read as "it went out".
+      # A dry run needs no confirmation — it cannot do anything.
+      - name: Refuse to send without confirmation
+        if: ${{ inputs.mode == 'send' && !inputs.confirm }}
+        run: |
+          echo "::error::Not confirmed. Re-run with the 'confirm' box ticked, or choose dry-run."
+          exit 1
+
+  announce:
+    name: ${{ inputs.mode == 'send' && 'Send' || 'Dry run' }}
+    needs: guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Enable Corepack (provides pnpm)
+        run: corepack enable
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The root `pnpm push:version` is not used here: it wraps the script
+      # in dotenv against envs/backend.local.env, which exists only on a
+      # developer's machine. In CI the environment IS the secrets, so the
+      # workspace script is called directly.
+      - name: Announce the version
+        working-directory: backend
+        env:
+          MODE: ${{ inputs.mode }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          WEB_PUSH_VAPID_PUBLIC_KEY: ${{ secrets.WEB_PUSH_VAPID_PUBLIC_KEY }}
+          WEB_PUSH_VAPID_PRIVATE_KEY: ${{ secrets.WEB_PUSH_VAPID_PRIVATE_KEY }}
+          WEB_PUSH_VAPID_SUBJECT: ${{ secrets.WEB_PUSH_VAPID_SUBJECT }}
+        run: |
+          set -euo pipefail
+          : "${SUPABASE_PROJECT_REF:?Secret SUPABASE_PROJECT_REF is not set}"
+          : "${SUPABASE_SECRET_KEY:?Secret SUPABASE_SECRET_KEY is not set}"
+          export SUPABASE_URL="https://${SUPABASE_PROJECT_REF}.supabase.co"
+          if [ "${MODE}" = "send" ]; then
+            node scripts/send-version-push.mjs --send
+          else
+            node scripts/send-version-push.mjs
+          fi

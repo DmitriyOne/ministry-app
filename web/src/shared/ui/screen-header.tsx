@@ -14,6 +14,11 @@ type ScreenHeaderProps = {
   eyebrow: string;
   onBack?: () => void;
   backLabel?: string;
+  // Which surface the header sits on. "ink" is the warm background of the
+  // document screens; "hero" is the deep green of sign-in and password
+  // reset, where the white `plain` button and the ink eyebrow would both
+  // be wrong. Nothing else differs between the two.
+  tone?: "ink" | "hero";
   className?: string;
 };
 
@@ -21,6 +26,7 @@ export const ScreenHeader = ({
   eyebrow,
   onBack,
   backLabel,
+  tone = "ink",
   className,
 }: ScreenHeaderProps) => {
   const t = useTranslations("common");
@@ -30,14 +36,16 @@ export const ScreenHeader = ({
     <header className={cn("flex items-center gap-3 px-5 pt-6 pb-3", className)}>
       <Button
         type="button"
-        variant="plain"
+        variant={tone === "hero" ? "heroGhost" : "plain"}
         onPress={onBack}
         aria-label={resolvedBackLabel}
         className="size-9.5 shrink-0 rounded-full p-0 [--press-scale:0.94]"
       >
         <ChevronLeftIcon size={18} />
       </Button>
-      <Eyebrow as="span">{eyebrow}</Eyebrow>
+      <Eyebrow as="span" className={tone === "hero" ? "text-hero-foreground/70" : undefined}>
+        {eyebrow}
+      </Eyebrow>
     </header>
   );
 };

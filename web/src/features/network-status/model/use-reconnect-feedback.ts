@@ -1,26 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+
+import { dismissToast, showToast, type ToastId } from "@/shared/ui/sonner";
 
 import { NETWORK_CONFIG } from "../config/network-config";
 
 import type { NetworkStatus } from "./use-network-status";
 
-// "leaving" exists only so the toast can animate out: a component removed
-// from the tree the moment it should disappear has nothing left to animate.
-// Same shape as the launch gate's phase machine (ADR 0019) — the element is
-// in the DOM while it animates and gone afterwards, rather than permanently
-// mounted and hidden.
-export type ReconnectToastPhase = "hidden" | "pending" | "visible" | "leaving";
+// Only the decision of whether to announce a restored connection lives here.
+// How the toast looks, animates and when it leaves is the shared toast's job.
+export type ReconnectToastPhase = "hidden" | "pending";
 
-type UseReconnectFeedbackResult = {
-  phase: ReconnectToastPhase;
-  onExited: () => void;
-};
-
-export const useReconnectFeedback = (status: NetworkStatus): UseReconnectFeedbackResult => {
+export const useReconnectFeedback = (status: NetworkStatus) => {
+  const t = useTranslations("common");
+  // Resolved during render, so the effect below depends on a string rather
+  // than on whatever identity useTranslations hands back. If `t` were in the
+  // dependency array and its identity changed between renders, the delay
+  // timer would be cancelled and restarted on every render while the phase
+  // is "pending" — and the toast could end up never appearing. A string
+  // compares by value, so that question does not arise.
+  const message = t("connectionRestored");
   const [phase, setPhase] = useState<ReconnectToastPhase>("hidden");
   const [previousStatus, setPreviousStatus] = useState<NetworkStatus>("checking");
+  // The id of the toast this hook last showed, so it can be taken away again.
+  const toastId = useRef<ToastId | null>(null);
 
   // Adjusted during render rather than in an effect. This is not
   // synchronisation with anything outside React — it is state derived from a
@@ -39,60 +44,37 @@ export const useReconnectFeedback = (status: NetworkStatus): UseReconnectFeedbac
       setPhase("pending");
     } else if (status === "offline" && phase === "pending") {
       setPhase("hidden");
-    } else if (status === "offline" && phase === "visible") {
-      // Dropped back offline while the toast was still up: take it away at
-      // once instead of announcing a restored connection over the offline
-      // screen. Without this the toast outlives the thing it reports, because
-      // the dismissal timer is tied to the phase and the offline→online
-      // branch never fires again to clear it.
-      setPhase("leaving");
     }
   }
 
   // The wait before the toast appears. If the connection drops again while
   // this runs, the render-time adjustment above has already put the phase
-  // back to "hidden" and this effect's cleanup cancels the timer.
+  // back to "hidden" and this effect's cleanup cancels the timer. Showing
+  // happens here, in a timer, never during render, since a toast is a side effect.
   useEffect(() => {
     if (phase !== "pending") return;
 
-    const timeout = window.setTimeout(
-      () => setPhase("visible"),
-      NETWORK_CONFIG.reconnectToastDelayMs,
-    );
+    const timeout = window.setTimeout(() => {
+      toastId.current = showToast({
+        message,
+        tone: "positive",
+        durationMs: NETWORK_CONFIG.reconnectToastDurationMs,
+      });
+      setPhase("hidden");
+    }, NETWORK_CONFIG.reconnectToastDelayMs);
 
     return () => window.clearTimeout(timeout);
-  }, [phase]);
+  }, [phase, message]);
 
-  // Keyed on the phase, not on the status: a second reconnect restarts the
-  // clock rather than inheriting whatever was left of the previous one.
+  // Dropped back offline while the toast was still up: take it away at once
+  // instead of announcing a restored connection over the offline screen. The
+  // shared toast would otherwise sit out its own timer. Dismissing an id
+  // that has already left is harmless, so no bookkeeping is needed for the
+  // case where it expired by itself.
   useEffect(() => {
-    if (phase !== "visible") return;
+    if (status !== "offline" || toastId.current === null) return;
 
-    const timeout = window.setTimeout(
-      () => setPhase("leaving"),
-      NETWORK_CONFIG.reconnectToastDurationMs,
-    );
-
-    return () => window.clearTimeout(timeout);
-  }, [phase]);
-
-  // The exit animation reports its own end, but it does not always run: under
-  // prefers-reduced-motion there is no animation to end, and a backgrounded
-  // tab can swallow the event. This timer is what guarantees the toast leaves
-  // the DOM either way — the same reasoning as the launch gate's failsafe.
-  useEffect(() => {
-    if (phase !== "leaving") return;
-
-    const timeout = window.setTimeout(
-      () => setPhase("hidden"),
-      NETWORK_CONFIG.reconnectToastAnimationMs + 200,
-    );
-
-    return () => window.clearTimeout(timeout);
-  }, [phase]);
-
-  return {
-    phase,
-    onExited: () => setPhase("hidden"),
-  };
+    dismissToast(toastId.current);
+    toastId.current = null;
+  }, [status]);
 };
