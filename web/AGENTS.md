@@ -21,6 +21,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - [`../CLAUDE.md`](../CLAUDE.md) — структура, FSD, дизайн-система, доступ,
   договорённости. Главный документ.
 - [`../AGENTS.md`](../AGENTS.md) — короткий вход для агентов.
+- [`../DESIGN.md`](../DESIGN.md) — визуальный язык: токены, шкала,
+  отступы, инвентарь `shared/ui`. Читается до того, как писать разметку.
 - [`../docs/decisions/`](../docs/decisions) — ADR.
 
 Что важно знать до правки файлов именно в `web/`:
