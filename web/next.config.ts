@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs/config";
 import { withSerwist } from "@serwist/turbopack";
@@ -24,6 +26,19 @@ import { env } from "./src/shared/config/env";
 // a deployment id may be at most 32. Unset off Vercel (local builds), and
 // then Next.js falls back to its own generated build id.
 const deploymentId = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12);
+
+// The product's version, read from the REPOSITORY's package.json (the root
+// one), not web's: the product is the repository, and web/ and backend/ are
+// workspace packages whose own versions mean nothing to anyone.
+//
+// It is injected here rather than declared in shared/config/env.ts because
+// it is not environment configuration — nobody sets it per deployment, it
+// is a fact about the build. Same reasoning as VERCEL_GIT_COMMIT_SHA above
+// and VERCEL_PROJECT_PRODUCTION_URL elsewhere: values the surroundings
+// supply, read where they are supplied.
+const appVersion: string = JSON.parse(
+  readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+).version;
 
 // Security headers. Until now the app answered with none of them at all:
 // nothing in next.config.ts, no vercel.json, and proxy.ts only carries the
@@ -69,6 +84,9 @@ const SECURITY_HEADERS = [
 const nextConfig: NextConfig = {
   /* config options here */
   ...(deploymentId ? { deploymentId } : {}),
+  // Inlined at build time, server and client alike. Nothing secret: it is
+  // the number on the About and What's New screens.
+  env: { APP_VERSION: appVersion },
   // A developer's own LAN IP(s) (envs/*.local.env, DEV_ALLOWED_ORIGIN,
   // comma-separated for more than one network) so the dev server can be
   // opened from a phone on the same network. Left unset in git — see

@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import webpush from "web-push";
 
 import { createAdminSupabaseClient } from "@/shared/api";
+import { reportActionFailure } from "@/shared/lib/action-failure";
 import { env, routes } from "@/shared/config";
 import { getClientIp } from "@/shared/lib/rate-limit";
 
@@ -53,6 +54,16 @@ export const registerPushSubscription = async (
   );
 
   if (error || data !== true) {
+    // The enrolment token is one-shot and has now been spent: the person
+    // cannot retry from the success card, so a failure here costs them
+    // notifications entirely. supabase-js returns `error` rather than
+    // throwing, so no catch sees this.
+    reportActionFailure({
+      scope: "push",
+      error: error ?? new Error("register_waitlist_push_subscription returned false"),
+      outcome: "failed",
+      context: { reason: "supabase-error", code: error?.code },
+    });
     console.error("[push] could not register subscription", {
       code: error?.code,
       message: error?.message,
@@ -87,6 +98,13 @@ export const registerPushSubscription = async (
       },
     );
   } catch (sendError) {
+    // Logged, not reported, unlike the failures above: a push service
+    // refusing one message is ordinary (an expired endpoint, a rate
+    // limit, a network blip), the subscription is already stored, and
+    // Sentry would fill with events nobody acts on. The case this does
+    // not catch is a systematic failure — wrong VAPID keys, say — which
+    // would look identical one event at a time and has to be noticed by
+    // nobody receiving anything.
     console.error("[push] confirmation delivery failed", {
       statusCode:
         typeof sendError === "object"

@@ -5,7 +5,7 @@ import { getSessionClaims } from "@/entities/session";
 import { PushNotificationsToggle } from "@/features/push-notifications";
 import { SignOutButton } from "@/features/sign-out";
 import { createServerSupabaseClient } from "@/shared/api";
-import { routes } from "@/shared/config";
+import { APP_VERSION, hasUnreadVersion, routes } from "@/shared/config";
 import { hasRole } from "@/shared/lib/auth";
 import { getInitials } from "@/shared/lib/display-name";
 import { LinkButton } from "@/shared/ui/button";
@@ -32,13 +32,29 @@ export const ProfileScreen = async () => {
   // failed read leaves the name out rather than failing the screen —
   // the role and the way out are the parts that matter here.
   const supabase = await createServerSupabaseClient();
-  const { data: profile } = await supabase.from("profiles").select("display_name").maybeSingle();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name, whats_new_seen")
+    .maybeSingle();
 
   const displayName = profile?.display_name ?? "";
   // Empty when the profile read failed or the name is blank; then the
   // badge shows nothing rather than a stray letter from a fallback
   // string, and the row still reads correctly.
   const initials = getInitials(displayName);
+
+  // The dot on the What's New row, lit when this person has opened that
+  // screen for nothing, or for a version older than the one running.
+  //
+  // A profile that did not load is a separate case and gets no dot: it
+  // means the read failed, not that there is news, and a database problem
+  // should not reach the screen as a claim about new features.
+  //
+  // The known cost of keying this to the whole version is in ADR 0057: a
+  // release with nothing worth reading lights the dot as well.
+  const hasUnreadWhatsNew = profile
+    ? hasUnreadVersion(profile.whats_new_seen, APP_VERSION)
+    : false;
 
   // The only use of the role guard in v2 (ADR 0044): nothing branches on
   // the role, the screen just names it.
@@ -84,6 +100,24 @@ export const ProfileScreen = async () => {
 
         <nav aria-label={t("linksLabel")}>
           <ListCard>
+            <ListRow
+              href={routes.whatsNew}
+              title={t("whatsNew")}
+              trailing={(
+                <span className="flex shrink-0 items-center gap-2.5">
+                  {hasUnreadWhatsNew
+                    ? (
+                        <span
+                          role="status"
+                          aria-label={t("whatsNewUnread")}
+                          className="size-2.5 rounded-full bg-primary"
+                        />
+                      )
+                    : null}
+                  <ChevronRightIcon size={20} className="shrink-0 text-ink-faint" />
+                </span>
+              )}
+            />
             <ListRow
               href={routes.about}
               title={t("about")}

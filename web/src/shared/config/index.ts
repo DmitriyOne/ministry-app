@@ -1,3 +1,4 @@
+export { APP_VERSION, hasUnreadVersion } from "./app-version";
 export { WEB_API_ROUTES } from "./api-routes";
 export { isDebugPageEnabled } from "./debug-pages";
 export { env, getSiteUrl } from "./env";

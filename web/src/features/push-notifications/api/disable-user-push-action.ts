@@ -30,6 +30,14 @@ export const disableUserPush = async (input: unknown): Promise<UserPushResult> =
     );
 
     if (error) {
+      // The browser's subscription is already gone; leaving the row
+      // behind means pushes keep being sent to an endpoint nobody reads.
+      reportActionFailure({
+        scope: "push",
+        error,
+        outcome: "failed",
+        context: { reason: "supabase-error", code: error.code },
+      });
       console.warn("[push] could not forget subscription", { code: error.code });
 
       return { status: "error" };
