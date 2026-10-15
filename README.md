@@ -104,6 +104,7 @@ All from the root.
 | `pnpm test` | `vitest run` |
 | `pnpm build` / `pnpm start` | Production build and running it (with env from `envs/web.local.env`) |
 | `pnpm push:launch` | Launch mailing to waitlist subscribers. **Defective, see ADR 0038** |
+| `pnpm push:version` | Announces the current version to account holders. Sends nothing without `--send`; see ADR 0058 |
 
 Deploying to cloud Supabase (`db:login`, `db:link`, `db:push`,
 `functions:deploy`) is a separate section in [`CLAUDE.md`](./CLAUDE.md#деплой-миграций-в-облачный-supabase);
