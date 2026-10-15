@@ -115,11 +115,14 @@ commands from a machine checks none of that.
 
 ## CI
 
-`.github/workflows/` holds five workflows. Three are about the code:
+`.github/workflows/` holds six workflows. Three are about the code:
 `ci.yml` (lint, types, unit tests, plus a check that a release raises the
 version), `db-test.yml` (pgTAP plus a check that the committed Supabase
 types still match the schema) and `supabase-deploy.yml` (manual
-deployment). Two are about keeping the free tier alive: `health-ping.yml`
+deployment). One announces a release to the people using the app: `version-push.yml`
+(manual, dry run by default, see
+[ADR 0058](./docs/decisions/0058-version-announcement-push.md)). Two are
+about keeping the free tier alive: `health-ping.yml`
 queries the database every three days, because a free Supabase project is
 paused after seven days of inactivity, and `supabase-backup.yml` takes a
 daily dump, because the free tier has no backups of its own. Both are on
