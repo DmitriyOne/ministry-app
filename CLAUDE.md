@@ -1052,7 +1052,13 @@ server-error` использует `useTranslations`, не `getTranslations`);
   (`web/src/app/layout/network-gate.tsx`) оборачивает приложение в обеих
   ветках `root-layout.tsx`. Состояние берёт у `useNetworkStatus`
   (`features/network-status`): `checking` → `online`/`offline`. Проба —
-  `fetch` на `/api/v1/health` (`app/api/v1/health/route.ts`, ответ 204);
+  `fetch` на `/api/v1/health` (`app/api/v1/health/route.ts`, ответ 204)
+  **с cookie** (`credentials: "same-origin"` — ADR 0055, обновление):
+  вопрос в том, дотягивается ли браузер до origin так, как он делает это
+  всегда, а всё остальное в приложении ходит с cookie. Запрос без них на
+  закрытом стенде Vercel получает 302 на SSO, `fetch` отклоняется
+  межсайтовым редиректом, и приложение целиком подменялось экраном «нет
+  связи» при живом сайте в той же вкладке;
   годится только ответ 2xx — `fetch` разрешается и на 500, и на 404, и на
   «captive portal» с 200, и сам по себе ничего не доказывает. Таймаут 5 с,
   повтор в офлайне раз в 10 с, тост «связь восстановлена» 3 с
