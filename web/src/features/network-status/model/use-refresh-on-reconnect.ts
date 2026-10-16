@@ -42,6 +42,11 @@ export const useRefreshOnReconnect = (status: NetworkStatus): void => {
 
     previousStatus.current = status;
 
-    if (previous === "offline" && status === "online") router.refresh();
+    // Any unusable state coming back, not just "offline": a deployment
+    // that was answering 503 has very likely just been replaced, which is
+    // the most stale a screen can be.
+    const wasUnusable = previous === "offline" || previous === "unavailable";
+
+    if (wasUnusable && status === "online") router.refresh();
   }, [status, router]);
 };

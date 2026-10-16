@@ -11,7 +11,8 @@
     "noscriptRequired": "MinistryApp needs JavaScript enabled to run.",
     "aboutLink": "About",
     "privacyLink": "Privacy & cookies",
-    "connectionRestored": "You're back online"
+    "connectionRestored": "You're back online",
+    "serviceRestored": "The app is back"
   },
   "nav": {
     "label": "Main navigation",
@@ -554,6 +555,12 @@
     "offline": {
       "title": "You’re offline",
       "text": "Check your Wi-Fi or mobile data, then try again.",
+      "retryButton": "Try again",
+      "retryingButton": "Checking…"
+    },
+    "serviceUnavailable": {
+      "title": "Something’s wrong on our side",
+      "text": "The app isn’t answering just now. It’s our problem, not yours — we’re on it, so try again in a moment.",
       "retryButton": "Try again",
       "retryingButton": "Checking…"
     },

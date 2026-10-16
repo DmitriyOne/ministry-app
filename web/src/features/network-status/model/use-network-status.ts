@@ -2,10 +2,22 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { checkConnectivity } from "../api/check-connectivity";
+import { checkConnectivity, type ConnectivityOutcome } from "../api/check-connectivity";
 import { NETWORK_CONFIG } from "../config/network-config";
 
-export type NetworkStatus = "checking" | "online" | "offline";
+// "unavailable" is the origin answering that it is broken, which is not
+// the same screen as no connection at all (ADR 0055, update). Anything
+// that is not "online" or "checking" means the app cannot be used right
+// now — the poll below and the reconnect hooks are written against that
+// property rather than against a list of names, so a fourth state would
+// not need finding in each of them.
+export type NetworkStatus = "checking" | "online" | "offline" | "unavailable";
+
+const STATUS_BY_OUTCOME: Record<ConnectivityOutcome, NetworkStatus> = {
+  reachable: "online",
+  unreachable: "unavailable",
+  offline: "offline",
+};
 
 type UseNetworkStatusResult = {
   status: NetworkStatus;
@@ -53,13 +65,14 @@ export const useNetworkStatus = (): UseNetworkStatusResult => {
 
     const run = (async () => {
       try {
-        const reachable = await checkConnectivity();
+        const outcome = await checkConnectivity();
+        const nextStatus = STATUS_BY_OUTCOME[outcome];
 
         if (probeId === probeIdRef.current) {
-          setStatus(reachable ? "online" : "offline");
+          setStatus(nextStatus);
         }
 
-        return reachable;
+        return nextStatus === "online";
       } finally {
         inFlightRef.current = null;
       }
@@ -116,7 +129,11 @@ export const useNetworkStatus = (): UseNetworkStatusResult => {
   }, [markOffline, probe]);
 
   useEffect(() => {
-    if (status !== "offline") return;
+    // Both unusable states poll. A 503 deployment comes back on its own,
+    // exactly like a connection does, and the person should not have to
+    // guess that this screen — unlike the offline one — needs the button
+    // pressed.
+    if (status === "online" || status === "checking") return;
 
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") void probe();

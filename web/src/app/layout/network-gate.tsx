@@ -8,6 +8,7 @@ import {
   useRefreshOnReconnect,
 } from "@/features/network-status";
 import { OfflineScreen } from "@/pages/offline";
+import { ServiceUnavailableScreen } from "@/pages/service-unavailable";
 
 type NetworkGateProps = {
   children: ReactNode;
@@ -26,6 +27,10 @@ export const NetworkGate = ({ children }: NetworkGateProps) => {
   // session).
   useRefreshOnReconnect(status);
 
+  const handleRetry = () => {
+    void retry();
+  };
+
   // "checking" renders the app, not a waiting screen. It used to render a
   // spinner, which meant the first paint of every launch was a spinner and
   // the real screen waited for hydration plus a round trip to
@@ -36,16 +41,17 @@ export const NetworkGate = ({ children }: NetworkGateProps) => {
   // applies to the online-but-unreachable case, and holding the app
   // hostage for five seconds on the chance of that is the wrong trade
   // (release review, 2026-10-14 — ADR 0055).
+  //
+  // Two ways for the app to be unusable, two screens, because they ask
+  // different things of the person: "check your Wi-Fi" is useless advice
+  // when the signal is fine and our own origin is answering 502 — that
+  // was the bug (ADR 0055, update). Everything else, "checking"
+  // included, renders the app.
   const content: ReactNode = status === "offline"
-    ? (
-        <OfflineScreen
-          retrying={isChecking}
-          onRetry={() => {
-            void retry();
-          }}
-        />
-      )
-    : children;
+    ? <OfflineScreen retrying={isChecking} onRetry={handleRetry} />
+    : status === "unavailable"
+      ? <ServiceUnavailableScreen retrying={isChecking} onRetry={handleRetry} />
+      : children;
 
   return (
     <>
