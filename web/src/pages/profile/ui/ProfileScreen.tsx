@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { getSessionClaims } from "@/entities/session";
 import { PushNotificationsToggle } from "@/features/push-notifications";
 import { SignOutButton } from "@/features/sign-out";
+import { WhatsNewUnreadDot } from "@/features/whats-new";
 import { createServerSupabaseClient } from "@/shared/api";
 import { APP_VERSION, hasUnreadVersion, routes } from "@/shared/config";
 import { hasRole } from "@/shared/lib/auth";
@@ -105,15 +106,16 @@ export const ProfileScreen = async () => {
               title={t("whatsNew")}
               trailing={(
                 <span className="flex shrink-0 items-center gap-2.5">
-                  {hasUnreadWhatsNew
-                    ? (
-                        <span
-                          role="status"
-                          aria-label={t("whatsNewUnread")}
-                          className="size-2.5 rounded-full bg-primary"
-                        />
-                      )
-                    : null}
+                  {/* A client island, not a span, because it has to be able
+                      to disagree with the server: this screen comes back
+                      from the router's cache on a back navigation without
+                      being re-rendered, so the dot has to check locally
+                      whether this device has already been shown the
+                      release (features/whats-new). */}
+                  <WhatsNewUnreadDot
+                    unread={hasUnreadWhatsNew}
+                    label={t("whatsNewUnread")}
+                  />
                   <ChevronRightIcon size={20} className="shrink-0 text-ink-faint" />
                 </span>
               )}
