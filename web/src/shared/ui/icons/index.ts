@@ -20,6 +20,7 @@ export { EyeIcon } from "./eye-icon";
 export { InfoCircleIcon } from "./info-circle-icon";
 export { LockClosedIcon } from "./lock-closed-icon";
 export { LockOpenIcon } from "./lock-open-icon";
+export { MinusIcon } from "./minus-icon";
 export { PlusIcon } from "./plus-icon";
 export { RabbitIcon } from "./rabbit-icon";
 export { TargetIcon } from "./target-icon";

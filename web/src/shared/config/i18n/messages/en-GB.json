@@ -57,6 +57,13 @@
   "screens": {
     "day": {
       "title": "Day",
+      "hours": {
+        "label": "Hours",
+        "step": "{minutes} min steps",
+        "decrease": "Take away {minutes} minutes",
+        "increase": "Add {minutes} minutes",
+        "quickAdd": "+{minutes} min"
+      },
       "welcomeBack": "Welcome back, {name}",
       "metadata": {
         "title": "Day",
