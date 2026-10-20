@@ -5,16 +5,23 @@ import { useSyncExternalStore, type ReactNode } from "react";
 import { cn } from "@/shared/lib/cn";
 import { supportsHapticTap } from "@/shared/lib/device";
 
-// WebKit's own attribute (Safari 17.4), reflected as a boolean IDL
-// property; no React type covers it. `interface`, not `type`, because
-// augmenting a third-party declaration requires one — the same exception
-// src/app/sw.ts takes for `declare global`.
+// WebKit's own attribute (Safari 17.4); no React type covers it.
+// `interface`, not `type`, because augmenting a third-party declaration
+// requires one — the same exception src/app/sw.ts takes for
+// `declare global`.
+//
+// Typed as a STRING, and that is the whole bug this file was shipped
+// with: React does not write a boolean `true` to an attribute it does not
+// know, it logs "Received `true` for a non-boolean attribute" and emits
+// nothing. The overlay was therefore an ordinary checkbox, a control iOS
+// has no tick for, and no amount of touching it could have worked. With
+// `switch=""` the attribute lands, and presence is all WebKit asks for.
 declare module "react" {
   // The type parameter is part of the declaration being augmented, not
   // ours to drop.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface InputHTMLAttributes<T> {
-    switch?: boolean;
+    switch?: string;
   }
 }
 
@@ -97,7 +104,7 @@ export const HapticTap = ({ onTap, radius, isDisabled, children, className }: Ha
       {supported && (
         <input
           type="checkbox"
-          switch
+          switch=""
           aria-hidden="true"
           tabIndex={-1}
           disabled={isDisabled}
