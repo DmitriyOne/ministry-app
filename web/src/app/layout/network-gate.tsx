@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 
 import {
+  type NetworkStatus,
   NetworkReconnectFeedback,
   useNetworkStatus,
   useRefreshOnReconnect,
@@ -12,6 +13,28 @@ import { ServiceUnavailableScreen } from "@/pages/network/service-unavailable";
 
 type NetworkGateProps = {
   children: ReactNode;
+};
+
+type GateScreenProps = {
+  retrying: boolean;
+  onRetry: () => void;
+};
+
+// Which screen replaces the app in which state, as a lookup rather than a
+// chain of conditionals — and a TOTAL one, `Record<NetworkStatus, …>`, so
+// a fifth status cannot compile until somebody has said what it shows.
+// `null` means "show the app", and it is written out for both such states
+// instead of being the fall-through: the same reason ROUTE_POLICY lists
+// every route (ADR 0050). Both screens take the same two props, which is
+// what lets them share one entry shape; they are twins by construction
+// (ADR 0055, update), not by coincidence.
+const GATE_SCREENS: Record<NetworkStatus, ((props: GateScreenProps) => ReactNode) | null> = {
+  // The first probe is still in the air. Nothing is being waited for —
+  // the app is already rendered (ADR 0055).
+  checking: null,
+  online: null,
+  offline: OfflineScreen,
+  unavailable: ServiceUnavailableScreen,
 };
 
 export const NetworkGate = ({ children }: NetworkGateProps) => {
@@ -45,13 +68,12 @@ export const NetworkGate = ({ children }: NetworkGateProps) => {
   // Two ways for the app to be unusable, two screens, because they ask
   // different things of the person: "check your Wi-Fi" is useless advice
   // when the signal is fine and our own origin is answering 502 — that
-  // was the bug (ADR 0055, update). Everything else, "checking"
-  // included, renders the app.
-  const content: ReactNode = status === "offline"
-    ? <OfflineScreen retrying={isChecking} onRetry={handleRetry} />
-    : status === "unavailable"
-      ? <ServiceUnavailableScreen retrying={isChecking} onRetry={handleRetry} />
-      : children;
+  // was the bug (ADR 0055, update).
+  const GateScreen = GATE_SCREENS[status];
+
+  const content: ReactNode = GateScreen === null
+    ? children
+    : <GateScreen retrying={isChecking} onRetry={handleRetry} />;
 
   return (
     <>
