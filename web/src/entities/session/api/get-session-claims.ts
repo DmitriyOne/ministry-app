@@ -1,5 +1,7 @@
 import "server-only";
 
+import * as Sentry from "@sentry/nextjs";
+
 import { createServerSupabaseClient } from "@/shared/api";
 import { parseSessionClaims, type SessionClaims } from "@/shared/lib/auth";
 import { reportActionFailure } from "@/shared/lib/action-failure";
@@ -27,6 +29,45 @@ import { reportActionFailure } from "@/shared/lib/action-failure";
 // which, since it answers both with the default role.
 const hasRoleClaim = (claims: unknown): boolean =>
   typeof claims === "object" && claims !== null && "user_role" in claims;
+
+// Sent to Sentry once per server instance, and logged every time.
+//
+// The two destinations answer two different questions. The log answers
+// "is it still happening", which is why it repeats: while the hook is off
+// EVERY request is affected, and a line that appeared once an hour ago
+// would not say whether the fix worked. Sentry answers "does somebody
+// know", and for that one event is the whole message — this is a
+// deployment-wide misconfiguration, identical on every request, so
+// reporting it per request would turn one fact into thousands of events,
+// spend the quota that real exceptions need, and bury them.
+//
+// A module-scoped flag is enough precisely because it is per instance:
+// each new Vercel instance says it once, so a deployment that is still
+// broken keeps producing a trickle rather than going quiet for ever,
+// and one that has been fixed stops as its instances are replaced.
+let roleClaimReported = false;
+
+const reportMissingRoleClaim = (userId: string): void => {
+  console.warn("[session] token carries no user_role claim", {
+    reason: "token-hook-disabled-or-no-role-row",
+    userId,
+  });
+
+  if (roleClaimReported) return;
+
+  roleClaimReported = true;
+
+  // captureMessage, not captureException: nothing threw, and a synthetic
+  // Error here would carry a stack pointing at this line, which says
+  // nothing about the cause. `warning` because the app works — it just
+  // calls everybody a user. No userId in the Sentry event: it adds
+  // nothing to a project-wide setting and it is personal data (ADR 0041).
+  Sentry.captureMessage("Access token carries no user_role claim", {
+    level: "warning",
+    tags: { scope: "session", reason: "token-hook-disabled-or-no-role-row" },
+    fingerprint: ["session-missing-user-role-claim"],
+  });
+};
 
 export const getSessionClaims = async (): Promise<SessionClaims | null> => {
   // Deliberately OUTSIDE the try. Creating the client reads the cookie
@@ -80,12 +121,7 @@ export const getSessionClaims = async (): Promise<SessionClaims | null> => {
     // is. It repeats on every request while the cause stands, which is
     // the correct volume for "nobody in this deployment can be an
     // admin".
-    if (claims && !hasRoleClaim(data?.claims)) {
-      console.warn("[session] token carries no user_role claim", {
-        reason: "token-hook-disabled-or-no-role-row",
-        userId: claims.userId,
-      });
-    }
+    if (claims && !hasRoleClaim(data?.claims)) reportMissingRoleClaim(claims.userId);
 
     return claims;
   } catch (error) {
