@@ -265,14 +265,21 @@ ministry-app/
 │  │  │                          ScreenBackHeader, Navigation API
 │  │  │                          `navigation.canGoBack`, не завязан на
 │  │  │                          конкретный экран — ADR 0029/0030), network-status
-│  │  │                          (сценарий «есть ли связь с origin» — api/
+│  │  │                          (сценарий «достижим ли origin» — api/
 │  │  │                          check-connectivity.ts опрашивает /api/v1/health и
-│  │  │                          принимает только 2xx, model/use-network-status.ts и
-│  │  │                          use-reconnect-feedback.ts, ui/ — NetworkReconnectFeedback
-│  │  │                          и ConnectionRestoredToast, config/network-config.ts —
+│  │  │                          отвечает одним из трёх исходов (reachable /
+│  │  │                          unreachable / offline — ADR 0055, обновление),
+│  │  │                          model/network-state.ts — все решения как чистые
+│  │  │                          функции с тестами (statusForOutcome, isUsable,
+│  │  │                          shouldPoll, hasRecovered, resolveReconnectToast),
+│  │  │                          model/use-network-status.ts (таймеры, слушатели,
+│  │  │                          состояние), use-refresh-on-reconnect.ts,
+│  │  │                          use-reconnect-feedback.ts, ui/ — только
+│  │  │                          NetworkReconnectFeedback, config/network-config.ts —
 │  │  │                          таймаут 5 с, повтор раз в 10 с, тост 3 с; публичный API —
-│  │  │                          useNetworkStatus, useRefreshOnReconnect и
-│  │  │                          NetworkReconnectFeedback — сверять по index.ts), push-
+│  │  │                          useNetworkStatus, useRefreshOnReconnect,
+│  │  │                          NetworkReconnectFeedback и тип NetworkStatus —
+│  │  │                          сверять по index.ts), push-
 │  │  │                          notifications (подписка на Web Push после записи в
 │  │  │                          вайтлист: ui/EnableWaitlistNotifications, lib/
 │  │  │                          subscribe-to-push.ts, Server Action
@@ -1223,6 +1230,26 @@ server-error` использует `useTranslations`, не `getTranslations`);
 | `/access/android` | заглушка «только iOS» |
 | `/access/ios-browser` | заглушка «только Safari» |
 | любой несуществующий адрес (например `/qwerty`), а также `/styleguide`, `/components` (удалены — ADR 0011/0012) | 404 |
+
+**Два экрана гейта адресом не открыть** — их показывает `NetworkGate` по
+результату пробы, а не маршрут. Проверяются так:
+
+- «нет связи» — выключить Wi-Fi/передачу данных (или DevTools →
+  Network → Offline). Проба отвечает мгновенно: `navigator.onLine ===
+  false` она не перепроверяет;
+- «сломалось у нас» — подменить ответ пробы в консоли открытой страницы,
+  затем уйти на другую вкладку и вернуться (проба идёт на
+  `visibilitychange`):
+
+  ```js
+  const real = window.fetch;
+  window.fetch = (url, init) => String(url).includes("/api/v1/health")
+    ? Promise.resolve(new Response(null, { status: 503 }))
+    : real(url, init);
+  ```
+
+  Вернуть как было — `window.fetch = real` и снова переключить вкладку:
+  должен появиться тост «The app is back», а не «You're back online».
 
 **`DEV_MODE=true` снимает щит устройства и щит запуска со значка, но
 НЕ сессию.** `proxy.ts` при нём пропускает всё, однако `/profile` и
