@@ -4,14 +4,19 @@ import { ScreenBackHeader } from "@/features/screen-back";
 import { MarkWhatsNewSeen } from "@/features/whats-new";
 import { AppMark } from "@/shared/ui/app-mark";
 import { CenteredState } from "@/shared/ui/centered-state";
-// Four of these are stand-ins. The set has no bell, no phone, no
+// Seven of these are stand-ins. The set has no bell, no phone, no
 // envelope and no eye-on-a-list, and adding icons is the owner's call,
 // not a detail to slip into a screen: notifications borrow the info
 // circle, "iPhone only" borrows the closed lock (it is a restriction),
 // the waiting list borrows the tick, and this page itself borrows the
 // eye — the glyph the password field uses for "see it". Install uses
-// the compass deliberately — the same glyph /about gives that row.
+// the compass deliberately — the same glyph /about gives that row. The
+// 2.0.1 rows borrow as well: the tick for a fix that landed, the warning
+// circle — the same one the new "something's wrong on our side" screen
+// shows, which is the point of that row — and the closed lock for
+// signing out, since that is what leaving does.
 import {
+  AlertCircleIcon,
   CalendarWeekIcon,
   CheckCircleIcon,
   CompassIcon,
@@ -58,7 +63,41 @@ export const WhatsNewScreen = async () => {
           />
         </div>
 
-        <VersionHeading name={t("v2.name")} date={t("v2.date")} pill={t("currentPill")} />
+        {/* A patch release, and it says so plainly: two fixes, no new
+            abilities. It gets a block of its own because raising the
+            version lights the dot on the profile either way (the known
+            defect in ADR 0057), and a dot that leads to nothing new to
+            read is worse than the fix it announces. */}
+        <VersionHeading
+          name={t("v2_0_1.name")}
+          date={t("v2_0_1.date")}
+          pill={t("currentPill")}
+        />
+        <ListCard>
+          <ListRow
+            icon={<CheckCircleIcon size={18} />}
+            title={t("v2_0_1.flicker.title")}
+            text={t("v2_0_1.flicker.text")}
+          />
+          <ListRow
+            icon={<AlertCircleIcon size={18} />}
+            title={t("v2_0_1.ourFault.title")}
+            text={t("v2_0_1.ourFault.text")}
+          />
+          <ListRow
+            icon={<UserIcon size={18} />}
+            title={t("v2_0_1.profileOpens.title")}
+            text={t("v2_0_1.profileOpens.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<LockClosedIcon size={18} />}
+            title={t("v2_0_1.signOut.title")}
+            text={t("v2_0_1.signOut.text")}
+          />
+        </ListCard>
+
+        <VersionHeading name={t("v2.name")} date={t("v2.date")} pill={t("releasedPill")} />
         <ListCard>
           <ListRow
             icon={<LockOpenIcon size={18} />}

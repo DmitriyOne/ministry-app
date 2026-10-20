@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useFormStatus } from "react-dom";
 
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogDescription, DialogFooter, DialogTitle } from "@/shared/ui/dialog";
+import { SubmitButton } from "@/shared/ui/submit-button";
 
 import { signOut } from "../api/sign-out-action";
 
@@ -30,6 +32,26 @@ type SignOutButtonProps = {
 // The confirming button stays a submit inside its own <form>, so the Server
 // Action is invoked the ordinary way, with its redirect and its cache
 // invalidation, rather than through a handler.
+// The confirming button, as its own component for one reason:
+// `useFormStatus` reports the status of the form it is rendered INSIDE,
+// so it cannot be called in the component that renders the <form>.
+//
+// Without it the button sat there saying nothing while the action ran,
+// and it runs for a while: signing out revokes the session with the auth
+// server over the network, then invalidates the client cache, then
+// redirects to /login. The owner reported exactly that — "no loading on
+// the button and it waits a long time". The wait is real work and is not
+// shortened here; what changes is that the button now admits to it.
+const ConfirmSignOut = ({ label }: { label: string }) => {
+  const { pending } = useFormStatus();
+
+  return (
+    <SubmitButton isPending={pending} variant="alert" size="role" className="w-full">
+      {label}
+    </SubmitButton>
+  );
+};
+
 export const SignOutButton = ({ label, confirm }: SignOutButtonProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -54,9 +76,7 @@ export const SignOutButton = ({ label, confirm }: SignOutButtonProps) => {
             {confirm.cancel}
           </Button>
           <form action={signOut}>
-            <Button type="submit" variant="alert" size="role" className="w-full">
-              {confirm.confirm}
-            </Button>
+            <ConfirmSignOut label={confirm.confirm} />
           </form>
         </DialogFooter>
       </Dialog>

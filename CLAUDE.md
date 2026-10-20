@@ -117,7 +117,11 @@ ministry-app/
 │  │                             /calendar, /month, /year, /profile,
 │  │                             /admin/users/new, его layout.tsx даёт
 │  │                             BottomNav и резервирует место под
-│  │                             панель; app/(with-footer)/ — только
+│  │                             панель; profile/loading.tsx — граница
+│  │                             загрузки (единственная в проекте):
+│  │                             рисует скелетон и этим включает префетч
+│  │                             динамического маршрута — ADR 0059;
+│  │                             app/(with-footer)/ — только
 │  │                             /soon и /install, его layout.tsx даёт
 │  │                             ScreenFooter ("About", "Privacy &
 │  │                             cookies") — группа сужена владельцем
@@ -171,7 +175,7 @@ ministry-app/
 │  │  │                          config/launch-mode.ts, глобальные стили,
 │  │  │                          layout/network-gate.tsx (NetworkGate — клиентская
 │  │  │                          обёртка: при отсутствии связи показывает
-│  │  │                          OfflineScreen из pages/offline, во всех остальных
+│  │  │                          OfflineScreen из pages/network/offline, в остальных
 │  │  │                          состояниях — children. Экрана ожидания нет: пока
 │  │  │                          идёт первая проба, приложение уже отрисовано
 │  │  │                          (ADR 0055);
@@ -182,9 +186,20 @@ ministry-app/
 │  │  │                          notificationclick). Определение
 │  │  │                          "запущено со значка или нет" уехало в
 │  │  │                          features/launch-gate — ADR 0028
-│  │  ├─ pages/                  FSD-слой "pages" (ADR 0016/0017/0018):
-│  │  │                          day, desktop-block, android-block,
-│  │  │                          ios-browser-required, install-app,
+│  │  ├─ pages/                  FSD-слой "pages" (ADR 0016/0017/0018).
+│  │  │                          Две ГРУППЫ слайсов (папка без своего
+│  │  │                          index.ts — не слайс, а контейнер):
+│  │  │                          access/ — три щита устройства
+│  │  │                          (desktop-block, android-block,
+│  │  │                          ios-browser-required, общий префикс
+│  │  │                          /access/*), network/ — offline и
+│  │  │                          service-unavailable (оба показывает
+│  │  │                          NetworkGate). Группы завелись, когда
+│  │  │                          слой перевалил за 20 слайсов и steiger
+│  │  │                          потребовал сгруппировать: правило
+│  │  │                          выполнено, не выключено — ADR 0055,
+│  │  │                          обновление 2026-10-20. Остальные слайсы:
+│  │  │                          day, install-app,
 │  │  │                          coming-soon, about (ADR 0029 — тонкий
 │  │  │                          экран, собирает ListRow/ListCard/
 │  │  │                          PaceCard/SectionLabel из shared/ui и
@@ -193,15 +208,21 @@ ministry-app/
 │  │  │                          тонкий-экран приём, собирает новые
 │  │  │                          SectionIndex/NumberedSection/CookieTable
 │  │  │                          из shared/ui и тот же ScreenBackHeader),
-│  │  │                          offline (экран «нет связи», ему отдаёт управление
-│  │  │                          NetworkGate; ui/ — только вёрстка, повтор проверки
-│  │  │                          приходит пропом `onRetry`), not-found, server-error
+│  │  │                          network/offline (экран «нет связи», ему отдаёт
+│  │  │                          управление NetworkGate; ui/ — только вёрстка,
+│  │  │                          повтор проверки приходит пропом `onRetry`),
+│  │  │                          network/service-unavailable (экран «сломалось
+│  │  │                          у нас»: тот же гейт, но origin ответил не
+│  │  │                          2xx — ADR 0055, обновление),
+│  │  │                          not-found, server-error
 │  │  │                          (styleguide,
 │  │  │                          components удалены — ADR 0011/0012);
 │  │  │                          v2: login (ADR 0043), forgot-password,
 │  │  │                          calendar/month/year (заглушки с одним
 │  │  │                          заголовком), profile (имя, роль, выход
-│  │  │                          — ADR 0044), admin-new-user (создание
+│  │  │                          — ADR 0044; рядом ProfileScreenSkeleton,
+│  │  │                          его рисует loading.tsx — ADR 0059),
+│  │  │                          admin-new-user (создание
 │  │  │                          аккаунта, только для роли admin)
 │  │  ├─ widgets/                install-sheet (панель установки),
 │  │  │                          waitlist-form (форма вайтлиста) — ADR
@@ -250,14 +271,21 @@ ministry-app/
 │  │  │                          ScreenBackHeader, Navigation API
 │  │  │                          `navigation.canGoBack`, не завязан на
 │  │  │                          конкретный экран — ADR 0029/0030), network-status
-│  │  │                          (сценарий «есть ли связь с origin» — api/
+│  │  │                          (сценарий «достижим ли origin» — api/
 │  │  │                          check-connectivity.ts опрашивает /api/v1/health и
-│  │  │                          принимает только 2xx, model/use-network-status.ts и
-│  │  │                          use-reconnect-feedback.ts, ui/ — NetworkReconnectFeedback
-│  │  │                          и ConnectionRestoredToast, config/network-config.ts —
+│  │  │                          отвечает одним из трёх исходов (reachable /
+│  │  │                          unreachable / offline — ADR 0055, обновление),
+│  │  │                          model/network-state.ts — все решения как чистые
+│  │  │                          функции с тестами (statusForOutcome, isUsable,
+│  │  │                          shouldPoll, hasRecovered, resolveReconnectToast),
+│  │  │                          model/use-network-status.ts (таймеры, слушатели,
+│  │  │                          состояние), use-refresh-on-reconnect.ts,
+│  │  │                          use-reconnect-feedback.ts, ui/ — только
+│  │  │                          NetworkReconnectFeedback, config/network-config.ts —
 │  │  │                          таймаут 5 с, повтор раз в 10 с, тост 3 с; публичный API —
-│  │  │                          useNetworkStatus, useRefreshOnReconnect и
-│  │  │                          NetworkReconnectFeedback — сверять по index.ts), push-
+│  │  │                          useNetworkStatus, useRefreshOnReconnect,
+│  │  │                          NetworkReconnectFeedback и тип NetworkStatus —
+│  │  │                          сверять по index.ts), push-
 │  │  │                          notifications (подписка на Web Push после записи в
 │  │  │                          вайтлист: ui/EnableWaitlistNotifications, lib/
 │  │  │                          subscribe-to-push.ts, Server Action
@@ -301,7 +329,9 @@ ministry-app/
 │  │      │                      privacy — чип-якоря, раздел с номером,
 │  │      │                      таблица cookies с пилюлей статуса, без
 │  │      │                      домена — ADR 0031); из реестра shadcn
-│  │      │                      добавлены sonner (тосты — ADR 0046),
+│  │      │                      добавлены skeleton (плашка загрузки —
+│  │      │                      ADR 0059, три правки к вендорному файлу
+│  │      │                      описаны там же), sonner (тосты — ADR 0046),
 │  │      │                      alert (светлая плашка со знаком),
 │  │      │                      input-group, radio-group — у всех
 │  │      │                      вендорных файлов кольца фокуса/ошибки
@@ -452,8 +482,24 @@ ministry-app/
 - **Слайсы независимы друг от друга** внутри одного слоя (без
   кросс-импортов между слайсами одного уровня, кроме `@x`-нотации для
   `entities`).
+- **Группы слайсов.** Папка внутри слоя, у которой НЕТ своего
+  `index.ts`, — не слайс, а контейнер слайсов; так в `pages` живут
+  `access/` (три щита устройства) и `network/` (`offline`,
+  `service-unavailable`). Группа завелась не из вкуса: `steiger`
+  потребовал сгруппировать слой, перешагнувший 20 слайсов. Группировать
+  по существующему признаку (общий префикс адреса, один и тот же
+  вызывающий), а не ради счётчика, и не давать группе `index.ts` —
+  иначе она сама становится слайсом.
 - Строгое соответствие проверяется линтером `steiger`
   (`web/steiger.config.ts`, запускается через `pnpm lint`).
+- **Правила FSD не отключаются под конкретную папку.** Единственное
+  выключенное правило — `fsd/insignificant-slice`, и у него в конфиге
+  записано решение владельца с причиной. Попытка выключить
+  `fsd/excessive-slicing` для `pages` была отвергнута владельцем
+  (2026-10-20): «так потом ещё где-то отключим, надо следовать их
+  логике». Правило, которое мешает, либо выполняется (у
+  `excessive-slicing` лекарство — группы, см. выше), либо отключается
+  отдельным решением с ADR, а не строкой в конфиге по ходу дела.
 - `web/pages/` (пустая, с `README.md`) — НЕ часть FSD, это технический
   щит от Next.js Pages Router. Реальный слой `pages` — `web/src/pages/`.
   Подробности — `docs/decisions/0004-fsd-pages-layer-named-pages.md`.
@@ -963,6 +1009,13 @@ tone="solid" elevated` плюс название приложения, тот ж
 всех перед пустым экраном было плохим разменом. Новый экран ожидания —
 повод сначала перечитать ADR 0055, а не добавлять второй такой.
 
+**Чего это правило НЕ запрещает — скелетон границы загрузки** (ADR
+0059). `app/(with-bottom-nav)/profile/loading.tsx` рисует
+`ProfileScreenSkeleton`, и это не тот экран ожидания: крутилки нет,
+ничего работающего собой не подменяет (данных просто ещё нет), а нижняя
+навигация остаётся — она в layout. Отличать по признаку «что прячется»:
+`NetworkChecking` прятал готовое приложение, скелетон не прячет ничего.
+
 При `DEV_MODE=true` `LaunchGate` вообще не подключается — `root-layout.tsx`
 (решение на сервере, `env.DEV_MODE`, `shared/config`) оборачивает
 `children` только в `Providers` и `NetworkGate`: ни щита по
@@ -1051,7 +1104,25 @@ server-error` использует `useTranslations`, не `getTranslations`);
 - **Проверка связи и офлайн-экран.** `NetworkGate`
   (`web/src/app/layout/network-gate.tsx`) оборачивает приложение в обеих
   ветках `root-layout.tsx`. Состояние берёт у `useNetworkStatus`
-  (`features/network-status`): `checking` → `online`/`offline`. Проба —
+  (`features/network-status`): `checking` → `online`/`offline`/
+  `unavailable`. **Три исхода, не два** (ADR 0055, обновление
+  2026-10-16): «браузер никуда не дотянулся» (`offline` — выключенный
+  радиомодуль, таймаут, отказ `fetch`) и «наш origin ответил, что он
+  сломан» (`unavailable` — ответ не 2xx: 500/502/503/404) — разные факты,
+  и человеку они говорят разное. Первый показывает `OfflineScreen`
+  («проверьте Wi-Fi»), второй — `ServiceUnavailableScreen`
+  (`pages/network/service-unavailable`, «сломалось у нас, не у вас»). Раньше при
+  502 от собственного сервера человеку предлагали проверить Wi-Fi,
+  который в полном порядке. Опрос раз в 10 с и `router.refresh()` при
+  возврате работают в **обоих** нерабочих состояниях, а тост о возврате
+  говорит ту строку, которая правда (`connectionRestored` или
+  `serviceRestored`). **Решения вынесены из хуков** в
+  `model/network-state.ts` (`statusForOutcome`, `isUsable`,
+  `shouldPoll`, `hasRecovered`, `resolveReconnectToast`) и покрыты
+  тестами, как `resolveGate` и `isNavItemCurrent`; у хуков остались
+  таймеры, слушатели и состояние. Какой экран показать, `NetworkGate`
+  берёт из полной карты `Record<NetworkStatus, …>`, а не цепочкой
+  тернарников: новый статус не скомпилируется молча. Проба —
   `fetch` на `/api/v1/health` (`app/api/v1/health/route.ts`, ответ 204)
   **с cookie** (`credentials: "same-origin"` — ADR 0055, обновление):
   вопрос в том, дотягивается ли браузер до origin так, как он делает это
@@ -1062,7 +1133,7 @@ server-error` использует `useTranslations`, не `getTranslations`);
   годится только ответ 2xx — `fetch` разрешается и на 500, и на 404, и на
   «captive portal» с 200, и сам по себе ничего не доказывает. Таймаут 5 с,
   повтор в офлайне раз в 10 с, тост «связь восстановлена» 3 с
-  (`NETWORK_CONFIG`). Офлайн-экран — `pages/offline`.
+  (`NETWORK_CONFIG`). Офлайн-экран — `pages/network/offline`.
   **Что эта проверка НЕ означает:** `/api/v1/health` намеренно не трогает
   ни Supabase, ни auth, поэтому «online» говорит только о том, что отдаёт
   сам origin. Supabase, упавший при живом origin, здесь не виден — об
@@ -1174,6 +1245,26 @@ server-error` использует `useTranslations`, не `getTranslations`);
 | `/access/android` | заглушка «только iOS» |
 | `/access/ios-browser` | заглушка «только Safari» |
 | любой несуществующий адрес (например `/qwerty`), а также `/styleguide`, `/components` (удалены — ADR 0011/0012) | 404 |
+
+**Два экрана гейта адресом не открыть** — их показывает `NetworkGate` по
+результату пробы, а не маршрут. Проверяются так:
+
+- «нет связи» — выключить Wi-Fi/передачу данных (или DevTools →
+  Network → Offline). Проба отвечает мгновенно: `navigator.onLine ===
+  false` она не перепроверяет;
+- «сломалось у нас» — подменить ответ пробы в консоли открытой страницы,
+  затем уйти на другую вкладку и вернуться (проба идёт на
+  `visibilitychange`):
+
+  ```js
+  const real = window.fetch;
+  window.fetch = (url, init) => String(url).includes("/api/v1/health")
+    ? Promise.resolve(new Response(null, { status: 503 }))
+    : real(url, init);
+  ```
+
+  Вернуть как было — `window.fetch = real` и снова переключить вкладку:
+  должен появиться тост «The app is back», а не «You're back online».
 
 **`DEV_MODE=true` снимает щит устройства и щит запуска со значка, но
 НЕ сессию.** `proxy.ts` при нём пропускает всё, однако `/profile` и
@@ -1350,7 +1441,7 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
 
 ## Версия продукта и экран «Что нового»
 
-**Версия живёт в корневом `package.json`** (сейчас `2.0.0`) — продукт это
+**Версия живёт в корневом `package.json`** (сейчас `2.0.1`) — продукт это
 репозиторий, а `web/` и `backend/` лишь пакеты воркспейса. В сборку она
 попадает через `next.config.ts` (`env: { APP_VERSION }`), код читает её
 из `shared/config` (`APP_VERSION`), а не из `env.ts`: это факт о сборке,
@@ -1381,19 +1472,43 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
 если рассказывать нечего. Починка и чего при этом делать нельзя — в ADR
 0057, раздел «Известный дефект».
 
-**Гасит её `revalidatePath(routes.profile)` в `markWhatsNewSeen`, и эта
-строка не лишняя.** Навигация назад в Next 16 читает ранее отрисованный
-`/profile` из клиентского BFCache **в обход проверки свежести** (в
-`readFromBFCache` вместо текущего времени передаётся `-1`), поэтому без
-ревалидации точка остаётся горящей при верной записи в базе — так и было
-найдено владельцем. Выселяет эту запись только ревалидация: ответ
-действия несёт `x-action-revalidated`, клиент на него вызывает
-`invalidateBfCache()`. Серверного кэша у `/profile` нет вовсе (экран
-читает cookies), так что `revalidatePath` здесь — **сигнал клиенту**, а
-не уборка на сервере. Подробности и отвергнутые варианты — ADR 0057,
-обновление 2026-10-15. **Правило: Server Action, после которого должен
-измениться ДРУГОЙ экран, обязан его ревалидировать** — иначе человек
-увидит правду только после полной перезагрузки.
+**Гасит её клиент, а не ревалидация, и за этим стоят два бага подряд.**
+Навигация назад в Next 16 читает ранее отрисованный `/profile` из
+клиентского BFCache **в обход проверки свежести** (в `readFromBFCache`
+вместо текущего времени передаётся `-1`), поэтому точка оставалась
+горящей при верной записи в базе — так её и нашёл владелец. Первая
+правка выселяла эту запись `revalidatePath(routes.profile)`, и это
+работало, но уход со страницы начал **мерцать**: выселение превращает
+возврат назад в запрос к серверу, а `/whats-new` лежит вне группы
+`(with-bottom-nav)`, так что в той же навигации пересобирается и layout
+группы. Размен плохой — точка горела раз в релиз, мерцание было каждый
+раз.
+
+Сейчас: `MarkWhatsNewSeen` пишет `ministry.whats-new-seen` в
+`localStorage` (до обращения к серверу и независимо от его исхода), а
+точку рисует островок `WhatsNewUnreadDot`
+(`features/whats-new`), читающий эту запись через
+`useSyncExternalStore`. Горит ли точка, решает
+`showsUnreadDot(serverSaysUnread, versionSeenOnThisDevice, current)` в
+`shared/config/app-version.ts` — чистая функция с тестами на все шесть
+случаев, включая тот самый баг и запись «из будущего» после отката
+деплоя. Островок умеет только **убирать** точку, никогда не зажигать;
+запись в `profiles.whats_new_seen` осталась — она для всех **остальных**
+устройств человека. Отказ `localStorage` (приватное окно,
+заблокированные данные сайта) уходит в Sentry на уровне `warning` с
+`fingerprint`, а не проглатывается: иначе «точка гаснет только на полной
+загрузке» не отличить от вернувшегося бага. Подробности, отменённый
+запрет «не гасить клиентом» и чем он закрыт — ADR 0057, обновления
+2026-10-16 и 2026-10-20.
+
+**Правило: Server Action, после которого должен измениться ДРУГОЙ экран,
+обязан его ревалидировать** — в силе; иначе человек увидит правду только
+после полной перезагрузки. Это действие под него больше не попадает: оно
+пишет строку, а экран, который её читает, узнаёт об этом сам. И вторая
+половина того же правила, добытая мерцанием: **ревалидация маршрута
+выселяет его клиентский кэш целиком**, поэтому её цена — пересборка того
+экрана при следующем возврате назад. Там, где изменившееся есть чем
+рассказать клиенту напрямую, это слишком дорогой инструмент.
 
 ## Ветки удаляются сразу после слияния
 
@@ -1522,6 +1637,18 @@ protection живёт в Settings репозитория, а не в файла�
    Без него роль в токен не попадает, `parseSessionClaims` подставляет
    `user` всем (намеренно — наименьшие права, ADR 0044), и админские
    экраны не откроются даже админу.
+
+   **Как это выглядит снаружи** (ловил владелец, 2026-10-16): роль
+   меняется в UI Supabase на `admin`, человек выходит и входит заново —
+   а в профиле по-прежнему `user`. В коде искать нечего. С 2026-10-16
+   `getSessionClaims` пишет на такой токен
+   `[session] token carries no user_role claim` с причиной
+   `token-hook-disabled-or-no-role-row` — на каждый запрос, пока причина
+   стоит, и в Sentry (`captureMessage`, `warning`) **один раз на инстанс**:
+   это один факт о настройке проекта, а не тысяча исключений, и квота
+   нужна настоящим ошибкам (ADR 0044, обновление). Причин три: хук не включён, у человека нет строки в
+   `user_roles`, либо строка помечена `deleted_at` (хук её фильтрует —
+   ADR 0047). Команды для проверки — ADR 0044, обновление 2026-10-16.
 2. **Регистрация выключена.** Authentication → Sign In / Providers →
    Email → Allow new users to sign up: **выключить**. Аккаунты выдаёт
    владелец (решение D1); при включённой регистрации любой желающий

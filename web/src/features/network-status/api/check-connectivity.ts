@@ -2,13 +2,31 @@ import { WEB_API_ROUTES } from "@/shared/config";
 
 import { NETWORK_CONFIG } from "../config/network-config";
 
+// Three answers, not two. "The origin did not answer" and "the origin
+// answered that it is broken" are different facts about the world, and
+// the person needs to be told different things: one is theirs to fix
+// (Wi-Fi, a tunnel, a dead spot), the other is ours and no amount of
+// walking towards a window will help. Collapsing them into a boolean is
+// how a 502 from our own server came out as "You're offline" on a phone
+// with four bars of signal.
+//
+// `reachable`  — 2xx from the health endpoint: the origin is serving.
+// `unreachable` — the origin answered, and the answer was not a 2xx: a
+//                 500 from a broken deployment, a 503 while Vercel has
+//                 nothing to route to, a 404 if the route went missing.
+// `offline`     — nothing answered: the radio is off, the request timed
+//                 out, DNS failed, or the response was a cross-origin
+//                 redirect fetch refuses to follow.
+export type ConnectivityOutcome
+  = "reachable" | "unreachable" | "offline";
+
 export const checkConnectivity
-  = async (): Promise<boolean> => {
+  = async (): Promise<ConnectivityOutcome> => {
     if (
       typeof navigator !== "undefined"
       && navigator.onLine === false
     ) {
-      return false;
+      return "offline";
     }
 
     const controller = new AbortController();
@@ -42,12 +60,23 @@ export const checkConnectivity
       });
 
       // `fetch` resolves for any HTTP response, so a resolved promise proves
-      // nothing: a 500/502 from a broken origin, a 404, or a captive
-      // portal's 200 login page all resolve. Only a 2xx from the health
-      // endpoint (204 No Content) means the origin is really serving.
-      return response.ok;
+      // nothing on its own: a 500/502 from a broken origin, a 404, or a
+      // captive portal's 200 login page all resolve. Only a 2xx from the
+      // health endpoint (204 No Content) means the origin is really serving.
+      if (response.ok) return "reachable";
+
+      // The status is the one thing worth keeping from a failed probe. It
+      // is not shown to anyone — the screen says the same sentence for
+      // every code — but it is the first question asked when somebody
+      // reports the screen, and the console is where they can answer it
+      // without a deployment.
+      console.warn("[network] origin answered, but not with a 2xx", {
+        status: response.status,
+      });
+
+      return "unreachable";
     } catch {
-      return false;
+      return "offline";
     } finally {
       globalThis.clearTimeout(timeout);
     }

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { markWhatsNewSeen } from "../api/mark-whats-new-seen-action";
+import { rememberSeenVersion } from "../lib/seen-version-store";
 
 // Renders nothing. Its only job is to call the action once, after the
 // screen has been shown.
@@ -23,6 +24,14 @@ export const MarkWhatsNewSeen = () => {
   useEffect(() => {
     if (sent.current) return;
     sent.current = true;
+
+    // Recorded on this device BEFORE the round trip, and not conditional
+    // on it: the fact being recorded is "this browser has displayed the
+    // release notes", which is already true. It is also what clears the
+    // dot without a server round trip, a revalidation or an evicted
+    // route cache — see lib/seen-version-store.ts.
+    rememberSeenVersion();
+
     void markWhatsNewSeen();
   }, []);
 
