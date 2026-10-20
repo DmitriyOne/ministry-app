@@ -4,16 +4,17 @@ import { ScreenBackHeader } from "@/features/screen-back";
 import { MarkWhatsNewSeen } from "@/features/whats-new";
 import { AppMark } from "@/shared/ui/app-mark";
 import { CenteredState } from "@/shared/ui/centered-state";
-// Six of these are stand-ins. The set has no bell, no phone, no
+// Seven of these are stand-ins. The set has no bell, no phone, no
 // envelope and no eye-on-a-list, and adding icons is the owner's call,
 // not a detail to slip into a screen: notifications borrow the info
 // circle, "iPhone only" borrows the closed lock (it is a restriction),
 // the waiting list borrows the tick, and this page itself borrows the
 // eye — the glyph the password field uses for "see it". Install uses
 // the compass deliberately — the same glyph /about gives that row. The
-// two 2.0.1 rows borrow as well: the tick for a fix that landed, and the
-// warning circle — the same one the new "something's wrong on our side"
-// screen shows, which is the point of that row.
+// 2.0.1 rows borrow as well: the tick for a fix that landed, the warning
+// circle — the same one the new "something's wrong on our side" screen
+// shows, which is the point of that row — and the closed lock for
+// signing out, since that is what leaving does.
 import {
   AlertCircleIcon,
   CalendarWeekIcon,
@@ -84,10 +85,15 @@ export const WhatsNewScreen = async () => {
             text={t("v2_0_1.ourFault.text")}
           />
           <ListRow
-            divided={false}
             icon={<UserIcon size={18} />}
             title={t("v2_0_1.profileOpens.title")}
             text={t("v2_0_1.profileOpens.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<LockClosedIcon size={18} />}
+            title={t("v2_0_1.signOut.title")}
+            text={t("v2_0_1.signOut.text")}
           />
         </ListCard>
 

@@ -123,16 +123,20 @@
         "name": "Version 2.0.1",
         "date": "20 October 2026",
         "flicker": {
-          "title": "Leaving this page no longer flickers",
-          "text": "Going back to your profile from here used to rebuild the screen in front of you. It does not any more, and the dot still goes out once you have read the latest version."
+          "title": "No more flicker on the way back",
+          "text": "Going back to your profile from here no longer makes the screen flash."
         },
         "ourFault": {
-          "title": "It stops blaming your Wi-Fi",
-          "text": "When the app itself is the problem, it now says so instead of asking you to check a connection that was working perfectly well."
+          "title": "Honest when the fault is ours",
+          "text": "If the app is the problem, it says so instead of asking you to check your Wi-Fi."
         },
         "profileOpens": {
-          "title": "Your profile opens at once",
-          "text": "Tapping Profile used to leave you on the screen you were already on while the app fetched your details. Now the profile is there immediately, with your name and role filling in a moment later."
+          "title": "Your profile opens straight away",
+          "text": "It no longer pauses on the screen you were on while it loads."
+        },
+        "signOut": {
+          "title": "Signing out looks like it is working",
+          "text": "The button shows it is busy until you are out, instead of looking stuck."
         }
       },
       "v2": {
