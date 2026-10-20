@@ -7,8 +7,8 @@ import {
   useNetworkStatus,
   useRefreshOnReconnect,
 } from "@/features/network-status";
-import { OfflineScreen } from "@/pages/offline";
-import { ServiceUnavailableScreen } from "@/pages/service-unavailable";
+import { OfflineScreen } from "@/pages/network/offline";
+import { ServiceUnavailableScreen } from "@/pages/network/service-unavailable";
 
 type NetworkGateProps = {
   children: ReactNode;

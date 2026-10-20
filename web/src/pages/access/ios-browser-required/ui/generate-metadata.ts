@@ -3,9 +3,9 @@ import { getTranslations } from "next-intl/server";
 
 import { buildPageMetadata } from "@/shared/lib/metadata";
 
-// noindex/nofollow — see pages/desktop-block/ui/generate-metadata.ts.
+// noindex/nofollow — see pages/access/desktop-block/ui/generate-metadata.ts.
 export const generateMetadata = async (): Promise<Metadata> => {
-  const t = await getTranslations("screens.access.android.metadata");
+  const t = await getTranslations("screens.access.iosBrowser.metadata");
 
   return buildPageMetadata({
     title: t("title"),

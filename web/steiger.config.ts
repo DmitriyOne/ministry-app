@@ -19,25 +19,4 @@ export default defineConfig([
       "fsd/insignificant-slice": "off",
     },
   },
-  {
-    // "excessive-slicing" counts slices and warns above twenty, on the
-    // reasoning that a layer with more than that is usually a layer
-    // nobody grouped. Switched off for `pages` only, and only there,
-    // because this project's pages layer is not a list of routes: six of
-    // its slices are screens with no address at all — the three device
-    // shields, 404, 500, offline and service-unavailable, all rendered by
-    // a gate or a Next.js convention rather than reached by a URL. The
-    // count passed twenty when the network gate gained its second screen
-    // (ADR 0055, update), and the rule's remedy — group them, or move
-    // them into the layer that uses them — would mean either folders that
-    // exist to satisfy a counter or screens living inside app/, which is
-    // where this project deliberately does not keep them (ADR 0018).
-    //
-    // It stays on everywhere else: features and widgets growing past
-    // twenty slices would be the signal the rule is for.
-    files: ["./src/pages/**"],
-    rules: {
-      "fsd/excessive-slicing": "off",
-    },
-  },
 ]);
