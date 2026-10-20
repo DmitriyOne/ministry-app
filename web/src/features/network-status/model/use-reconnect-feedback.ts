@@ -7,17 +7,14 @@ import { dismissToast, showToast, type ToastId } from "@/shared/ui/sonner";
 
 import { NETWORK_CONFIG } from "../config/network-config";
 
-import type { NetworkStatus } from "./use-network-status";
+import { isUsable, type NetworkStatus, type ReconnectToastKind, resolveReconnectToast } from "./network-state";
 
-// Only the decision of whether to announce a restored connection lives here.
-// How the toast looks, animates and when it leaves is the shared toast's job.
-//
-// Which of the two sentences to say is part of that decision, because the
-// person was not necessarily offline: a deployment answering 503 gets
-// its own screen (ADR 0055, update), and telling someone they are "back
-// online" when their signal never dropped is a small lie that makes the
-// app look like it was not watching.
-export type ReconnectToastKind = "connection" | "service";
+// When to announce a restored connection, and which of the two sentences
+// to use — the decision itself is `resolveReconnectToast` (model/
+// network-state.ts, with tests); what lives here is the timing: the
+// delay that debounces a flapping link, and taking the toast away again
+// if the app becomes unusable while it is still up. How the toast looks
+// and when it leaves is the shared toast's job.
 
 export const useReconnectFeedback = (status: NetworkStatus) => {
   const t = useTranslations("common");
@@ -47,16 +44,14 @@ export const useReconnectFeedback = (status: NetworkStatus) => {
   if (status !== previousStatus) {
     setPreviousStatus(status);
 
-    if (status === "online") {
-      // Not shown yet — a pending toast waits out reconnectToastDelayMs
-      // first. A connection that comes back and drops again inside that
-      // second never produces a toast at all, which is what stops a
-      // flapping link from flashing one per flap.
-      if (previousStatus === "offline") setPending("connection");
-      else if (previousStatus === "unavailable") setPending("service");
-    } else if (status !== "checking" && pending !== null) {
-      setPending(null);
-    }
+    const kind = resolveReconnectToast(previousStatus, status);
+
+    // Not shown yet — a pending toast waits out reconnectToastDelayMs
+    // first. A connection that comes back and drops again inside that
+    // second never produces a toast at all, which is what stops a
+    // flapping link from flashing one per flap.
+    if (kind !== null) setPending(kind);
+    else if (!isUsable(status) && pending !== null) setPending(null);
   }
 
   const message = pending === "service" ? serviceRestored : connectionRestored;
@@ -86,8 +81,7 @@ export const useReconnectFeedback = (status: NetworkStatus) => {
   // Dismissing an id that has already left is harmless, so no bookkeeping
   // is needed for the case where it expired by itself.
   useEffect(() => {
-    if (status === "online" || status === "checking") return;
-    if (toastId.current === null) return;
+    if (isUsable(status) || toastId.current === null) return;
 
     dismissToast(toastId.current);
     toastId.current = null;

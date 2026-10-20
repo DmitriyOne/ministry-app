@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
-import type { NetworkStatus } from "./use-network-status";
+import { hasRecovered, type NetworkStatus } from "./network-state";
 
 // What the connection coming back does beyond the toast: ask the server for
 // this screen again.
@@ -42,11 +42,6 @@ export const useRefreshOnReconnect = (status: NetworkStatus): void => {
 
     previousStatus.current = status;
 
-    // Any unusable state coming back, not just "offline": a deployment
-    // that was answering 503 has very likely just been replaced, which is
-    // the most stale a screen can be.
-    const wasUnusable = previous === "offline" || previous === "unavailable";
-
-    if (wasUnusable && status === "online") router.refresh();
+    if (hasRecovered(previous, status)) router.refresh();
   }, [status, router]);
 };

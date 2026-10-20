@@ -1,6 +1,6 @@
 "use client";
 
-import type { NetworkStatus } from "../model/use-network-status";
+import type { NetworkStatus } from "../model/network-state";
 import { useReconnectFeedback } from "../model/use-reconnect-feedback";
 
 type NetworkReconnectFeedbackProps = {
