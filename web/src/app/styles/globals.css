@@ -183,6 +183,14 @@
   --tracking-list-row: -0.015em;
   --tracking-eyebrow: 0.12em;
   --tracking-tab: 0.01em;
+
+  /* The hours card's answer to a tap (features/hours-entry, ADR 0060).
+     Declared as a token so the card writes `animate-value-bump` instead
+     of spelling the timing inline, and so the one number that matters —
+     how long the bump lasts — is here with the rest of the scale.
+     Deliberately short: it has to land inside the same moment as the
+     haptic tick, or the two read as two separate events. */
+  --animate-value-bump: value-bump 140ms ease-out;
 }
 
 :root {
@@ -543,6 +551,23 @@
  * not apply here. Holding it is required, since the overlay stays on
  * screen after the entrance finishes.
  */
+/*
+ * The hours card's number, each time it changes (ADR 0060). The strength
+ * of a haptic tick is not ours to choose — WebKit picks the style and
+ * there is no API for "harder" — so what can be made more emphatic is
+ * what the eye sees in the same instant. A short overshoot on the value
+ * is the part a person is actually looking at while they tap.
+ */
+@keyframes value-bump {
+  from {
+    transform: scale(1.09);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
 @keyframes shell-mark-enter {
   from {
     opacity: 0;
@@ -657,6 +682,7 @@
    */
   .haptic-tap:has(> input:active) > .pressable {
     transform: scale(var(--press-scale, 0.96));
+    filter: brightness(var(--press-brightness, 1));
   }
   @media (prefers-reduced-motion: reduce) {
     .pressable {

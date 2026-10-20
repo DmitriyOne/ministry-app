@@ -33,6 +33,20 @@ import {
 const SURFACE_INK = "text-white/50";
 const BONE_ON_HERO = "bg-white/12";
 
+// How hard a press reads. The haptic tick's own strength is not ours to
+// choose — WebKit picks the style, and no API asks for "harder" (ADR
+// 0040) — so the part that can be made more emphatic is what happens
+// under the finger at the same moment: a deeper squeeze than the app's
+// usual 0.98, a quicker one than its 150ms, and a brightening that the
+// `.haptic-tap` rule in globals.css drives from the overlay, because the
+// button itself never sees :active.
+//
+// 0.9 is not a new value in the project — the password field's toggle
+// already presses that far (ADR 0012). It is simply the deepest of them,
+// which is what 56px circles meant to feel like keys should be, as
+// opposed to a row in a card at 0.98.
+const PRESS_FEEL = "duration-75 [--press-brightness:1.18] [--press-scale:0.9]";
+
 export const HoursCard = () => {
   const t = useTranslations("screens.day.hours");
   const headingId = useId();
@@ -68,7 +82,7 @@ export const HoursCard = () => {
             aria-label={t("decrease", { minutes: HOURS_STEP_MINUTES })}
             isDisabled={!changes(-HOURS_STEP_MINUTES)}
             onPress={() => add(-HOURS_STEP_MINUTES)}
-            className={`size-14 rounded-full px-0 ${BONE_ON_HERO}`}
+            className={`size-14 rounded-full px-0 ${BONE_ON_HERO} ${PRESS_FEEL}`}
           >
             <MinusIcon size={28} />
           </Button>
@@ -76,12 +90,17 @@ export const HoursCard = () => {
 
         {/* Announced rather than silent: the buttons say what they do, but
             what the number BECAME is the answer to the tap, and without
-            this a screen reader would never hear it. */}
+            this a screen reader would never hear it. The live region is
+            the outer span and stays mounted; only the number inside is
+            keyed, so each change replays the bump without the region
+            itself being torn down and re-announced from scratch. */}
         <span
           aria-live="polite"
           className="text-display font-600 tracking-display tabular-nums"
         >
-          {formatHours(minutes)}
+          <span key={minutes} className="inline-block motion-safe:animate-value-bump">
+            {formatHours(minutes)}
+          </span>
         </span>
 
         <HapticTap
@@ -94,7 +113,7 @@ export const HoursCard = () => {
             aria-label={t("increase", { minutes: HOURS_STEP_MINUTES })}
             isDisabled={!changes(HOURS_STEP_MINUTES)}
             onPress={() => add(HOURS_STEP_MINUTES)}
-            className="size-14 rounded-full px-0"
+            className={`size-14 rounded-full px-0 ${PRESS_FEEL}`}
           >
             <PlusIcon size={28} />
           </Button>
@@ -114,7 +133,7 @@ export const HoursCard = () => {
               variant="heroGhost"
               isDisabled={!changes(delta)}
               onPress={() => add(delta)}
-              className={`h-10 w-full rounded-sm px-0 text-sm font-560 ${BONE_ON_HERO}`}
+              className={`h-10 w-full rounded-sm px-0 text-sm font-560 ${BONE_ON_HERO} ${PRESS_FEEL}`}
             >
               {t("quickAdd", { minutes: delta })}
             </Button>
