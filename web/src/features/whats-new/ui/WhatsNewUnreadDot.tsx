@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-import { APP_VERSION, hasUnreadVersion } from "@/shared/config";
+import { APP_VERSION, showsUnreadDot } from "@/shared/config";
 
 import { readSeenVersion } from "../lib/seen-version-store";
 
@@ -43,17 +43,15 @@ const getServerSnapshot = (): string | null => null;
 // shown this version (see lib/seen-version-store.ts for why that matters
 // and what it replaced).
 //
-// It can only ever take the dot away, never put one there. A device that
-// has read the release cannot make a dot appear on a profile the database
-// says is up to date, and a local record from the future — a rolled-back
-// deployment — is handled by `hasUnreadVersion`, the same comparison the
-// server uses, rather than by string equality.
+// Whether the dot is lit is `showsUnreadDot` (shared/config/app-version
+// .ts), with its own tests, including the back-navigation case this
+// island exists for and the rolled-back deployment that leaves a record
+// from the future. What is left here is the wiring: read the store, hand
+// both answers over, render a span or nothing.
 export const WhatsNewUnreadDot = ({ unread, label }: WhatsNewUnreadDotProps) => {
   const seenVersion = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  const seenOnThisDevice = seenVersion !== null && !hasUnreadVersion(seenVersion, APP_VERSION);
-
-  if (!unread || seenOnThisDevice) return null;
+  if (!showsUnreadDot(unread, seenVersion, APP_VERSION)) return null;
 
   return (
     <span

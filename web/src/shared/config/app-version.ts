@@ -40,3 +40,27 @@ export const hasUnreadVersion = (seen: string | null, current: string): boolean 
 
   return differs !== -1 && currentParts[differs] > seenParts[differs];
 };
+
+// Whether the dot on the profile's What's New row is lit, given both
+// records of what has been read: the database row for this person and the
+// record this DEVICE keeps (features/whats-new — see that slice for why
+// the second one exists at all).
+//
+// Both have to say "unread", which is what makes the device record able
+// only to TAKE the dot away and never to light one. Taking the device's
+// word for it alone would light a dot for somebody who had read the
+// release elsewhere; taking only the server's would leave it lit on a
+// back navigation, which is the bug this pair was written for — the
+// profile screen comes back from the router's cache without being
+// re-rendered, so the server's answer there is as old as the cache entry.
+//
+// Separate from hasUnreadVersion rather than folded into it: the server
+// side of the question is answered while rendering the profile (where a
+// profile that failed to load means NO dot, not an unread one), and the
+// device side only after hydration. One function cannot be in both
+// places, so this one combines two answers instead of fetching them.
+export const showsUnreadDot = (
+  serverSaysUnread: boolean,
+  versionSeenOnThisDevice: string | null,
+  current: string,
+): boolean => serverSaysUnread && hasUnreadVersion(versionSeenOnThisDevice, current);
