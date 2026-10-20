@@ -126,6 +126,14 @@
       },
       "currentPill": "Current",
       "releasedPill": "Released",
+      "v2_1": {
+        "name": "Version 2.1",
+        "date": "20 October 2026",
+        "haptics": {
+          "title": "Buttons you can feel",
+          "text": "On iPhone, buttons answer with a short tap under your finger."
+        }
+      },
       "v2_0_1": {
         "name": "Version 2.0.1",
         "date": "20 October 2026",

@@ -11,6 +11,8 @@ import { CenteredState } from "@/shared/ui/centered-state";
 // the waiting list borrows the tick, and this page itself borrows the
 // eye — the glyph the password field uses for "see it". Install uses
 // the compass deliberately — the same glyph /about gives that row. The
+// 2.1's single row borrows the target: the set has nothing for a tap
+// landing under a finger, and that is the closest honest stand-in. The
 // 2.0.1 rows borrow as well: the tick for a fix that landed, the warning
 // circle — the same one the new "something's wrong on our side" screen
 // shows, which is the point of that row — and the closed lock for
@@ -24,6 +26,7 @@ import {
   InfoCircleIcon,
   LockClosedIcon,
   LockOpenIcon,
+  TargetIcon,
   UserIcon,
   WifiOffIcon,
 } from "@/shared/ui/icons";
@@ -35,8 +38,8 @@ import { VersionHeading } from "./VersionHeading";
 
 // The release history people see, in the same frame as /about and
 // /privacy: sticky back header, green hero block, cards of rows. The
-// versions are written out rather than driven by a list, because there
-// are two of them and each one's rows are different prose — a loop over
+// versions are written out rather than driven by a list, because each
+// one's rows are different prose — a loop over
 // a config would buy nothing and cost the dictionary its literal keys,
 // which are what makes a missing string a compile error (ADR 0014).
 export const WhatsNewScreen = async () => {
@@ -63,6 +66,21 @@ export const WhatsNewScreen = async () => {
           />
         </div>
 
+        {/* One row, on purpose. The release also puts the hours card on
+            the day screen, and that card saves nothing: a reload clears
+            it (ADR 0060). Announcing "you can record your hours" would be
+            a promise the app does not keep yet, so this version says only
+            the part that is true for good — the tick under the finger. */}
+        <VersionHeading name={t("v2_1.name")} date={t("v2_1.date")} pill={t("currentPill")} />
+        <ListCard>
+          <ListRow
+            divided={false}
+            icon={<TargetIcon size={18} />}
+            title={t("v2_1.haptics.title")}
+            text={t("v2_1.haptics.text")}
+          />
+        </ListCard>
+
         {/* A patch release, and it says so plainly: two fixes, no new
             abilities. It gets a block of its own because raising the
             version lights the dot on the profile either way (the known
@@ -71,7 +89,7 @@ export const WhatsNewScreen = async () => {
         <VersionHeading
           name={t("v2_0_1.name")}
           date={t("v2_0_1.date")}
-          pill={t("currentPill")}
+          pill={t("releasedPill")}
         />
         <ListCard>
           <ListRow
