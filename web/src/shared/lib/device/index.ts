@@ -13,4 +13,5 @@
 // browser has no opinion. A module that reads configuration, or anything
 // a build decides, does not belong here.
 export { isStandaloneDisplayMode } from "./display-mode";
+export { supportsHapticTap } from "./haptics";
 export { resolveKeyboardInset } from "./keyboard-inset";

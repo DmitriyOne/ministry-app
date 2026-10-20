@@ -644,11 +644,28 @@
   .pressable:active {
     transform: scale(var(--press-scale, 0.96));
   }
+
+  /*
+   * A press under a haptic overlay (shared/ui/haptic-tap.tsx).
+   *
+   * The overlay is a real <input type="checkbox" switch> laid over the
+   * button, and it is what the finger touches — so the button never
+   * enters :active and the rule above would do nothing on exactly the
+   * controls that got the tick. The overlay's own :active drives its
+   * sibling instead. Written with :has because the overlay comes after
+   * the button in the DOM, where no sibling combinator reaches back.
+   */
+  .haptic-tap:has(> input:active) > .pressable {
+    transform: scale(var(--press-scale, 0.96));
+  }
   @media (prefers-reduced-motion: reduce) {
     .pressable {
       transition: none;
     }
     .pressable:active {
+      transform: none;
+    }
+    .haptic-tap:has(> input:active) > .pressable {
       transform: none;
     }
   }
