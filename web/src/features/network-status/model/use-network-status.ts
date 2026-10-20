@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { checkConnectivity } from "../api/check-connectivity";
 import { NETWORK_CONFIG } from "../config/network-config";
 
-export type NetworkStatus = "checking" | "online" | "offline";
+import { type NetworkStatus, shouldPoll, statusForOutcome } from "./network-state";
 
 type UseNetworkStatusResult = {
   status: NetworkStatus;
@@ -53,13 +53,13 @@ export const useNetworkStatus = (): UseNetworkStatusResult => {
 
     const run = (async () => {
       try {
-        const reachable = await checkConnectivity();
+        const nextStatus = statusForOutcome(await checkConnectivity());
 
         if (probeId === probeIdRef.current) {
-          setStatus(reachable ? "online" : "offline");
+          setStatus(nextStatus);
         }
 
-        return reachable;
+        return nextStatus === "online";
       } finally {
         inFlightRef.current = null;
       }
@@ -116,7 +116,7 @@ export const useNetworkStatus = (): UseNetworkStatusResult => {
   }, [markOffline, probe]);
 
   useEffect(() => {
-    if (status !== "offline") return;
+    if (!shouldPoll(status)) return;
 
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") void probe();

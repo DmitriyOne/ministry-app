@@ -11,7 +11,8 @@
     "noscriptRequired": "MinistryApp needs JavaScript enabled to run.",
     "aboutLink": "About",
     "privacyLink": "Privacy & cookies",
-    "connectionRestored": "You're back online"
+    "connectionRestored": "You're back online",
+    "serviceRestored": "The app is back"
   },
   "nav": {
     "label": "Main navigation",
@@ -118,6 +119,26 @@
       },
       "currentPill": "Current",
       "releasedPill": "Released",
+      "v2_0_1": {
+        "name": "Version 2.0.1",
+        "date": "20 October 2026",
+        "flicker": {
+          "title": "No more flicker on the way back",
+          "text": "Going back to your profile from here no longer makes the screen flash."
+        },
+        "ourFault": {
+          "title": "Honest when the fault is ours",
+          "text": "If the app is the problem, it says so instead of asking you to check your Wi-Fi."
+        },
+        "profileOpens": {
+          "title": "Your profile opens straight away",
+          "text": "It no longer pauses on the screen you were on while it loads."
+        },
+        "signOut": {
+          "title": "Signing out looks like it is working",
+          "text": "The button shows it is busy until you are out, instead of looking stuck."
+        }
+      },
       "v2": {
         "name": "Version 2",
         "date": "14 October 2026",
@@ -554,6 +575,12 @@
     "offline": {
       "title": "You’re offline",
       "text": "Check your Wi-Fi or mobile data, then try again.",
+      "retryButton": "Try again",
+      "retryingButton": "Checking…"
+    },
+    "serviceUnavailable": {
+      "title": "Something’s wrong on our side",
+      "text": "The app isn’t answering just now. It’s our problem, not yours — we’re on it, so try again in a moment.",
       "retryButton": "Try again",
       "retryingButton": "Checking…"
     },
