@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 import { Button } from "@/shared/ui/button";
 import { Spinner } from "@/shared/ui/spinner";
@@ -21,6 +21,14 @@ type SubmitButtonProps = {
   // Anything else that should block the submit — in practice
   // `hasErrors` from useActionForm.
   isBlocked?: boolean;
+  // Every form in the project submits with the same green action button,
+  // which is why those are the defaults. The confirming button of the
+  // sign-out dialog is the exception that made these props necessary: it
+  // is the alert tone, and it sits in a dialog footer rather than at the
+  // foot of a screen. Passing them beats a second component that would
+  // drift from this one's two rules.
+  variant?: ComponentProps<typeof Button>["variant"];
+  size?: ComponentProps<typeof Button>["size"];
   className?: string;
 };
 
@@ -28,12 +36,14 @@ export const SubmitButton = ({
   children,
   isPending,
   isBlocked = false,
+  variant = "action",
+  size = "role-lg",
   className,
 }: SubmitButtonProps) => (
   <Button
     type="submit"
-    variant="action"
-    size="role-lg"
+    variant={variant}
+    size={size}
     isDisabled={isBlocked || isPending}
     className={className}
   >
