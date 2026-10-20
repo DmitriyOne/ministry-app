@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 import { APP_VERSION } from "@/shared/config";
 
 // Which version this DEVICE has shown its owner, kept beside the
@@ -30,10 +32,35 @@ import { APP_VERSION } from "@/shared/config";
 // server's answer rather than on an error.
 const STORAGE_KEY = "ministry.whats-new-seen";
 
+// Reported to Sentry rather than swallowed, at `warning`: a refusal is
+// EXPECTED in a private window or with site data blocked, so it is not an
+// error to be woken up for — but it is not nothing either, because the
+// dot then behaves as it did before this record existed, and without a
+// line anywhere that would be indistinguishable from the bug coming back.
+// Tagged and deduplicated by `fingerprint` so a device that refuses on
+// every visit groups into one issue instead of a stream.
+//
+// Sentry is off outside production (ADR 0041), so locally this is silent
+// by design; the console line carries the same facts.
+const report = (error: unknown, operation: "read" | "write"): void => {
+  console.warn("[whats-new] local seen-version store unavailable", { operation });
+
+  Sentry.captureException(error, {
+    level: "warning",
+    tags: { scope: "whats-new", operation },
+    fingerprint: ["whats-new-seen-store", operation],
+  });
+};
+
 export const readSeenVersion = (): string | null => {
   try {
     return window.localStorage.getItem(STORAGE_KEY);
-  } catch {
+  } catch (error) {
+    // Reported, like the write below, but it is the harmless direction:
+    // "this device knows nothing" falls back to the server's answer, so
+    // at worst the dot stays lit one visit longer.
+    report(error, "read");
+
     return null;
   }
 };
@@ -41,11 +68,11 @@ export const readSeenVersion = (): string | null => {
 export const rememberSeenVersion = (): void => {
   try {
     window.localStorage.setItem(STORAGE_KEY, APP_VERSION);
-  } catch {
-    // Nothing to do and nothing to report: the database write in
-    // markWhatsNewSeen is the record that matters, and this one is the
-    // shortcut that saves a round trip. Without it the dot clears on the
-    // next full load of the profile, which is the behaviour this project
-    // had before the local copy existed.
+  } catch (error) {
+    // The database write in markWhatsNewSeen is still the record that
+    // matters; what is lost here is the shortcut that clears the dot
+    // without a round trip. The dot then goes out on the next full load
+    // of the profile instead of immediately.
+    report(error, "write");
   }
 };
