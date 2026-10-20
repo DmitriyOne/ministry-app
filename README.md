@@ -14,7 +14,7 @@ Pre-launch. Two things exist side by side.
 person leaves an email, gets a position in the list and, if they opened
 the installed app, can turn on a push notification about the launch.
 
-**Behind a sign-in, and a skeleton:** v2 added email-and-password sign-in,
+**Behind a sign-in, and still mostly bare:** v2 added email-and-password sign-in,
 roles, bottom navigation and the screens behind a session — `/day`,
 `/calendar`, `/month`, `/year` are still placeholders carrying a title
 each, `/profile` is real (name, role, push toggle, sign-out) and

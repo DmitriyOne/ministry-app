@@ -247,7 +247,7 @@ children** — `<Title title={...} />` не соберётся (так уже п
 | Компонент | Когда |
 |---|---|
 | `ActionForm` | сам `<form>`: `noValidate`, `preventDefault`, `gap-3.5` |
-| `SubmitButton` | кнопка отправки: блокировка при ошибках и в полёте, крутилка |
+| `SubmitButton` | кнопка отправки: блокировка при ошибках и в полёте, крутилка. Тон и размер — пропами `variant`/`size`, по умолчанию `action`/`role-lg` (ADR 0012, обновление) |
 | `Button` / `LinkButton` | роли `deep` `action` `alert` `plain` `heroGhost`, размеры `role` (50) и `role-lg` (54) |
 | `ActionStack` | колонка кнопок |
 | `PillForm` | форма-пилюля (вайтлист) |
@@ -264,6 +264,7 @@ children** — `<Title title={...} />` не соберётся (так уже п
 | `ScreenHeader` / `ScreenBackHeader` | шапка с кнопкой «назад» (`features/screen-back`) |
 | `ScreenIntro` | `AppMark` над `TextBlock` — шапка экранов входа |
 | `CenteredState` | каркас экрана |
+| `Skeleton` | плашка на месте данных, которых ещё нет. Только в границе загрузки (`loading.tsx`), не как «подождите» вместо работающего экрана — ADR 0055/0059. Тон задаёт вызывающая сторона: `bg-ink-a09` на белой карточке, `bg-white/15` на `--hero` |
 
 ### Иконки
 

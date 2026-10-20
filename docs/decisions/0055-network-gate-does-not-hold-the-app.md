@@ -196,7 +196,7 @@ offline / Check your Wi-Fi or mobile data», то есть при 502 от
 `isNavItemCurrent` и `resolveSplashDelay`. Хуки держат таймеры,
 слушатели и состояние; что из этого следует — здесь.
 
-Тестов стало 33: `network-state.test.ts` (включая перебор всех пар
+Новых тестов 33 (всего в проекте 235): `network-state.test.ts` (включая перебор всех пар
 статусов — тост не должен возникать ни на одном переходе, кроме входа в
 `online`) и `check-connectivity.test.ts`, где подменяются
 `navigator.onLine` и `fetch`: 204 → `reachable`, 500/502/503/404/302 →

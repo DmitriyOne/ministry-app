@@ -175,7 +175,7 @@ ministry-app/
 │  │  │                          config/launch-mode.ts, глобальные стили,
 │  │  │                          layout/network-gate.tsx (NetworkGate — клиентская
 │  │  │                          обёртка: при отсутствии связи показывает
-│  │  │                          OfflineScreen из pages/offline, во всех остальных
+│  │  │                          OfflineScreen из pages/network/offline, в остальных
 │  │  │                          состояниях — children. Экрана ожидания нет: пока
 │  │  │                          идёт первая проба, приложение уже отрисовано
 │  │  │                          (ADR 0055);
@@ -1111,7 +1111,7 @@ server-error` использует `useTranslations`, не `getTranslations`);
   сломан» (`unavailable` — ответ не 2xx: 500/502/503/404) — разные факты,
   и человеку они говорят разное. Первый показывает `OfflineScreen`
   («проверьте Wi-Fi»), второй — `ServiceUnavailableScreen`
-  (`pages/service-unavailable`, «сломалось у нас, не у вас»). Раньше при
+  (`pages/network/service-unavailable`, «сломалось у нас, не у вас»). Раньше при
   502 от собственного сервера человеку предлагали проверить Wi-Fi,
   который в полном порядке. Опрос раз в 10 с и `router.refresh()` при
   возврате работают в **обоих** нерабочих состояниях, а тост о возврате
@@ -1133,7 +1133,7 @@ server-error` использует `useTranslations`, не `getTranslations`);
   годится только ответ 2xx — `fetch` разрешается и на 500, и на 404, и на
   «captive portal» с 200, и сам по себе ничего не доказывает. Таймаут 5 с,
   повтор в офлайне раз в 10 с, тост «связь восстановлена» 3 с
-  (`NETWORK_CONFIG`). Офлайн-экран — `pages/offline`.
+  (`NETWORK_CONFIG`). Офлайн-экран — `pages/network/offline`.
   **Что эта проверка НЕ означает:** `/api/v1/health` намеренно не трогает
   ни Supabase, ни auth, поэтому «online» говорит только о том, что отдаёт
   сам origin. Supabase, упавший при живом origin, здесь не виден — об
