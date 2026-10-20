@@ -119,6 +119,18 @@
       },
       "currentPill": "Current",
       "releasedPill": "Released",
+      "v2_0_1": {
+        "name": "Version 2.0.1",
+        "date": "20 October 2026",
+        "flicker": {
+          "title": "Leaving this page no longer flickers",
+          "text": "Going back to your profile from here used to rebuild the screen in front of you. It does not any more, and the dot still goes out once you have read the latest version."
+        },
+        "ourFault": {
+          "title": "It stops blaming your Wi-Fi",
+          "text": "When the app itself is the problem, it now says so instead of asking you to check a connection that was working perfectly well."
+        }
+      },
       "v2": {
         "name": "Version 2",
         "date": "14 October 2026",
