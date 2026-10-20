@@ -129,6 +129,10 @@
         "ourFault": {
           "title": "It stops blaming your Wi-Fi",
           "text": "When the app itself is the problem, it now says so instead of asking you to check a connection that was working perfectly well."
+        },
+        "profileOpens": {
+          "title": "Your profile opens at once",
+          "text": "Tapping Profile used to leave you on the screen you were already on while the app fetched your details. Now the profile is there immediately, with your name and role filling in a moment later."
         }
       },
       "v2": {

@@ -79,10 +79,15 @@ export const WhatsNewScreen = async () => {
             text={t("v2_0_1.flicker.text")}
           />
           <ListRow
-            divided={false}
             icon={<AlertCircleIcon size={18} />}
             title={t("v2_0_1.ourFault.title")}
             text={t("v2_0_1.ourFault.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<UserIcon size={18} />}
+            title={t("v2_0_1.profileOpens.title")}
+            text={t("v2_0_1.profileOpens.text")}
           />
         </ListCard>
 
