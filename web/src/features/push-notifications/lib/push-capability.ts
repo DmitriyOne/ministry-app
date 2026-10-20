@@ -1,4 +1,4 @@
-import { isStandaloneDisplayMode } from "@/shared/lib/display-mode";
+import { isStandaloneDisplayMode } from "@/shared/lib/device";
 
 // The shape the server stores and sends with: endpoint plus both keys.
 // A subscription missing either key cannot be sent to, so the readers
