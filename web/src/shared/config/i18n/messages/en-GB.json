@@ -100,6 +100,12 @@
       "nameUnknown": "Your account",
       "roleUser": "User",
       "roleAdmin": "Administrator",
+      "ministryStatus": {
+        "publisher": "Publisher",
+        "auxiliary_pioneer": "Auxiliary pioneer",
+        "regular_auxiliary_pioneer": "Regular auxiliary pioneer",
+        "regular_pioneer": "Regular pioneer"
+      },
       "linksLabel": "About this app",
       "about": "About",
       "privacy": "Privacy & cookies",

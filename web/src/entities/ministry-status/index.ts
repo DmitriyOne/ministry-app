@@ -1,3 +1,4 @@
+export { getMinistryStatusForMonth } from "./api/get-ministry-status-for-month";
 export {
   isMinistryStatus,
   MAX_MONTHLY_GOAL_HOURS,
