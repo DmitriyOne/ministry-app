@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 
 import { env } from "@/shared/config";
-import { isStandaloneDisplayMode } from "@/shared/lib/device";
+import { isStandaloneDisplayMode } from "@/shared/lib/browser";
 
 import { registerPushSubscription } from "../api/register-push-subscription-action";
 import {

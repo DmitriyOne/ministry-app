@@ -3,7 +3,7 @@
 import { useSyncExternalStore, type ReactNode } from "react";
 
 import { cn } from "@/shared/lib/cn";
-import { supportsHapticTap } from "@/shared/lib/device";
+import { supportsHapticTap } from "@/shared/lib/browser";
 
 // WebKit's own attribute (Safari 17.4); no React type covers it.
 // `interface`, not `type`, because augmenting a third-party declaration

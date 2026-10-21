@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { resolveRoutePolicy, routes } from "@/shared/config";
-import { isStandaloneDisplayMode } from "@/shared/lib/device";
+import { isStandaloneDisplayMode } from "@/shared/lib/browser";
 
 import { parseCssDuration } from "./parse-css-duration";
 import { resolveSplashDelay } from "./resolve-splash-delay";

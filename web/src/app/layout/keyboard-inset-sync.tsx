@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { resolveKeyboardInset } from "@/shared/lib/device";
+import { resolveKeyboardInset } from "@/shared/lib/browser";
 
 // Publishes the on-screen keyboard's height as --keyboard-inset, which is
 // what `min-h-app` (globals.css) subtracts from the screen's height. Renders
