@@ -23,7 +23,20 @@ alter table public.profiles
 comment on column public.profiles.time_zone is
   'IANA time zone this person''s device reported, e.g. "Europe/Moscow". Used to work out which month they are in. Defaults to Europe/London. See ADR 0061.';
 
--- A COLUMN grant, like display_name and whats_new_seen before it (ADR
--- 0043): the "update own profile" policy restricts the ROW and says
--- nothing about which columns may be written.
-grant update (time_zone) on table public.profiles to authenticated;
+-- No write grant yet, and that is the owner's decision: nothing in the
+-- app writes this column in 2.2, and the screen that will let a person
+-- change their zone comes later. An unused write privilege is still a
+-- write privilege, so the grant belongs to the migration that adds that
+-- screen —
+--
+--   grant update (time_zone) on table public.profiles to authenticated;
+--
+-- a COLUMN grant, like display_name and whats_new_seen before it (ADR
+-- 0043), because the "update own profile" policy restricts the ROW and
+-- says nothing about which columns may be written.
+--
+-- Until then every profile carries the default, so the server works out
+-- the current month in London. The cost is named in ADR 0061: for a
+-- person in another zone the profile's label can disagree with what they
+-- just chose, for the few hours between their month boundary and
+-- London's.

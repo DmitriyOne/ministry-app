@@ -26,9 +26,13 @@ select col_default_is('public', 'profiles', 'time_zone', 'Europe/London',
   'the default matches the app locale, so no caller handles an absent zone');
 select col_not_null('public', 'profiles', 'time_zone',
   'time_zone is not null');
+-- Nothing writes this column in 2.2 (the owner's decision): it lives
+-- with its default until there is a screen for changing it, and the
+-- grant belongs to that screen's migration. An unused write privilege is
+-- still a write privilege.
 select ok(
-  has_column_privilege('authenticated', 'public.profiles', 'time_zone', 'update'),
-  'a person may write their own time zone'
+  not has_column_privilege('authenticated', 'public.profiles', 'time_zone', 'update'),
+  'nothing in the app may write the time zone yet'
 );
 
 -- Shape only — a zone NAME can only be checked against
