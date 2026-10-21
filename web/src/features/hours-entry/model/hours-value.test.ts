@@ -6,6 +6,7 @@ import {
   HOURS_QUICK_ADD_MINUTES,
   HOURS_STEP_MINUTES,
   MAX_DAY_MINUTES,
+  wouldChange,
 } from "./hours-value";
 
 describe("addMinutes", () => {
@@ -46,5 +47,21 @@ describe("formatHours", () => {
 
   it("pads minutes and not hours", () => {
     expect(formatHours(615)).toBe("10:15");
+  });
+});
+
+describe("wouldChange", () => {
+  it("is false where the tap would do nothing", () => {
+    expect(wouldChange(0, -HOURS_STEP_MINUTES)).toBe(false);
+    expect(wouldChange(MAX_DAY_MINUTES, HOURS_STEP_MINUTES)).toBe(false);
+    expect(wouldChange(MAX_DAY_MINUTES, 45)).toBe(false);
+  });
+
+  it("is true everywhere in between, and at the edge it can still reach", () => {
+    expect(wouldChange(0, HOURS_STEP_MINUTES)).toBe(true);
+    expect(wouldChange(MAX_DAY_MINUTES, -HOURS_STEP_MINUTES)).toBe(true);
+    // Not at the cap yet: clamping still moves the number, so the button
+    // stays live rather than refusing a tap that has somewhere to go.
+    expect(wouldChange(MAX_DAY_MINUTES - 5, 45)).toBe(true);
   });
 });

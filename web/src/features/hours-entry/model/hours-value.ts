@@ -32,3 +32,12 @@ export const formatHours = (minutes: number): string => {
 
   return `${hours}:${String(rest).padStart(2, "0")}`;
 };
+
+// Whether a button with this delta is worth offering at all: false at
+// zero going down and at the cap going up.
+//
+// Here rather than in the component so that the button and the
+// arithmetic cannot disagree about the edges — it asks the very function
+// that does the adding, and a test can hold it to that.
+export const wouldChange = (current: number, delta: number): boolean =>
+  addMinutes(current, delta) !== current;
