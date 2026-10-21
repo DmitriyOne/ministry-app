@@ -34,12 +34,46 @@ export type Database = {
   }
   public: {
     Tables: {
+      ministry_status_months: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          duration: string
+          month: string
+          monthly_goal_hours: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          duration: string
+          month: string
+          monthly_goal_hours?: number | null
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          duration?: string
+          month?: string
+          monthly_goal_hours?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
           deleted_at: string | null
           display_name: string
           id: string
+          time_zone: string
           updated_at: string
           whats_new_seen: string | null
         }
@@ -48,6 +82,7 @@ export type Database = {
           deleted_at?: string | null
           display_name: string
           id: string
+          time_zone?: string
           updated_at?: string
           whats_new_seen?: string | null
         }
@@ -56,6 +91,7 @@ export type Database = {
           deleted_at?: string | null
           display_name?: string
           id?: string
+          time_zone?: string
           updated_at?: string
           whats_new_seen?: string | null
         }
@@ -155,10 +191,37 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      amend_ministry_status_month: {
+        Args: { p_month: string; p_monthly_goal?: number; p_status: string }
+        Returns: {
+          created_at: string
+          deleted_at: string | null
+          duration: string
+          month: string
+          monthly_goal_hours: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ministry_status_months"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      assert_ministry_month_writable: {
+        Args: { p_month: string; p_user: string }
+        Returns: undefined
+      }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       forget_user_push_subscription: {
         Args: { p_endpoint: string; p_user_id: string }
         Returns: boolean
+      }
+      freeze_ministry_month_after: {
+        Args: { p_month: string; p_user: string }
+        Returns: undefined
       }
       join_waitlist: {
         Args: { p_email: string }
@@ -167,6 +230,29 @@ export type Database = {
           list_position: number
           push_enrollment_token: string
         }[]
+      }
+      ministry_status_for_month: {
+        Args: { p_month: string }
+        Returns: {
+          created_at: string
+          deleted_at: string | null
+          duration: string
+          month: string
+          monthly_goal_hours: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ministry_status_months"
+          isOneToOne: true
+          isSetofReturn: true
+        }
+      }
+      ministry_status_shape: {
+        Args: { p_monthly_goal: number; p_status: string }
+        Returns: Record<string, unknown>
       }
       register_user_push_subscription: {
         Args: {
@@ -185,6 +271,25 @@ export type Database = {
           p_token: string
         }
         Returns: boolean
+      }
+      set_ministry_status: {
+        Args: { p_month: string; p_monthly_goal?: number; p_status: string }
+        Returns: {
+          created_at: string
+          deleted_at: string | null
+          duration: string
+          month: string
+          monthly_goal_hours: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ministry_status_months"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {
