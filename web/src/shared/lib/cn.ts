@@ -50,6 +50,14 @@ const RADIUS_NAMES = ["mark-sm", "mark-md", "mark-lg", "button"] as const;
 // suffix.
 const SHADOW_NAMES = ["card", "mark-elevated", "nav", "nav-primary"] as const;
 
+// `--animate-value-bump` (ADR 0060) is deliberately NOT registered. The
+// rule above exists because an unknown suffix after text-/font-/rounded-/
+// shadow- falls into the wrong conflict group silently; `animate-*` does
+// not, which was checked rather than assumed —
+// `cn("animate-value-bump", "animate-pulse")` returns `animate-pulse` and
+// the reverse returns `animate-value-bump`, so the group resolves custom
+// names on its own and nothing collides. Config that changes no outcome
+// is config somebody later has to understand.
 export const cn = createCn({
   extend: {
     classGroups: {

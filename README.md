@@ -15,8 +15,12 @@ person leaves an email, gets a position in the list and, if they opened
 the installed app, can turn on a push notification about the launch.
 
 **Behind a sign-in, and still mostly bare:** v2 added email-and-password sign-in,
-roles, bottom navigation and the screens behind a session — `/day`,
-`/calendar`, `/month`, `/year` are still placeholders carrying a title
+roles, bottom navigation and the screens behind a session. `/day` now
+holds the hours card — minus and plus by five minutes, quick-adds of
+15/30/45, capped at a day, and a system haptic tick under the finger on
+an iPhone — though it saves nothing yet: a reload puts it back to zero,
+and the ministry tables are what will give it somewhere to go.
+`/calendar`, `/month` and `/year` are still placeholders carrying a title
 each, `/profile` is real (name, role, push toggle, sign-out) and
 `/admin/users/new` creates an account. `/whats-new` tells a person what
 each version added, with a dot on the profile row while they have not

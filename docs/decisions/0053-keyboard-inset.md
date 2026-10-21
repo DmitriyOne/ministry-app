@@ -3,7 +3,8 @@
 Статус: принято, 2026-10-13.
 Затрагивает `globals.css` (`--keyboard-inset`, утилита `min-h-app`),
 `src/app/layout/keyboard-inset-sync.tsx`,
-`shared/lib/keyboard-inset`, `CenteredState` и два layout'а route group.
+`shared/lib/browser` (с 2026-10-21; был `shared/lib/keyboard-inset` — ADR
+0060), `CenteredState` и два layout'а route group.
 
 ## Контекст
 
@@ -49,7 +50,7 @@
 `KeyboardInsetSync` (`src/app/layout/`, клиентский, рендерит `null`)
 подписан на `resize` визуального вьюпорта и пишет на `<html>` переменную
 `--keyboard-inset`. Сама арифметика — чистая функция
-`resolveKeyboardInset` в `shared/lib/keyboard-inset`, с тестами.
+`resolveKeyboardInset` в `shared/lib/browser`, с тестами.
 
 Утилита в `globals.css`:
 
