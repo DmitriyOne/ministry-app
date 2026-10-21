@@ -493,11 +493,29 @@ ministry-app/
 │  │                             — ADR 0044), deleted_at во всех
 │  │                             таблицах (ADR 0047), явные deny-all
 │  │                             политики (ADR 0048).
+│  │                             v2.2 — ministry_status_months: статус
+│  │                             служения и цель по месяцам, строка
+│  │                             пишется только за месяц смены, а месяц
+│  │                             без строки наследует от последней
+│  │                             непрерывной. Читается политикой, пишется
+│  │                             ТОЛЬКО двумя функциями: set_ministry
+│  │                             _status («с этого месяца и дальше», месяц
+│  │                             раньше текущего не принимает) и amend_
+│  │                             ministry_status_month (правка одного
+│  │                             месяца, включая прожитый, с закреплением
+│  │                             следующего) — прямого
+│  │                             insert/update/delete нет ни у кого, и
+│  │                             цифры каталога выводит сервер, а не
+│  │                             присылает клиент; плюс profiles
+│  │                             .time_zone (ADR 0061).
 │  │                             tests/ (pgTAP, `pnpm db:test` — проверяют
 │  │                             именно модель доступа: что anon может
 │  │                             записаться через функцию и не может
 │  │                             прочитать таблицу, что свой профиль
-│  │                             читается, а чужой нет), functions/health,
+│  │                             читается, а чужой нет, что правка одного
+│  │                             месяца статуса не меняет остальные и что
+│  │                             definer-функция пишет в строку
+│  │                             вызывающего), functions/health,
 │  │                             seed.sql — два тестовых аккаунта
 │  │                             (admin@ и user@jw.fenko.dev, пароль
 │  │                             TestPass1!), только для локальной БД
@@ -1384,7 +1402,7 @@ ADR 0014, смена языка на английский — ADR 0023), оди�
 |---|---|
 | `pnpm dev` | Поднимает Supabase (`db:start`), ждёт готовности (`wait-on` на health Supabase), затем `next dev` (Turbopack) с env из `envs/web.local.env` |
 | `pnpm db:start` / `db:stop` / `db:reset` | Обёртки над `supabase start/stop/db reset` в `backend/` |
-| `pnpm db:test` | pgTAP-тесты схемы (`supabase test db`) — модель доступа: `waitlist_signups` (ADR 0033), `profiles`/`user_roles` (ADR 0043), хук токена (ADR 0044), soft-delete (ADR 0047), фолбэки имени в `handle_new_user` (три ветки, две из них раньше валили создание аккаунта). Только локальная БД |
+| `pnpm db:test` | pgTAP-тесты схемы (`supabase test db`) — модель доступа: `waitlist_signups` (ADR 0033), `profiles`/`user_roles` (ADR 0043), хук токена (ADR 0044), soft-delete (ADR 0047), фолбэки имени в `handle_new_user` (три ветки, две из них раньше валили создание аккаунта), статус служения по месяцам (ADR 0061 — перенос через 1 сентября, локальность правки одного месяца, оживление помеченной удалённой строки). Только локальная БД |
 | `pnpm db:types` | Генерация TS-типов из локальной БД в `web/src/shared/api/supabase/database.types.ts` |
 | `pnpm lint` | ESLint + `steiger` (проверка границ FSD) в `web/` |
 | `pnpm typecheck` | `tsc --noEmit` в `web/` |
