@@ -82,7 +82,17 @@ const OVERLAY_CLIP: Record<NonNullable<HapticButtonProps["radius"]>, string> = {
 // squeeze the project already uses (the password field's toggle, ADR
 // 0012); the brightening exists only here, because nothing else had
 // asked. A call site may override either through `className`.
-const PRESS_FEEL = "duration-75 [--press-brightness:1.18] [--press-scale:0.9]";
+//
+// `data-disabled:pointer-events-none` is not belt-and-braces, it is the
+// only thing stopping a dead button from pretending: react-aria puts
+// `aria-disabled` on a `<button>` and NOT the native `disabled`
+// attribute (see useButton — `disabled: elementType === "input" ?
+// isDisabled : undefined`), so `button.tsx`'s own
+// `disabled:pointer-events-none` never matches and CSS `:active` lands
+// on the button as usual. RAC does set `data-disabled`, which is the
+// hook that works. Without this, tapping minus at 0:00 — or plus at
+// 24:00 — squeezed and brightened exactly as if it had worked.
+const PRESS_FEEL = "duration-75 data-disabled:pointer-events-none [--press-brightness:1.18] [--press-scale:0.9]";
 
 // The environment answer is a fact about the browser, not state: read
 // through useSyncExternalStore (never an effect plus setState, which the
@@ -111,15 +121,18 @@ export const HapticButton = ({
         {children}
       </Button>
 
-      {hasTick && (
+      {/* Gone entirely while the button is disabled, rather than present
+          and `disabled`: a tick on a tap that changes nothing is worse
+          than silence, and a disabled control can still take the touch
+          and match `:active`, which is the squeeze this is meant to
+          prevent. With no overlay the tap reaches the button, which is
+          `pointer-events-none` by then, so nothing happens at all. */}
+      {hasTick && !isDisabled && (
         <input
           type="checkbox"
           switch=""
           aria-hidden="true"
           tabIndex={-1}
-          // A button that cannot act must not tick either: a tick on a tap
-          // that changes nothing is worse than silence.
-          disabled={isDisabled}
           onChange={onTap}
           className={cn("absolute inset-0 m-0 size-full opacity-0", OVERLAY_CLIP[radius])}
         />
