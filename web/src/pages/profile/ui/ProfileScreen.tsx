@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { currentMonthKey, getMinistryStatusForMonth } from "@/entities/ministry-status";
 import { getSessionClaims } from "@/entities/session";
 import { PushNotificationsToggle } from "@/features/push-notifications";
 import { SignOutButton } from "@/features/sign-out";
@@ -12,6 +13,7 @@ import { getInitials } from "@/shared/lib/display-name";
 import { LinkButton } from "@/shared/ui/button";
 import { CenteredState } from "@/shared/ui/centered-state";
 import { Eyebrow } from "@/shared/ui/eyebrow";
+import { HeroPill } from "@/shared/ui/hero-pill";
 import { ChevronRightIcon } from "@/shared/ui/icons";
 import { ListCard } from "@/shared/ui/list-card";
 import { ListRow } from "@/shared/ui/list-row";
@@ -35,7 +37,7 @@ export const ProfileScreen = async () => {
   const supabase = await createServerSupabaseClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, whats_new_seen")
+    .select("display_name, whats_new_seen, time_zone")
     .maybeSingle();
 
   const displayName = profile?.display_name ?? "";
@@ -62,6 +64,19 @@ export const ProfileScreen = async () => {
   const isAdmin = hasRole(claims, "admin");
   const roleLabel = isAdmin ? t("roleAdmin") : t("roleUser");
 
+  // How this person serves THIS month, in their own calendar (ADR 0061).
+  // The zone is read from the profile; nothing writes it yet, so it is
+  // the Europe/London default for everybody — the cost is named in the
+  // ADR, and this line is where it will stop costing anything once there
+  // is a screen for changing it.
+  //
+  // Null is the read having failed, and then the pill is left out
+  // entirely: "Publisher" is a statement about the person, not a safe
+  // fallback for a query that did not answer.
+  const ministryStatus = await getMinistryStatusForMonth(
+    currentMonthKey(profile?.time_zone),
+  );
+
   return (
     <CenteredState fill className="items-stretch justify-start gap-0 px-0 pt-2 pb-0 text-left">
       {/* Variant A1 of the profile mockups: the top of the screen is the
@@ -84,11 +99,17 @@ export const ProfileScreen = async () => {
 
         <div className="flex flex-col gap-2">
           <Title tone="hero">{displayName || t("nameUnknown")}</Title>
-          {/* Mint on deep green — the one place the palette allows it
-              (ADR 0011). */}
-          <span className="self-start rounded-sm bg-white/10 px-3 py-1.5 text-caption font-600 text-positive-hero">
-            {roleLabel}
-          </span>
+          {/* Two pills, role and ministry status, in that order; the
+              status takes the filled tone because it is what a person
+              came here to check. They wrap rather than shrink, because
+              "Regular auxiliary pioneer" is the longest label in the
+              app. */}
+          <div className="flex flex-wrap items-center gap-2">
+            <HeroPill>{roleLabel}</HeroPill>
+            {ministryStatus
+              ? <HeroPill tone="filled">{t(`ministryStatus.${ministryStatus.status}`)}</HeroPill>
+              : null}
+          </div>
         </div>
       </div>
 

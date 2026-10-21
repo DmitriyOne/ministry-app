@@ -64,7 +64,14 @@ export const ProfileScreenSkeleton = async () => {
 
         <div className="flex flex-col gap-2">
           <Skeleton className={`h-8 w-2/3 rounded-lg ${BONE_ON_HERO}`} />
-          <Skeleton className={`h-8 w-28 rounded-sm ${BONE_ON_HERO}`} />
+          {/* Two plates for the two pills. The status plate is the wider
+              one because its labels are longer, and both are sized to
+              let the real pills GROW into them rather than shrink: a pill
+              that gets smaller when the data lands reads as a glitch. */}
+          <div className="flex gap-2">
+            <Skeleton className={`h-8 w-18 rounded-sm ${BONE_ON_HERO}`} />
+            <Skeleton className={`h-8 w-28 rounded-sm ${BONE_ON_HERO}`} />
+          </div>
         </div>
       </div>
 
