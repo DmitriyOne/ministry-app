@@ -90,9 +90,14 @@ export const useSetMinistryStatus = (
 
   const { dragY, dragHandlers } = useSheetDrag({ onClose: () => setIsOpen(false) });
 
-  // Which row is in force now, and so which row the sheet opens on.
+  // Which row is in force now, and so which row the sheet opens on —
+  // and, for a publisher, the goal they set last time, so the field
+  // opens with their own number rather than empty.
   const currentChoiceId = status
     ? ministryStatusChoiceFor(status.status, status.monthlyGoalHours)?.id ?? ""
+    : "";
+  const currentGoalHours = status?.status === "publisher" && status.monthlyGoalHours !== null
+    ? String(status.monthlyGoalHours)
     : "";
 
   const schema = useMemo(() => createMinistryChoiceSchema(t), [t]);
@@ -101,7 +106,7 @@ export const useSetMinistryStatus = (
     state,
     isPending,
     schema,
-    defaultValues: { choiceId: currentChoiceId },
+    defaultValues: { choiceId: currentChoiceId, goalHours: currentGoalHours },
     submitAction: (values) => {
       startTransition(async () => {
         // The month is read HERE, as the form is submitted, and not when
@@ -134,7 +139,7 @@ export const useSetMinistryStatus = (
     // Back to what is actually in force. Without this, picking a row,
     // dismissing the sheet and opening it again would show the abandoned
     // pick as though it had been saved.
-    form.reset({ choiceId: currentChoiceId });
+    form.reset({ choiceId: currentChoiceId, goalHours: currentGoalHours });
 
     const thisMonth = deviceMonthKey();
 
@@ -145,11 +150,19 @@ export const useSetMinistryStatus = (
     setIsOpen(true);
   };
 
+  // Asking before sending means the values have to be good BEFORE the
+  // question: "are you sure?" followed by "no, that number is wrong" is
+  // the wrong order, and the message would be rendered behind the dialog
+  // asking it.
+  const ask = async () => {
+    if (await form.validate()) setIsConfirming(true);
+  };
+
   return {
     sheet: { isOpen, open, onOpenChange: setIsOpen, dragY, dragHandlers },
     confirm: {
       isOpen: isConfirming,
-      ask: () => setIsConfirming(true),
+      ask,
       cancel: () => setIsConfirming(false),
       accept: form.onSubmit,
     },

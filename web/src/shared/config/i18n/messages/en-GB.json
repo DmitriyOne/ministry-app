@@ -122,6 +122,12 @@
           "regular_auxiliary_pioneer": "Every month, until you change it",
           "regular_pioneer": "600 h over the service year"
         },
+        "goal": {
+          "label": "Your monthly goal",
+          "suffix": "hours a month",
+          "hint": "Leave it empty for no goal at all.",
+          "outOfRange": "A monthly goal has to be a whole number between 1 and 744."
+        },
         "save": "Save",
         "confirm": {
           "title": "Change your status?",

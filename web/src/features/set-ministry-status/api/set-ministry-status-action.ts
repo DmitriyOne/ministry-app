@@ -12,9 +12,11 @@ import { getSessionClaims } from "@/entities/session";
 import { createServerSupabaseClient } from "@/shared/api";
 import { routes } from "@/shared/config";
 import { reportActionFailure } from "@/shared/lib/action-failure";
+import { firstFieldErrors } from "@/shared/lib/forms";
 
 import {
   createSetMinistryStatusSchema,
+  parseGoalHours,
   type SetMinistryStatusActionState,
   type SetMinistryStatusValues,
 } from "../model/schema";
@@ -41,7 +43,9 @@ export const setMinistryStatus = async (
 
   const result = createSetMinistryStatusSchema(t).safeParse(values);
 
-  if (!result.success) return { status: "error", formError: t("invalidChoice") };
+  // Under the field, not above the form: the only thing in here a person
+  // can get wrong is their own goal (ADR 0013).
+  if (!result.success) return { status: "error", fieldErrors: firstFieldErrors(result.error) };
 
   const choice = findMinistryStatusChoice(result.data.choiceId);
   const currentMonth = parseMonthKey(result.data.currentMonth);
@@ -70,13 +74,22 @@ export const setMinistryStatus = async (
 
     const appliesFrom = (count ?? 0) === 0 ? currentMonth : addMonths(currentMonth, 1);
 
+    // The publisher is the only status whose hours are the person's own
+    // (the owner's rule: a pioneer's numbers are not theirs to change),
+    // so it is the only one whose number comes from the request. Every
+    // other status takes its hours from the catalogue, by id.
+    const goalHours = choice.status === "publisher"
+      ? parseGoalHours(result.data.goalHours)
+      : choice.hours;
+
     const { error } = await supabase.rpc("set_ministry_status", {
       p_month: appliesFrom,
       p_status: choice.status,
-      // Omitted rather than null for a status with no hours of its own:
-      // the generated signature has the argument optional, and leaving it
-      // out lets the function's own default (null) stand.
-      p_monthly_goal: choice.hours ?? undefined,
+      // Omitted rather than null for a status with no hours: the
+      // generated signature has the argument optional, and leaving it
+      // out lets the function's own default (null) stand — which is
+      // exactly "a publisher with no goal".
+      p_monthly_goal: goalHours ?? undefined,
     });
 
     if (error) {
