@@ -276,6 +276,7 @@ children** — `<Title title={...} />` не соберётся (так уже п
 | `PillForm` | форма-пилюля (вайтлист) |
 | `InputGroup` + `InputGroupAddon/Button/Text/Input` | поле с кнопкой или подписью внутри рамки (на нём построен `PasswordField`) |
 | `Dialog`, `Sheet`, `Switch`, `RadioGroup`, `Separator`, `Spinner`, `Input`, `Label`, `Field*` | как в shadcn, с вырезанными кольцами |
+| `useSheetDrag` + `SheetDragHandle` + `sheetDragStyle` (`shared/ui/sheet`) | свайп вниз закрывает нижнюю панель (порог 90px) и полоска-ручка над содержимым. Одна реализация на обе панели — установки и статуса служения; `showCloseButton={false}` при ней, крестик поверх ручки был бы вторым выходом из панели, которая и так закрывается свайпом, тапом по фону и кнопкой |
 | `showToast` / `dismissToast` / `Toaster` (`shared/ui/sonner`) | тост: успех и недоступность бэкенда. Что тостом, а что в форме — ADR 0046 |
 | `HoneypotField` | ловушка для ботов в публичной форме |
 

@@ -1,0 +1,108 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
+
+import {
+  addMonths,
+  findMinistryStatusChoice,
+  parseMonthKey,
+} from "@/entities/ministry-status";
+import { getSessionClaims } from "@/entities/session";
+import { createServerSupabaseClient } from "@/shared/api";
+import { routes } from "@/shared/config";
+import { reportActionFailure } from "@/shared/lib/action-failure";
+
+import {
+  createSetMinistryStatusSchema,
+  type SetMinistryStatusActionState,
+  type SetMinistryStatusValues,
+} from "../model/schema";
+
+// A check constraint or a raise from set_ministry_status: the month was
+// outside its bounds, or the hours did not belong to the status. Those
+// are refusals, not outages, and they must not be reported as "the
+// server did not answer".
+const CHECK_VIOLATION = "23514";
+
+export const setMinistryStatus = async (
+  values: SetMinistryStatusValues,
+): Promise<SetMinistryStatusActionState> => {
+  const t = await getTranslations("screens.profile.ministrySheet");
+
+  // The screen is already behind a session (proxy.ts), and the database
+  // would refuse an anonymous write anyway — set_ministry_status raises
+  // without auth.uid(). This is the third of those three checks, and it
+  // is here for the same reason as in create-user: a Server Action is a
+  // public endpoint, reachable by anyone who can craft the request.
+  const claims = await getSessionClaims();
+
+  if (!claims) return { status: "error", formError: t("notSignedIn") };
+
+  const result = createSetMinistryStatusSchema(t).safeParse(values);
+
+  if (!result.success) return { status: "error", formError: t("invalidChoice") };
+
+  const choice = findMinistryStatusChoice(result.data.choiceId);
+  const currentMonth = parseMonthKey(result.data.currentMonth);
+
+  // Both were just validated by the schema; narrowing them again is what
+  // lets this file hold no non-null assertion.
+  if (!choice || !currentMonth) return { status: "error", formError: t("invalidChoice") };
+
+  try {
+    const supabase = await createServerSupabaseClient();
+
+    // Whose first choice this is decides WHEN it starts, and only the
+    // server can tell: the first one ever applies to the month the
+    // person is in — otherwise somebody installing the app today would
+    // spend a month being described wrongly — and every later change
+    // starts next month, because a month already under way should not
+    // have its goal moved underneath the hours already entered.
+    //
+    // Counted through the select policy, so it counts this person's live
+    // rows and nobody else's.
+    const { count, error: countError } = await supabase
+      .from("ministry_status_months")
+      .select("month", { count: "exact", head: true });
+
+    if (countError) throw countError;
+
+    const appliesFrom = (count ?? 0) === 0 ? currentMonth : addMonths(currentMonth, 1);
+
+    const { error } = await supabase.rpc("set_ministry_status", {
+      p_month: appliesFrom,
+      p_status: choice.status,
+      // Omitted rather than null for a status with no hours of its own:
+      // the generated signature has the argument optional, and leaving it
+      // out lets the function's own default (null) stand.
+      p_monthly_goal: choice.hours ?? undefined,
+    });
+
+    if (error) {
+      // A refusal from the database is the person's problem to see, an
+      // outage is not. Anything else is reported as an outage: it is the
+      // honest answer when we do not know.
+      if (error.code === CHECK_VIOLATION) {
+        reportActionFailure({ scope: "set-ministry-status", error, outcome: "rejected" });
+
+        return { status: "error", formError: t("refused") };
+      }
+
+      throw error;
+    }
+
+    // The profile is where the status is shown, and it is rendered on the
+    // server: without this the pill would keep saying the old status
+    // until a full reload. The sheet lives on that same screen, so this
+    // is the "another screen must change" rule applied to the screen the
+    // action was invoked from.
+    revalidatePath(routes.profile);
+
+    return { status: "success", appliesFrom };
+  } catch (error) {
+    reportActionFailure({ scope: "set-ministry-status", error, outcome: "failed" });
+
+    return { status: "unavailable" };
+  }
+};

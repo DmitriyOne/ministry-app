@@ -1,6 +1,7 @@
 "use client";
 
-import type { CSSProperties, ComponentProps, PointerEventHandler, ReactNode } from "react";
+import type { CSSProperties, ComponentProps, PointerEvent as ReactPointerEvent, PointerEventHandler, ReactNode } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/shared/lib/cn";
 import {
@@ -168,3 +169,87 @@ export const SheetDescription = ({
 }: Omit<ComponentProps<"div">, "slot">) => (
   <div data-slot="sheet-description" className={cn("text-sm text-muted-foreground", className)} {...props} />
 );
+
+// ---------------------------------------------------------------------
+// Swipe down to close
+// ---------------------------------------------------------------------
+// react-aria-components ships no such gesture, so it is added by hand —
+// and it lives HERE, with the panel, rather than in the one feature that
+// happened to need it first. It was written for the install panel (ADR
+// 0018); the ministry status sheet needed exactly the same thing, and
+// the choice was between a second copy and this move. The hook keeps the
+// numbers and the handle keeps the look, so two panels cannot drift
+// apart in either.
+
+// A downward swipe past this threshold (px) closes the panel — from the
+// design ("swipe down, ~90px threshold").
+const CLOSE_DRAG_THRESHOLD = 90;
+
+export type SheetDragHandlers = {
+  onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
+  onPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
+  onPointerUp: () => void;
+  onPointerCancel: () => void;
+};
+
+type UseSheetDragResult = {
+  // How far the panel is currently dragged, in px, never negative:
+  // the caller feeds it to the panel's transform.
+  dragY: number;
+  dragHandlers: SheetDragHandlers;
+};
+
+export const useSheetDrag = ({ onClose }: { onClose: () => void }): UseSheetDragResult => {
+  const [dragY, setDragY] = useState(0);
+  const dragStartY = useRef<number | null>(null);
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    dragStartY.current = event.clientY;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (dragStartY.current === null) return;
+
+    setDragY(Math.max(0, event.clientY - dragStartY.current));
+  };
+
+  const endDrag = () => {
+    if (dragStartY.current === null) return;
+
+    dragStartY.current = null;
+    if (dragY > CLOSE_DRAG_THRESHOLD) onClose();
+    setDragY(0);
+  };
+
+  return {
+    dragY,
+    dragHandlers: {
+      onPointerDown: handlePointerDown,
+      onPointerMove: handlePointerMove,
+      onPointerUp: endDrag,
+      onPointerCancel: endDrag,
+    },
+  };
+};
+
+// The grab area at the top of a bottom sheet: the bar people aim at, and
+// the only element the gesture is attached to — dragging the panel's body
+// would fight with scrolling inside it.
+export const SheetDragHandle = ({ className, ...handlers }: SheetDragHandlers & { className?: string }) => (
+  <div
+    data-slot="sheet-drag-handle"
+    className={cn(
+      "flex shrink-0 cursor-grab touch-none justify-center pt-3 pb-1 active:cursor-grabbing",
+      className,
+    )}
+    {...handlers}
+  >
+    <div aria-hidden="true" className="h-1 w-9 rounded-full bg-ink/15" />
+  </div>
+);
+
+// The transform a dragged panel wears. Kept beside the hook so a caller
+// cannot invent its own easing and make one panel feel unlike the other.
+export const sheetDragStyle = (dragY: number): CSSProperties | undefined =>
+  dragY > 0 ? { transform: `translateY(${dragY}px)`, transition: "none" } : undefined;
