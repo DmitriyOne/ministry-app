@@ -65,6 +65,7 @@ export const useActionForm = <
     handleSubmit,
     reset,
     setError,
+    trigger,
     formState: { errors },
   } = useForm<TValues>({
     resolver,
@@ -123,5 +124,11 @@ export const useActionForm = <
   const hasErrors = Object.keys(errors).length > 0;
   const formError = state.status === "error" ? state.formError : undefined;
 
-  return { control, reset, onSubmit, hasErrors, isPending, formError };
+  // `validate` is react-hook-form's trigger under a name that says what
+  // it is for: a form that asks something before sending (the ministry
+  // status asks for confirmation) has to know the values are good BEFORE
+  // the question, or the answer to "are you sure?" is followed by "no,
+  // that number is wrong" — with the message rendered behind the dialog
+  // that is asking.
+  return { control, reset, validate: trigger, onSubmit, hasErrors, isPending, formError };
 };
