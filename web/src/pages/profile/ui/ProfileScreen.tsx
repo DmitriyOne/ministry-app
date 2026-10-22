@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
-import { currentMonthKey, getMinistryStatusForMonth } from "@/entities/ministry-status";
+import { currentMonthKey, toEffectiveMinistryStatus } from "@/entities/ministry-status";
 import { getSessionClaims } from "@/entities/session";
 import { PushNotificationsToggle } from "@/features/push-notifications";
 import { SignOutButton } from "@/features/sign-out";
 import { WhatsNewUnreadDot } from "@/features/whats-new";
+import { MinistryStatusSheet } from "@/widgets/ministry-status-sheet";
 import { createServerSupabaseClient } from "@/shared/api";
 import { APP_VERSION, hasUnreadVersion, routes } from "@/shared/config";
 import { hasRole } from "@/shared/lib/auth";
@@ -73,8 +74,10 @@ export const ProfileScreen = async () => {
   // Null is the read having failed, and then the pill is left out
   // entirely: "Publisher" is a statement about the person, not a safe
   // fallback for a query that did not answer.
-  const ministryStatus = await getMinistryStatusForMonth(
-    currentMonthKey(profile?.time_zone),
+  const ministryStatus = toEffectiveMinistryStatus(
+    await supabase
+      .rpc("ministry_status_for_month", { p_month: currentMonthKey(profile?.time_zone) })
+      .maybeSingle(),
   );
 
   return (
@@ -114,6 +117,15 @@ export const ProfileScreen = async () => {
       </div>
 
       <div className="flex flex-col gap-3 px-5 pt-4">
+        {/* Above the notifications, because it is the one row here that
+            changes what the rest of the app counts. `isFirstChoice` is
+            the status having come from no row at all: the first choice
+            ever applies to the month under way, every later one to the
+            next, and the server decides it again for itself. */}
+        <ListCard>
+          <MinistryStatusSheet status={ministryStatus} />
+        </ListCard>
+
         <ListCard>
           {/* Renders nothing in a browser tab or on a device without Web
               Push — iOS delivers it only to an installed app. */}

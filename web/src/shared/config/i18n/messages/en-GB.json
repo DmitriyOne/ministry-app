@@ -106,6 +106,36 @@
         "regular_auxiliary_pioneer": "Regular auxiliary pioneer",
         "regular_pioneer": "Regular pioneer"
       },
+      "ministrySheet": {
+        "row": {
+          "title": "Ministry status",
+          "action": "Change",
+          "unknown": "Not available right now"
+        },
+        "title": "Ministry status",
+        "intro": "Takes effect on {date}. Hours you have already entered stay as they are.",
+        "hours": "{hours} h",
+        "noGoal": "—",
+        "hint": {
+          "publisher": "Your own pace",
+          "auxiliary_pioneer": "One month only",
+          "regular_auxiliary_pioneer": "Every month, until you change it",
+          "regular_pioneer": "600 h over the service year"
+        },
+        "save": "Save",
+        "confirm": {
+          "title": "Change your status?",
+          "body": "The new goal starts on {date}. Every hour you have already entered stays as it is.",
+          "confirm": "Change it",
+          "cancel": "Keep as it is"
+        },
+        "updated": "Status updated",
+        "unavailable": "Couldn't reach the server",
+        "notSignedIn": "Sign in again to change this",
+        "invalidChoice": "That is not a status we offer",
+        "invalidMonth": "Your device's date looks wrong",
+        "refused": "That change was not accepted"
+      },
       "linksLabel": "About this app",
       "about": "About",
       "privacy": "Privacy & cookies",
