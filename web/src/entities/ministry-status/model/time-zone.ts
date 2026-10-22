@@ -51,3 +51,13 @@ export const currentMonthKey = (
 
   return toMonthKey(Number(year), Number(month));
 };
+
+// The month the device itself is in — the authority for a WRITE (ADR
+// 0061), where the server only fences a clock that has run away.
+//
+// Browser only, and only inside an event or an effect: called while
+// rendering it would run on the server too, with the server's zone, and
+// the two answers differ for a few hours twice a month — which is
+// exactly the hydration mismatch nobody would reproduce.
+export const deviceMonthKey = (now: Date = new Date()): MonthKey =>
+  currentMonthKey(Intl.DateTimeFormat().resolvedOptions().timeZone, now);

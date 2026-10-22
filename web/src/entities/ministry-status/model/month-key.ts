@@ -17,6 +17,10 @@ export type MonthKey = string & { readonly [monthKeyBrand]: true };
 
 const MONTHS_IN_YEAR = 12;
 
+// Hoisted: a literal inside the function is a new RegExp on every call,
+// and this one runs once per row of a service year.
+const MONTH_KEY_PATTERN = /^(\d{4})-(\d{2})-01$/;
+
 export const toMonthKey = (year: number, month: number): MonthKey =>
   `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-01` as MonthKey;
 
@@ -24,7 +28,7 @@ export const toMonthKey = (year: number, month: number): MonthKey =>
 // including the shapes that look close enough to be dangerous
 // ("2026-10-15", "2026-13-01", "2026-10").
 export const parseMonthKey = (value: string): MonthKey | null => {
-  const match = /^(\d{4})-(\d{2})-01$/.exec(value);
+  const match = MONTH_KEY_PATTERN.exec(value);
   if (!match) return null;
 
   const month = Number(match[2]);
