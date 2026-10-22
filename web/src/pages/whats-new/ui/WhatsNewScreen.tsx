@@ -19,6 +19,7 @@ import { CenteredState } from "@/shared/ui/centered-state";
 // signing out, since that is what leaving does.
 import {
   AlertCircleIcon,
+  CalendarMonthIcon,
   CalendarWeekIcon,
   CheckCircleIcon,
   CompassIcon,
@@ -66,12 +67,37 @@ export const WhatsNewScreen = async () => {
           />
         </div>
 
-        {/* One row, on purpose. The release also puts the hours card on
+        {/* The first release where the app learns something ABOUT the
+            person rather than only showing them screens: how they serve,
+            and what they are aiming for. The third row is here because
+            "from next month" is the one rule that would otherwise be
+            discovered by surprise. */}
+        <VersionHeading name={t("v2_2.name")} date={t("v2_2.date")} pill={t("currentPill")} />
+        <ListCard>
+          <ListRow
+            icon={<UserIcon size={18} />}
+            title={t("v2_2.status.title")}
+            text={t("v2_2.status.text")}
+          />
+          <ListRow
+            icon={<TargetIcon size={18} />}
+            title={t("v2_2.goal.title")}
+            text={t("v2_2.goal.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<CalendarMonthIcon size={18} />}
+            title={t("v2_2.whenItStarts.title")}
+            text={t("v2_2.whenItStarts.text")}
+          />
+        </ListCard>
+
+        {/* One row, on purpose. That release also put the hours card on
             the day screen, and that card saves nothing: a reload clears
             it (ADR 0060). Announcing "you can record your hours" would be
             a promise the app does not keep yet, so this version says only
             the part that is true for good — the tick under the finger. */}
-        <VersionHeading name={t("v2_1.name")} date={t("v2_1.date")} pill={t("currentPill")} />
+        <VersionHeading name={t("v2_1.name")} date={t("v2_1.date")} pill={t("releasedPill")} />
         <ListCard>
           <ListRow
             divided={false}

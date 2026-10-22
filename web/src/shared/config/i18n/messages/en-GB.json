@@ -166,6 +166,22 @@
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
       },
+      "v2_2": {
+        "name": "Version 2.2",
+        "date": "22 October 2026",
+        "status": {
+          "title": "Say how you serve",
+          "text": "Publisher, auxiliary pioneer, regular auxiliary pioneer or regular pioneer — chosen in your profile and shown next to your role."
+        },
+        "goal": {
+          "title": "Hours to aim for",
+          "text": "Each status brings its own monthly goal, and a publisher can set one of their own — or none at all."
+        },
+        "whenItStarts": {
+          "title": "Changes start next month",
+          "text": "A month already under way keeps the goal it began with, so the hours you have entered are never measured against a new one. Your first choice is the exception: it counts from this month."
+        }
+      },
       "currentPill": "Current",
       "releasedPill": "Released",
       "v2_1": {
