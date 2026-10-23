@@ -118,10 +118,7 @@ export const ProfileScreen = async () => {
 
       <div className="flex flex-col gap-3 px-5 pt-4">
         {/* Above the notifications, because it is the one row here that
-            changes what the rest of the app counts. `isFirstChoice` is
-            the status having come from no row at all: the first choice
-            ever applies to the month under way, every later one to the
-            next, and the server decides it again for itself. */}
+            changes what the rest of the app counts. */}
         <ListCard>
           <MinistryStatusSheet status={ministryStatus} />
         </ListCard>

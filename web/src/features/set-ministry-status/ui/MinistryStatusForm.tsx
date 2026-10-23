@@ -18,7 +18,7 @@ import { GoalHoursField } from "./GoalHoursField";
 
 type MinistryStatusFormProps = {
   form: UseSetMinistryStatusResult["form"];
-  appliesFromLabel: string;
+  monthLabel: string;
   // Saving asks for confirmation first, so this opens the dialog rather
   // than submitting.
   onSave: () => void;
@@ -39,7 +39,7 @@ const fieldId = (choiceId: string) => `ministry-status-${choiceId.replace(":", "
 // console.
 export const MinistryStatusForm = ({
   form,
-  appliesFromLabel,
+  monthLabel,
   onSave,
 }: MinistryStatusFormProps) => {
   const t = useTranslations("screens.profile.ministrySheet");
@@ -59,7 +59,7 @@ export const MinistryStatusForm = ({
           {t("title")}
         </SheetTitle>
         <p className="text-caption font-500 text-pretty text-ink-muted">
-          {t("intro", { date: appliesFromLabel })}
+          {t("intro", { month: monthLabel })}
         </p>
       </div>
 

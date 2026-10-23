@@ -16,24 +16,26 @@
 -- tests plan a month, sweep it away and then choose it again.
 
 -- ---------------------------------------------------------------------
--- "From this month on" — what the sheet in the profile does
+-- "This month, and from here on" — what the sheet in the profile does
 -- ---------------------------------------------------------------------
--- The choice is meant to reach forward, so a month planned LATER is
--- dropped: otherwise the new choice would stop dead at a row pinned
--- earlier.
+-- A choice applies to the month the person is in, and to every month
+-- after it until they choose again. Nothing is ever set ahead: the
+-- owner's rule (2026-10-23) is that the status you pick is the status
+-- you are on now, changed again as often as you need, so there is no
+-- planned month to arrive later and no second state to explain.
 --
--- Which is why this function refuses a month that has already been
--- lived. Found on review, and it was a real defect: the bounds alone
--- allow a past month, and "from March on" would then have swept away
--- every record after March — exactly the cascade the owner forbade.
--- Correcting a month that has already started is a different intention
--- and goes through amend_ministry_status_month below, which pins the
--- following month instead of sweeping it.
+-- Which month counts as "now" is the phone's answer (ADR 0061), and at
+-- the turn of a month the Earth holds two months at once — Kiritimati
+-- has entered the next one some fourteen hours before Midway leaves the
+-- last. Both are somebody's present, so the fence below is one month
+-- either side of UTC's; two months out is nobody's now.
 --
--- The floor is UTC's current month, and no legitimate call is lost to
--- it: a person always chooses THIS month or a later one, and the
--- furthest any time zone can run behind UTC's month boundary is a few
--- hours of the first day.
+-- A caller behind UTC's month is the one the earlier version of this
+-- function refused outright, and that refusal was wrong: west of
+-- Greenwich the month under way IS the one UTC has just left, so a save
+-- came back as "not accepted" for a whole hemisphere once a month. It is
+-- accepted now, with one limit kept — it may not reach past the month
+-- UTC has already entered.
 create or replace function public.set_ministry_status(
   p_month date,
   p_status text,
@@ -46,7 +48,10 @@ set search_path = ''
 as $$
 declare
   v_user uuid := (select auth.uid());
-  v_this_month date := date_trunc('month', now())::date;
+  -- UTC named outright rather than left to the session: the fence below
+  -- is measured from this value, and a role with another TimeZone
+  -- setting would quietly move it.
+  v_utc_month date := date_trunc('month', now() at time zone 'utc')::date;
   v_duration text;
   v_goal smallint;
   v_row public.ministry_status_months;
@@ -57,9 +62,10 @@ begin
 
   perform public.assert_ministry_month_writable(v_user, p_month);
 
-  if p_month < v_this_month then
+  if p_month not between (v_utc_month - interval '1 month')::date
+                     and (v_utc_month + interval '1 month')::date then
     raise exception
-      'a status cannot start in a month already lived: % (use amend_ministry_status_month)',
+      'only the month under way can be set: % (use amend_ministry_status_month)',
       p_month using errcode = 'check_violation';
   end if;
 
@@ -67,15 +73,27 @@ begin
     into v_duration, v_goal
     from public.ministry_status_shape(p_status, p_monthly_goal);
 
-  -- The second condition is redundant while the check above holds, and
-  -- it stays anyway: it is the difference between one barrier and none
-  -- between a future-looking choice and a month somebody has lived.
+  -- Nothing may sit ahead of the month under way. Normally there is
+  -- nothing to sweep — no caller can write a later month any more — and
+  -- it stays as the one thing that makes that true of a row left by a
+  -- build that could, or by this person's other phone an hour either
+  -- side of a month boundary.
+  --
+  -- There is no pinning here, and that is the difference between the two
+  -- functions rather than an omission: "this is what I am on now" is
+  -- meant to carry forward, while amend_ministry_status_month means "that
+  -- one month was wrong" and pins what follows so it cannot spread. The
+  -- second condition below is the one guard that survives into this
+  -- function: a caller behind UTC's month — legitimate west of Greenwich
+  -- in the first hours of a month, and the shape a stale clock also
+  -- takes — may write their own month, but not reach past the month UTC
+  -- has already entered.
   update public.ministry_status_months
      set deleted_at = now()
    where user_id = v_user
      and deleted_at is null
      and month > p_month
-     and month > v_this_month;
+     and month > v_utc_month;
 
   insert into public.ministry_status_months
     (user_id, month, status, duration, monthly_goal_hours)
@@ -92,7 +110,7 @@ end;
 $$;
 
 comment on function public.set_ministry_status(date, text, smallint) is
-  'Sets the status from the given month onwards, dropping any month planned later. Refuses a month already lived. See ADR 0061.';
+  'Sets the status for the month under way and every month after it, dropping anything that sat ahead. Accepts only a month within one of UTC''s, so nothing can be planned ahead; older months go through amend_ministry_status_month. See ADR 0061.';
 
 revoke all on function public.set_ministry_status(date, text, smallint)
   from public, anon;
@@ -108,9 +126,9 @@ grant execute on function public.set_ministry_status(date, text, smallint)
 --
 -- No screen offers this in 2.2 — the owner asked for the rule on the
 -- server and no UI yet — so it exists to give the correction one
--- validated path when a screen appears. It accepts a future month as
--- well: "just this month, leave the rest" is a coherent thing to want
--- about next month too.
+-- validated path when a screen appears. This is also the only way to
+-- reach a month older than the one under way: set_ministry_status now
+-- fences itself to the present.
 create or replace function public.amend_ministry_status_month(
   p_month date,
   p_status text,

@@ -8,10 +8,10 @@ import { Spinner } from "@/shared/ui/spinner";
 
 type ConfirmMinistryStatusDialogProps = {
   isOpen: boolean;
-  // The month the new status starts in, already in the person's words.
+  // The month the new status applies to, already in the person's words.
   // Formatted by the hook, so this dialog and the sheet behind it cannot
   // name different months.
-  appliesFromLabel: string;
+  monthLabel: string;
   isPending: boolean;
   onCancel: () => void;
   onConfirm: () => void;
@@ -25,7 +25,7 @@ type ConfirmMinistryStatusDialogProps = {
 // which words, belongs to the scenario; the widget only places it.
 export const ConfirmMinistryStatusDialog = ({
   isOpen,
-  appliesFromLabel,
+  monthLabel,
   isPending,
   onCancel,
   onConfirm,
@@ -42,7 +42,7 @@ export const ConfirmMinistryStatusDialog = ({
       }}
     >
       <DialogTitle>{t("title")}</DialogTitle>
-      <DialogDescription>{t("body", { date: appliesFromLabel })}</DialogDescription>
+      <DialogDescription>{t("body", { month: monthLabel })}</DialogDescription>
       <DialogFooter>
         {/* Keeping things as they are is the quiet option and the one a
             stray tap should land on, so it sits away from the thumb —

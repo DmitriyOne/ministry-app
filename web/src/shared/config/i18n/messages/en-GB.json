@@ -113,12 +113,12 @@
           "unknown": "Not available right now"
         },
         "title": "Ministry status",
-        "intro": "Takes effect on {date}. Hours you have already entered stay as they are.",
+        "intro": "Applies to {month}, and to every month after it until you change it again. Hours you have already entered stay as they are.",
         "hours": "{hours} h",
         "noGoal": "—",
         "hint": {
           "publisher": "Your own pace",
-          "auxiliary_pioneer": "One month only",
+          "auxiliary_pioneer": "This month only",
           "regular_auxiliary_pioneer": "Every month, until you change it",
           "regular_pioneer": "600 h over the service year"
         },
@@ -131,7 +131,7 @@
         "save": "Save",
         "confirm": {
           "title": "Change your status?",
-          "body": "The new goal starts on {date}. Every hour you have already entered stays as it is.",
+          "body": "Your goal for {month} changes. Every hour you have already entered stays as it is.",
           "confirm": "Change it",
           "cancel": "Keep as it is"
         },
@@ -177,9 +177,9 @@
           "title": "Hours to aim for",
           "text": "Each status brings its own monthly goal, and a publisher can set one of their own — or none at all."
         },
-        "whenItStarts": {
-          "title": "Changes start next month",
-          "text": "A month already under way keeps the goal it began with, so the hours you have entered are never measured against a new one. Your first choice is the exception: it counts from this month."
+        "changeAnyTime": {
+          "title": "Change it whenever you need",
+          "text": "What you pick is what you are on this month, and you can pick again as often as you need. The hours you have already entered are never touched."
         }
       },
       "currentPill": "Current",

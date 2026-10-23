@@ -37,7 +37,7 @@ export const MinistryStatusSheet = ({ status }: MinistryStatusSheetProps) => {
   const t = useTranslations("screens.profile.ministrySheet");
   const statusName = useTranslations("screens.profile.ministryStatus");
 
-  const { sheet, confirm, appliesFromLabel, form } = useSetMinistryStatus({ status });
+  const { sheet, confirm, monthLabel, form } = useSetMinistryStatus({ status });
 
   return (
     <>
@@ -75,14 +75,14 @@ export const MinistryStatusSheet = ({ status }: MinistryStatusSheetProps) => {
 
         <MinistryStatusForm
           form={form}
-          appliesFromLabel={appliesFromLabel}
+          monthLabel={monthLabel}
           onSave={confirm.ask}
         />
       </Sheet>
 
       <ConfirmMinistryStatusDialog
         isOpen={confirm.isOpen}
-        appliesFromLabel={appliesFromLabel}
+        monthLabel={monthLabel}
         isPending={form.isPending}
         onCancel={confirm.cancel}
         onConfirm={confirm.accept}

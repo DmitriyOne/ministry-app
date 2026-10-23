@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(50);
+select plan(54);
 
 -- What this file is really about: the rules that live nowhere else.
 -- The carry-forward rule, the catalogue's numbers, the month bounds and
@@ -136,8 +136,11 @@ insert into auth.users (id, email) values
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
 
--- Becoming a regular pioneer from next month: the forward intent, which
--- is what the sheet in the profile does.
+-- A month ahead of UTC's: what a phone in Kiritimati sends on the last
+-- evening of a month, when its own month has already turned. The sheet
+-- never plans ahead (a choice is for the month under way), so this is
+-- the far edge of the window — and it is what the carry-forward tests
+-- below need in order to have a row to carry from.
 select is(
   (select monthly_goal_hours from public.set_ministry_status(
     (date_trunc('month', now()) + interval '1 month')::date,
@@ -202,6 +205,25 @@ select throws_ok(
   null,
   'a device whose clock runs months fast cannot plant a row in the future'
 );
+-- Nothing is set ahead any more: a choice is for the month under way,
+-- and the owner's rule is that there is no second, pending state to
+-- explain. One month either side of UTC's is still somebody's now —
+-- Kiritimati enters a month some fourteen hours before Midway leaves
+-- the one before — and two months out is nobody's.
+select throws_ok(
+  $$select public.set_ministry_status(
+      (date_trunc('month', now()) + interval '2 months')::date, 'publisher')$$,
+  '23514',
+  null,
+  'a month two ahead belongs to no time zone and is refused'
+);
+select throws_ok(
+  $$select public.set_ministry_status(
+      (date_trunc('month', now()) - interval '2 months')::date, 'publisher')$$,
+  '23514',
+  null,
+  'and neither does a month two back'
+);
 select throws_ok(
   $$select public.set_ministry_status(
       (date_trunc('month', now()) - interval '24 months')::date, 'publisher')$$,
@@ -210,21 +232,11 @@ select throws_ok(
   'a month long before the account existed is refused'
 );
 
--- The defect found on review. "From this month on" sweeps away what is
--- planned LATER, so starting it in a month already lived would sweep
--- away months somebody has actually served. It is refused outright, and
--- corrections go through amend_ministry_status_month instead.
-select throws_ok(
-  $$select public.set_ministry_status(
-      (date_trunc('month', now()) - interval '1 month')::date, 'publisher')$$,
-  '23514',
-  null,
-  'a forward-looking choice cannot start in a month already lived'
-);
-
--- Forward intent, part two: choosing for THIS month drops the plan that
--- was sitting on next month, because otherwise the new choice would stop
--- dead at it. Nothing lived is touched — next month has not happened.
+-- Choosing for the month under way drops whatever sat ahead of it. No
+-- screen can put a row there any more, so in practice this clears what
+-- an older build left or what this person's other phone wrote from a
+-- zone whose month had already turned — and it is what stops such a row
+-- from shadowing the choice made here.
 select is(
   (select monthly_goal_hours from public.set_ministry_status(
     date_trunc('month', now())::date, 'auxiliary_pioneer', 15::smallint)),
@@ -234,7 +246,7 @@ select is(
 select is(
   (select count(*) from public.ministry_status_months where deleted_at is null),
   1::bigint,
-  'the month planned later is dropped by a choice that starts earlier'
+  'a row sitting ahead is swept by a choice for the month under way'
 );
 select is(
   (select count(*) from public.ministry_status_for_month(
@@ -371,6 +383,31 @@ select is(
   'a write lands on the caller''s own row'
 );
 
+-- West of Greenwich in the first hours of a month, the month under way
+-- is the one UTC has just left, and this is the save that used to come
+-- back refused. It is accepted, it lands on that month — and it stops
+-- there: the month UTC has already entered keeps its own row, which is
+-- the whole of what the second sweep condition is for.
+select is(
+  (select monthly_goal_hours from public.set_ministry_status(
+    (date_trunc('month', now()) - interval '1 month')::date,
+    'publisher', 20::smallint)),
+  20::smallint,
+  'a phone still in last month may set its status there'
+);
+select is(
+  (select monthly_goal_hours from public.ministry_status_for_month(
+    (date_trunc('month', now()) - interval '1 month')::date)),
+  20::smallint,
+  'last month takes it'
+);
+select is(
+  (select monthly_goal_hours from public.ministry_status_for_month(
+    date_trunc('month', now())::date)),
+  50::smallint,
+  'and the month UTC is in keeps exactly what it showed'
+);
+
 reset role;
 
 select is(
@@ -385,8 +422,8 @@ select is(
   (select count(*) from public.ministry_status_months
     where user_id = '22222222-2222-2222-2222-222222222222'
       and deleted_at is null),
-  1::bigint,
-  'and the second person has exactly the one month they wrote'
+  2::bigint,
+  'and the second person has exactly the two months they wrote'
 );
 
 select * from finish();

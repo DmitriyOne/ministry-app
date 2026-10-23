@@ -3,11 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
-import {
-  addMonths,
-  findMinistryStatusChoice,
-  parseMonthKey,
-} from "@/entities/ministry-status";
+import { findMinistryStatusChoice, parseMonthKey } from "@/entities/ministry-status";
 import { getSessionClaims } from "@/entities/session";
 import { createServerSupabaseClient } from "@/shared/api";
 import { routes } from "@/shared/config";
@@ -57,23 +53,6 @@ export const setMinistryStatus = async (
   try {
     const supabase = await createServerSupabaseClient();
 
-    // Whose first choice this is decides WHEN it starts, and only the
-    // server can tell: the first one ever applies to the month the
-    // person is in — otherwise somebody installing the app today would
-    // spend a month being described wrongly — and every later change
-    // starts next month, because a month already under way should not
-    // have its goal moved underneath the hours already entered.
-    //
-    // Counted through the select policy, so it counts this person's live
-    // rows and nobody else's.
-    const { count, error: countError } = await supabase
-      .from("ministry_status_months")
-      .select("month", { count: "exact", head: true });
-
-    if (countError) throw countError;
-
-    const appliesFrom = (count ?? 0) === 0 ? currentMonth : addMonths(currentMonth, 1);
-
     // The publisher is the only status whose hours are the person's own
     // (the owner's rule: a pioneer's numbers are not theirs to change),
     // so it is the only one whose number comes from the request. Every
@@ -82,8 +61,13 @@ export const setMinistryStatus = async (
       ? parseGoalHours(result.data.goalHours)
       : choice.hours;
 
+    // The month the device sent, and no arithmetic on it: a choice is
+    // the status the person is on NOW, changed again whenever they need
+    // (the owner's rule — nothing is ever set ahead), so there is no
+    // second month to work out here. The database refuses a month that
+    // is nobody's present, which is what keeps a runaway clock out.
     const { error } = await supabase.rpc("set_ministry_status", {
-      p_month: appliesFrom,
+      p_month: currentMonth,
       p_status: choice.status,
       // Omitted rather than null for a status with no hours: the
       // generated signature has the argument optional, and leaving it
@@ -112,7 +96,7 @@ export const setMinistryStatus = async (
     // action was invoked from.
     revalidatePath(routes.profile);
 
-    return { status: "success", appliesFrom };
+    return { status: "success" };
   } catch (error) {
     reportActionFailure({ scope: "set-ministry-status", error, outcome: "failed" });
 

@@ -87,8 +87,8 @@ export const WhatsNewScreen = async () => {
           <ListRow
             divided={false}
             icon={<CalendarMonthIcon size={18} />}
-            title={t("v2_2.whenItStarts.title")}
-            text={t("v2_2.whenItStarts.text")}
+            title={t("v2_2.changeAnyTime.title")}
+            text={t("v2_2.changeAnyTime.text")}
           />
         </ListCard>
 

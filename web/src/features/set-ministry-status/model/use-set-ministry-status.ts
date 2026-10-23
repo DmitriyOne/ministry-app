@@ -4,7 +4,6 @@ import { useMemo, useState, useTransition } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import {
-  addMonths,
   deviceMonthKey,
   type EffectiveMinistryStatus,
   ministryStatusChoiceFor,
@@ -42,10 +41,10 @@ export type UseSetMinistryStatusResult = {
     cancel: () => void;
     accept: () => void;
   };
-  // The month the choice will start in, already in the person's words.
-  // Formatted once, here, because both the sheet and the dialog say it
-  // and they must not be able to disagree.
-  appliesFromLabel: string;
+  // The month the choice applies to — always the one the person is in —
+  // in their own words. Formatted once, here, because both the sheet
+  // and the dialog say it and they must not be able to disagree.
+  monthLabel: string;
   form: ReturnType<typeof useActionForm<MinistryChoiceValues, SetMinistryStatusActionState>>;
 };
 
@@ -82,11 +81,11 @@ export const useSetMinistryStatus = (
 
   const [isOpen, setIsOpen] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
-  // Worked out when the sheet opens — in an event, never while
-  // rendering: deviceMonthKey() reads the device's own calendar, and
-  // calling it during a render would run it on the server too, with the
-  // server's zone (ADR 0061).
-  const [appliesFrom, setAppliesFrom] = useState<MonthKey | null>(null);
+  // Read when the sheet opens — in an event, never while rendering:
+  // deviceMonthKey() reads the device's own calendar, and calling it
+  // during a render would run it on the server too, with the server's
+  // zone (ADR 0061).
+  const [month, setMonth] = useState<MonthKey | null>(null);
 
   const { dragY, dragHandlers } = useSheetDrag({ onClose: () => setIsOpen(false) });
 
@@ -141,12 +140,10 @@ export const useSetMinistryStatus = (
     // pick as though it had been saved.
     form.reset({ choiceId: currentChoiceId, goalHours: currentGoalHours });
 
-    const thisMonth = deviceMonthKey();
-
-    // The first choice ever applies to the month under way; every later
-    // one starts next month. The server decides this again for itself —
-    // this copy only lets the sheet name the month before the write.
-    setAppliesFrom(status?.source === null ? thisMonth : addMonths(thisMonth, 1));
+    // The month to name in the sheet and in the dialog. There is only
+    // ever one candidate: the choice applies to the month under way, and
+    // the same person may change it again as often as they need.
+    setMonth(deviceMonthKey());
     setIsOpen(true);
   };
 
@@ -169,8 +166,8 @@ export const useSetMinistryStatus = (
     // Midday rather than midnight: the key is a plain date, and a date
     // parsed as UTC midnight is the previous day in any zone behind it,
     // which would print the month before.
-    appliesFromLabel: appliesFrom
-      ? format.dateTime(new Date(`${appliesFrom}T12:00:00`), { day: "numeric", month: "long" })
+    monthLabel: month
+      ? format.dateTime(new Date(`${month}T12:00:00`), { month: "long" })
       : "",
     form,
   };

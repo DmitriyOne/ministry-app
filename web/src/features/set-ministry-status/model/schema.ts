@@ -37,11 +37,6 @@ export type SetMinistryStatusActionState = {
   // (ADR 0013). Only the goal can be wrong in a way worth pointing at.
   fieldErrors?: Partial<Record<keyof MinistryChoiceValues, string>>;
   formError?: string;
-  // The month the new status actually starts in, as the SERVER worked it
-  // out. Echoed back rather than assumed, because only the server knows
-  // whether this was the first choice ever (which starts this month) or
-  // a later one (which starts next).
-  appliesFrom?: string;
 };
 
 export const setMinistryStatusInitialState: SetMinistryStatusActionState = { status: "idle" };
