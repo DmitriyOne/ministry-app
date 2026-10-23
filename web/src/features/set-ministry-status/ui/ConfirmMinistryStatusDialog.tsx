@@ -50,10 +50,19 @@ export const ConfirmMinistryStatusDialog = ({
         <Button variant="plain" size="role" onPress={onCancel}>
           {t("cancel")}
         </Button>
-        {/* Not SubmitButton: there is no <form> here. The choice lives in
-            the sheet behind this dialog and is sent programmatically, so
-            the two rules SubmitButton carries — a spinner while in
-            flight, disabled while in flight — are spelled out instead. */}
+        {/* A plain button, not SubmitButton in a form of its own: there
+            is nothing here to submit. The values live in the sheet
+            behind this dialog, in react-hook-form, and the Server Action
+            is called through its hook — so a <form> around this button
+            would be an empty shell, and the two rules SubmitButton
+            carries (spinner in flight, blocked in flight) are spelled
+            out instead.
+
+            Which means the dialog does not answer to Enter, and that is
+            the owner's decision (2026-10-23): making it would mean
+            moving focus onto the confirming button, and the way out of a
+            dialog should keep it. The dialog is answered by tapping, the
+            same as the sign-out one. */}
         <Button variant="action" size="role" isDisabled={isPending} onPress={onConfirm}>
           {isPending ? <Spinner className="size-5" /> : null}
           {t("confirm")}

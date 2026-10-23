@@ -6,12 +6,13 @@ import { Controller, useWatch } from "react-hook-form";
 
 import { MINISTRY_STATUS_CHOICES } from "@/entities/ministry-status";
 import { cn } from "@/shared/lib/cn";
-import { Button } from "@/shared/ui/button";
+import { ActionForm } from "@/shared/ui/action-form";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { AlertCircleIcon } from "@/shared/ui/icons";
 import { Notice } from "@/shared/ui/notice";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import { SheetTitle } from "@/shared/ui/sheet";
+import { SubmitButton } from "@/shared/ui/submit-button";
 
 import type { UseSetMinistryStatusResult } from "../model/use-set-ministry-status";
 import { GoalHoursField } from "./GoalHoursField";
@@ -19,8 +20,8 @@ import { GoalHoursField } from "./GoalHoursField";
 type MinistryStatusFormProps = {
   form: UseSetMinistryStatusResult["form"];
   monthLabel: string;
-  // Saving asks for confirmation first, so this opens the dialog rather
-  // than submitting.
+  // Saving asks for confirmation first, so submitting this form opens
+  // the dialog; the status is sent from there.
   onSave: () => void;
 };
 
@@ -37,6 +38,14 @@ const fieldId = (choiceId: string) => `ministry-status-${choiceId.replace(":", "
 // Heading with slot="title", and without one it warns that the panel has
 // no accessible name — which it did, and the owner caught it in the
 // console.
+//
+// A real <form>, through the project's ActionForm, and not because every
+// form has one: pressing Enter in the goal field has to save. Without the
+// element there is nothing to submit implicitly, so the key did nothing
+// at all and iOS offered a plain return instead of "go" — the owner
+// caught that too. SubmitButton for the same reason, and it carries the
+// two rules about blocking and the spinner that were spelled out here by
+// hand (ADR 0013).
 export const MinistryStatusForm = ({
   form,
   monthLabel,
@@ -49,11 +58,16 @@ export const MinistryStatusForm = ({
 
   // Which row is picked right now — the goal field belongs to one of
   // them. useWatch rather than watch, so only this subtree re-renders
-  // when the choice changes.
-  const isPublisher = useWatch({ control: form.control, name: "choiceId" }) === "publisher";
+  // when the choice changes. Compared against the catalogue's own ids
+  // below, never against a spelling written out here: how an id is built
+  // is choices.ts's business, and a second place that knows is a second
+  // place to fix.
+  const pickedId = useWatch({ control: form.control, name: "choiceId" });
 
   return (
-    <>
+    // gap-3, because the panel around it sets the rhythm; ActionForm's own
+    // default is for a screen.
+    <ActionForm onSubmit={onSave} className="gap-3">
       <div className="flex flex-col gap-1">
         <SheetTitle className="text-day-title font-620 tracking-day-title text-ink">
           {t("title")}
@@ -118,7 +132,7 @@ export const MinistryStatusForm = ({
                     rows away from the choice it belongs to, the owner
                     chose this, and it is the pattern the rest of the web
                     uses for the same question. */}
-                {isPublisher && choice.status === "publisher"
+                {choice.status === "publisher" && choice.id === pickedId
                   ? (
                       <div className="mb-3.5 ml-6">
                         <GoalHoursField control={form.control} />
@@ -141,15 +155,14 @@ export const MinistryStatusForm = ({
           )
         : null}
 
-      <Button
+      <SubmitButton
         variant="deep"
-        size="role-lg"
+        isPending={form.isPending}
+        isBlocked={form.hasErrors}
         className="w-full"
-        isDisabled={form.hasErrors || form.isPending}
-        onPress={onSave}
       >
         {t("save")}
-      </Button>
-    </>
+      </SubmitButton>
+    </ActionForm>
   );
 };
