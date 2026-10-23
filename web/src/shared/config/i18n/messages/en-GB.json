@@ -100,6 +100,54 @@
       "nameUnknown": "Your account",
       "roleUser": "User",
       "roleAdmin": "Administrator",
+      "goals": {
+        "month": "Monthly goal",
+        "year": "Service year",
+        "hours": "{hours} h",
+        "noGoal": "—"
+      },
+      "ministryStatus": {
+        "publisher": "Publisher",
+        "auxiliary_pioneer": "Auxiliary pioneer",
+        "regular_auxiliary_pioneer": "Regular auxiliary pioneer",
+        "regular_pioneer": "Regular pioneer"
+      },
+      "ministrySheet": {
+        "row": {
+          "title": "Ministry status",
+          "action": "Change",
+          "unknown": "Not available right now"
+        },
+        "title": "Ministry status",
+        "intro": "Applies to {month}, and to every month after it until you change it again. Hours you have already entered stay as they are.",
+        "hours": "{hours} h",
+        "noGoal": "—",
+        "hint": {
+          "publisher": "Your own pace",
+          "auxiliary_pioneer": "This month only",
+          "regular_auxiliary_pioneer": "Every month, until you change it",
+          "regular_pioneer": "600 h over the service year"
+        },
+        "goal": {
+          "label": "Your monthly goal",
+          "suffix": "hours a month",
+          "hint": "Leave it empty for no goal at all.",
+          "outOfRange": "A monthly goal has to be a whole number between 1 and 744."
+        },
+        "save": "Save",
+        "confirm": {
+          "title": "Change your status?",
+          "body": "Your goal for {month} changes. Every hour you have already entered stays as it is.",
+          "confirm": "Change it",
+          "cancel": "Keep as it is"
+        },
+        "updated": "Status updated",
+        "unavailable": "Couldn't reach the server",
+        "notSignedIn": "Sign in again to change this",
+        "invalidChoice": "That is not a status we offer",
+        "invalidMonth": "Your device's date looks wrong",
+        "refused": "That change was not accepted"
+      },
       "linksLabel": "About this app",
       "about": "About",
       "privacy": "Privacy & cookies",
@@ -123,6 +171,22 @@
       "hero": {
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
+      },
+      "v2_2": {
+        "name": "Version 2.2",
+        "date": "22 October 2026",
+        "status": {
+          "title": "Say how you serve",
+          "text": "Publisher, auxiliary pioneer, regular auxiliary pioneer or regular pioneer — chosen in your profile and shown next to your role."
+        },
+        "goal": {
+          "title": "Hours to aim for",
+          "text": "Each status brings its own monthly goal, and a publisher can set one of their own — or none at all. Your profile shows the month and the service year side by side."
+        },
+        "changeAnyTime": {
+          "title": "Change it whenever you need",
+          "text": "What you pick is what you are on this month, and you can pick again as often as you need. The hours you have already entered are never touched."
+        }
       },
       "currentPill": "Current",
       "releasedPill": "Released",
