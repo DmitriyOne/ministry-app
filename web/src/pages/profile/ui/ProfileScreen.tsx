@@ -1,7 +1,15 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
-import { currentMonthKey, toEffectiveMinistryStatus } from "@/entities/ministry-status";
+import {
+  currentMonthKey,
+  resolveStatusForMonth,
+  SERVICE_YEAR_FIRST_MONTH,
+  serviceYearGoalHours,
+  serviceYearOf,
+  toMinistryStatusRows,
+  toMonthKey,
+} from "@/entities/ministry-status";
 import { getSessionClaims } from "@/entities/session";
 import { PushNotificationsToggle } from "@/features/push-notifications";
 import { SignOutButton } from "@/features/sign-out";
@@ -14,6 +22,7 @@ import { getInitials } from "@/shared/lib/display-name";
 import { LinkButton } from "@/shared/ui/button";
 import { CenteredState } from "@/shared/ui/centered-state";
 import { Eyebrow } from "@/shared/ui/eyebrow";
+import { GoalCard } from "@/shared/ui/goal-card";
 import { HeroPill } from "@/shared/ui/hero-pill";
 import { ChevronRightIcon } from "@/shared/ui/icons";
 import { ListCard } from "@/shared/ui/list-card";
@@ -65,20 +74,46 @@ export const ProfileScreen = async () => {
   const isAdmin = hasRole(claims, "admin");
   const roleLabel = isAdmin ? t("roleAdmin") : t("roleUser");
 
-  // How this person serves THIS month, in their own calendar (ADR 0061).
-  // The zone is read from the profile; nothing writes it yet, so it is
-  // the Europe/London default for everybody — the cost is named in the
-  // ADR, and this line is where it will stop costing anything once there
-  // is a screen for changing it.
+  // Which month this person is in, in their own calendar (ADR 0061). The
+  // zone is read from the profile; nothing writes it yet, so it is the
+  // Europe/London default for everybody — the cost is named in the ADR,
+  // and this line is where it will stop costing anything once there is a
+  // screen for changing it.
+  const currentMonth = currentMonthKey(profile?.time_zone);
+  const serviceYear = serviceYearOf(currentMonth);
+  // August, said as "the month before the one a service year starts in",
+  // so this line follows if that boundary ever moves.
+  const yearEndsIn = toMonthKey(serviceYear + 1, SERVICE_YEAR_FIRST_MONTH - 1);
+
+  // ONE read for both answers. The status in force this month and the
+  // goal for the whole service year come from the same rows, through the
+  // same rule (ADR 0061, decision 5) — a second query would be a second
+  // chance for the pill and the cards to disagree with each other.
   //
-  // Null is the read having failed, and then the pill is left out
-  // entirely: "Publisher" is a statement about the person, not a safe
-  // fallback for a query that did not answer.
-  const ministryStatus = toEffectiveMinistryStatus(
+  // No lower bound: a status chosen two years ago and never changed is
+  // what the start of this year reads from, so the rows BEFORE September
+  // are part of the answer. There is one row per change, not per month,
+  // so this stays small.
+  //
+  // Null is the read having failed, and then neither the pill nor the
+  // cards are drawn: "Publisher, no goal" is a statement about the
+  // person, not a safe fallback for a query that did not answer.
+  const rows = toMinistryStatusRows(
     await supabase
-      .rpc("ministry_status_for_month", { p_month: currentMonthKey(profile?.time_zone) })
-      .maybeSingle(),
+      .from("ministry_status_months")
+      .select("month, status, duration, monthly_goal_hours")
+      .lte("month", yearEndsIn)
+      .order("month"),
   );
+
+  const ministryStatus = rows ? resolveStatusForMonth(rows, currentMonth) : null;
+
+  // A dash, not a zero: "no goal at all" is an answer a publisher may
+  // give, and a goal of zero hours would be a different claim. The
+  // year's total is zero in exactly the same case — every month of it
+  // had no goal — so both read through here.
+  const goalLabel = (hours: number | null) =>
+    hours === null || hours === 0 ? t("goals.noGoal") : t("goals.hours", { hours });
 
   return (
     <CenteredState fill className="items-stretch justify-start gap-0 px-0 pt-2 pb-0 text-left">
@@ -117,6 +152,33 @@ export const ProfileScreen = async () => {
       </div>
 
       <div className="flex flex-col gap-3 px-5 pt-4">
+        {/* The two numbers the status produces, directly under the
+            person they belong to. A description list, not two divs: the
+            pair is two terms and their values, and it reads as "Monthly
+            goal, 30 hours" instead of four loose lines.
+
+            The year is the sum of its twelve monthly goals and is stored
+            nowhere (ADR 0061, decision 5), so a pioneer appointed in
+            November sees the truth about their year — 500 — rather than
+            a stored 600 that would show them behind from the first day
+            to the last. */}
+        {ministryStatus
+          ? (
+              <dl className="grid grid-cols-2 gap-3">
+                <GoalCard
+                  tone="primary"
+                  label={t("goals.month")}
+                  value={goalLabel(ministryStatus.monthlyGoalHours)}
+                />
+                <GoalCard
+                  tone="deep"
+                  label={t("goals.year")}
+                  value={goalLabel(rows ? serviceYearGoalHours(rows, serviceYear) : null)}
+                />
+              </dl>
+            )
+          : null}
+
         {/* Above the notifications, because it is the one row here that
             changes what the rest of the app counts. */}
         <ListCard>

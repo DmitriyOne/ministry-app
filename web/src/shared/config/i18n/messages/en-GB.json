@@ -100,6 +100,12 @@
       "nameUnknown": "Your account",
       "roleUser": "User",
       "roleAdmin": "Administrator",
+      "goals": {
+        "month": "Monthly goal",
+        "year": "Service year",
+        "hours": "{hours} h",
+        "noGoal": "—"
+      },
       "ministryStatus": {
         "publisher": "Publisher",
         "auxiliary_pioneer": "Auxiliary pioneer",
@@ -175,7 +181,7 @@
         },
         "goal": {
           "title": "Hours to aim for",
-          "text": "Each status brings its own monthly goal, and a publisher can set one of their own — or none at all."
+          "text": "Each status brings its own monthly goal, and a publisher can set one of their own — or none at all. Your profile shows the month and the service year side by side."
         },
         "changeAnyTime": {
           "title": "Change it whenever you need",

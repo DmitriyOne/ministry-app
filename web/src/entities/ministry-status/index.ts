@@ -4,9 +4,10 @@
 // is why the status is READ at the call site, with the client the screen
 // already holds, and only the answer is turned into something renderable
 // here.
-export { toEffectiveMinistryStatus } from "./api/to-effective-ministry-status";
+export { toMinistryStatusRows } from "./api/to-ministry-status-rows";
 export {
   isMinistryStatus,
+  isMinistryStatusDuration,
   MAX_MONTHLY_GOAL_HOURS,
   MINISTRY_STATUS_CATALOGUE,
   MINISTRY_STATUSES,
