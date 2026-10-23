@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(25);
+select plan(34);
 
 -- What this file pins: the rules that exist nowhere else. The day table
 -- is written by one security definer function, so the things worth
@@ -54,6 +54,17 @@ select ok(
   has_function_privilege('authenticated',
     'public.set_ministry_day_minutes(date, smallint)', 'execute'),
   'a signed-in person can record hours'
+);
+
+select ok(
+  not has_function_privilege('anon',
+    'public.ministry_days_total_minutes(date, date)', 'execute'),
+  'anon cannot total anybody''s days'
+);
+select ok(
+  has_function_privilege('authenticated',
+    'public.ministry_days_total_minutes(date, date)', 'execute'),
+  'a signed-in person can total their own'
 );
 
 -- ---------------------------------------------------------------------
@@ -152,6 +163,43 @@ select is(
   'zero minutes is stored as a row rather than as an absence'
 );
 
+-- ---------------------------------------------------------------------
+-- The total over a span of days
+-- ---------------------------------------------------------------------
+-- This person now holds: 90 minutes today, 0 yesterday, 120 thirty days
+-- back, 45 on UTC's tomorrow.
+select is(
+  public.ministry_days_total_minutes(now()::date, now()::date),
+  90,
+  'one day totals that day'
+);
+select is(
+  public.ministry_days_total_minutes((now() - interval '30 days')::date, now()::date),
+  210,
+  'a span totals every day in it'
+);
+-- Both ends included: a month's first and last day are in that month,
+-- and an exclusive end would silently lose the 31st.
+select is(
+  public.ministry_days_total_minutes(
+    (now() - interval '30 days')::date, (now() - interval '30 days')::date),
+  120,
+  'the ends of the span are inside it'
+);
+-- Zero, never null: "nothing recorded" has to reach a screen as 0:00
+-- rather than as a blank nobody can tell from a failed read.
+select is(
+  public.ministry_days_total_minutes(
+    (now() - interval '10 days')::date, (now() - interval '9 days')::date),
+  0,
+  'a span with nothing in it totals zero rather than null'
+);
+select is(
+  public.ministry_days_total_minutes(now()::date, (now() - interval '1 day')::date),
+  0,
+  'a span that runs backwards totals zero'
+);
+
 reset role;
 update public.ministry_days
    set deleted_at = now()
@@ -165,6 +213,13 @@ select is(
   (select count(*) from public.ministry_days where day = now()::date),
   0::bigint,
   'a row marked deleted is invisible to the person it belongs to'
+);
+-- And out of the total as well. The function runs as the caller, so the
+-- policy is what hides it — which is the point of invoker here.
+select is(
+  public.ministry_days_total_minutes(now()::date, now()::date),
+  0,
+  'a day marked deleted is not in the total either'
 );
 
 -- And choosing that day again revives it. Without the `deleted_at = null`
@@ -189,6 +244,13 @@ select is(
   (select minutes from public.set_ministry_day_minutes(now()::date, 15::smallint)),
   15::smallint,
   'and records their own'
+);
+-- 15, not 45: the first person's 30 minutes of the same day are no part
+-- of this total.
+select is(
+  public.ministry_days_total_minutes(now()::date, now()::date),
+  15,
+  'a total holds the caller''s days and nobody else''s'
 );
 
 reset role;
