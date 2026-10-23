@@ -4,10 +4,9 @@
 // is why the status is READ at the call site, with the client the screen
 // already holds, and only the answer is turned into something renderable
 // here.
-export { toMinistryStatusRows } from "./api/to-ministry-status-rows";
+export { toEffectiveMinistryStatus } from "./api/to-effective-ministry-status";
 export {
   isMinistryStatus,
-  isMinistryStatusDuration,
   MAX_MONTHLY_GOAL_HOURS,
   MINISTRY_STATUS_CATALOGUE,
   MINISTRY_STATUSES,
@@ -25,13 +24,10 @@ export { addMonths, type MonthKey, parseMonthKey, toMonthKey } from "./model/mon
 export {
   DEFAULT_MINISTRY_STATUS,
   type EffectiveMinistryStatus,
-  type MinistryStatusRow,
-  resolveStatusForMonth,
 } from "./model/resolve-status";
 export {
   SERVICE_YEAR_FIRST_MONTH,
   type ServiceYear,
-  serviceYearMonths,
   serviceYearOf,
 } from "./model/service-year";
 export {
@@ -40,4 +36,3 @@ export {
   deviceMonthKey,
   resolveTimeZone,
 } from "./model/time-zone";
-export { serviceYearGoalHours } from "./model/year-goal";

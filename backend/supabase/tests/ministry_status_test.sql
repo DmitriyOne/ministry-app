@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(54);
+select plan(57);
 
 -- What this file is really about: the rules that live nowhere else.
 -- The carry-forward rule, the catalogue's numbers, the month bounds and
@@ -357,6 +357,16 @@ select is(
   'and that leaves one row for the month, not two'
 );
 
+-- The yearly norm belongs to a regular pioneer and to nobody else. This
+-- person is a publisher this month and a regular auxiliary pioneer from
+-- the next one — twelve months with goals in them, and not one hour of
+-- it is a year's norm.
+select is(
+  public.ministry_status_year_goal(date_trunc('month', now())::date),
+  0,
+  'a publisher and an auxiliary pioneer have no yearly norm at all'
+);
+
 -- ---------------------------------------------------------------------
 -- The other person
 -- ---------------------------------------------------------------------
@@ -406,6 +416,23 @@ select is(
     date_trunc('month', now())::date)),
   50::smallint,
   'and the month UTC is in keeps exactly what it showed'
+);
+
+-- A regular pioneer from this month on: every one of the twelve months
+-- reads from that row, so the year is the number people know.
+select is(
+  public.ministry_status_year_goal(date_trunc('month', now())::date),
+  600,
+  'twelve pioneered months come to 600'
+);
+-- And a year that starts one month earlier counts eleven of them: that
+-- month is this person's publisher month, which carries no norm. This is
+-- the appointed-mid-year case, where a stored 600 would have been wrong
+-- from the first day to the last.
+select is(
+  public.ministry_status_year_goal((date_trunc('month', now()) - interval '1 month')::date),
+  550,
+  'a year only partly pioneered counts only the months that were'
 );
 
 reset role;

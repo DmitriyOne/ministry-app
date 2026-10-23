@@ -71,10 +71,3 @@ export const MAX_MONTHLY_GOAL_HOURS = 744;
 
 export const isMinistryStatus = (value: unknown): value is MinistryStatus =>
   typeof value === "string" && (MINISTRY_STATUSES as readonly string[]).includes(value);
-
-// Beside isMinistryStatus for the same reason: `duration` is a text
-// column, so it arrives as a string however narrow the check constraint
-// on it is, and a value outside these two means this build is older than
-// the database.
-export const isMinistryStatusDuration = (value: unknown): value is MinistryStatusDuration =>
-  value === "single_month" || value === "until_changed";

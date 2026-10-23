@@ -254,6 +254,10 @@ export type Database = {
         Args: { p_monthly_goal: number; p_status: string }
         Returns: Record<string, unknown>
       }
+      ministry_status_year_goal: {
+        Args: { p_year_start: string }
+        Returns: number
+      }
       register_user_push_subscription: {
         Args: {
           p_auth: string

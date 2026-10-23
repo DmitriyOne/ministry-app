@@ -3,11 +3,9 @@ import { getTranslations } from "next-intl/server";
 
 import {
   currentMonthKey,
-  resolveStatusForMonth,
   SERVICE_YEAR_FIRST_MONTH,
-  serviceYearGoalHours,
   serviceYearOf,
-  toMinistryStatusRows,
+  toEffectiveMinistryStatus,
   toMonthKey,
 } from "@/entities/ministry-status";
 import { getSessionClaims } from "@/entities/session";
@@ -80,38 +78,27 @@ export const ProfileScreen = async () => {
   // and this line is where it will stop costing anything once there is a
   // screen for changing it.
   const currentMonth = currentMonthKey(profile?.time_zone);
-  const serviceYear = serviceYearOf(currentMonth);
-  // August, said as "the month before the one a service year starts in",
-  // so this line follows if that boundary ever moves.
-  const yearEndsIn = toMonthKey(serviceYear + 1, SERVICE_YEAR_FIRST_MONTH - 1);
+  // September, the month this person's service year began in. The
+  // boundary lives here and nowhere else: the database counts twelve
+  // months from whatever it is given and knows nothing about September
+  // (ADR 0061, decision 1).
+  const yearStartsIn = toMonthKey(serviceYearOf(currentMonth), SERVICE_YEAR_FIRST_MONTH);
 
-  // ONE read for both answers. The status in force this month and the
-  // goal for the whole service year come from the same rows, through the
-  // same rule (ADR 0061, decision 5) — a second query would be a second
-  // chance for the pill and the cards to disagree with each other.
-  //
-  // No lower bound: a status chosen two years ago and never changed is
-  // what the start of this year reads from, so the rows BEFORE September
-  // are part of the answer. There is one row per change, not per month,
-  // so this stays small.
-  //
+  // Two questions, two answers, both from the database. Nothing is
+  // resolved here: the carry-forward rule and the sum over the year each
+  // exist once, in SQL (ADR 0061, decision 5, обновление 2026-10-23).
+  // They go together because neither can start before the month is
+  // known, and the month comes from the profile above.
+  const [status, yearGoal] = await Promise.all([
+    supabase.rpc("ministry_status_for_month", { p_month: currentMonth }).maybeSingle(),
+    supabase.rpc("ministry_status_year_goal", { p_year_start: yearStartsIn }),
+  ]);
+
   // Null is the read having failed, and then neither the pill nor the
   // cards are drawn: "Publisher, no goal" is a statement about the
   // person, not a safe fallback for a query that did not answer.
-  const rows = toMinistryStatusRows(
-    await supabase
-      .from("ministry_status_months")
-      .select("month, status, duration, monthly_goal_hours")
-      .lte("month", yearEndsIn)
-      .order("month"),
-  );
+  const ministryStatus = toEffectiveMinistryStatus(status);
 
-  const ministryStatus = rows ? resolveStatusForMonth(rows, currentMonth) : null;
-
-  // A dash, not a zero: "no goal at all" is an answer a publisher may
-  // give, and a goal of zero hours would be a different claim. The
-  // year's total is zero in exactly the same case — every month of it
-  // had no goal — so both read through here.
   const goalLabel = (hours: number | null) =>
     hours === null || hours === 0 ? t("goals.noGoal") : t("goals.hours", { hours });
 
@@ -157,11 +144,13 @@ export const ProfileScreen = async () => {
             pair is two terms and their values, and it reads as "Monthly
             goal, 30 hours" instead of four loose lines.
 
-            The year is the sum of its twelve monthly goals and is stored
-            nowhere (ADR 0061, decision 5), so a pioneer appointed in
-            November sees the truth about their year — 500 — rather than
-            a stored 600 that would show them behind from the first day
-            to the last. */}
+            The year counts only the months this person is a regular
+            pioneer, because that is the one status with a yearly norm
+            (the owner's rule): a publisher works at their own pace, and
+            an auxiliary pioneer commits a month at a time. So the year
+            card shows a dash for everybody else — and for a pioneer
+            appointed in November it shows 500, the truth about their
+            year, rather than the 600 from the leaflet. */}
         {ministryStatus
           ? (
               <dl className="grid grid-cols-2 gap-3">
@@ -173,7 +162,7 @@ export const ProfileScreen = async () => {
                 <GoalCard
                   tone="deep"
                   label={t("goals.year")}
-                  value={goalLabel(rows ? serviceYearGoalHours(rows, serviceYear) : null)}
+                  value={goalLabel(yearGoal.error ? null : yearGoal.data)}
                 />
               </dl>
             )
