@@ -11,6 +11,16 @@
 -- whatever is passed in. The user_id predicate repeats what the policy
 -- already does; belt and braces, and it is what lets the planner use the
 -- primary key.
+--
+-- The argument is snapped to the first of its month before anything is
+-- compared, because `month = asked` is what makes a month's OWN row win
+-- over an earlier running one — and that test silently fails for a date
+-- in the middle of a month. Asked about the 15th of October, the
+-- unsnapped version skipped a one-month auxiliary pioneer sitting on 1
+-- October and answered with whatever ran before it: the wrong answer
+-- about the right month. Nothing in the app can ask that way (MonthKey
+-- is a branded first-of-month string), which is precisely why the
+-- function should not depend on it.
 create or replace function public.ministry_status_for_month(p_month date)
 returns setof public.ministry_status_months
 language sql
@@ -19,18 +29,19 @@ security invoker
 set search_path = ''
 rows 1
 as $$
-  select *
-    from public.ministry_status_months
-   where user_id = (select auth.uid())
-     and deleted_at is null
-     and month <= p_month
-     and (month = p_month or duration = 'until_changed')
-   order by month desc
+  with asked as (select date_trunc('month', p_month)::date as month)
+  select m.*
+    from public.ministry_status_months as m, asked
+   where m.user_id = (select auth.uid())
+     and m.deleted_at is null
+     and m.month <= asked.month
+     and (m.month = asked.month or m.duration = 'until_changed')
+   order by m.month desc
    limit 1;
 $$;
 
 comment on function public.ministry_status_for_month(date) is
-  'The ministry status in force for the given month: that month''s own row, or the most recent earlier row that is still running. No rows means publisher with no goal. See ADR 0061.';
+  'The ministry status in force for the month the given date falls in: that month''s own row, or the most recent earlier row that is still running. No rows means publisher with no goal. See ADR 0061.';
 
 revoke all on function public.ministry_status_for_month(date) from public, anon;
 grant execute on function public.ministry_status_for_month(date) to authenticated;

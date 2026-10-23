@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(48);
+select plan(50);
 
 -- What this file is really about: the rules that live nowhere else.
 -- The carry-forward rule, the catalogue's numbers, the month bounds and
@@ -241,6 +241,24 @@ select is(
     (date_trunc('month', now()) + interval '1 month')::date)),
   0::bigint,
   'a one-month status ends itself: the next month does not inherit it'
+);
+
+-- A date in the middle of a month asks about that month. The one-month
+-- row above is the case that used to break: "this row is the month's
+-- own" is an equality test, and it misses the 15th, so the answer came
+-- from whatever ran before it — right month, wrong answer. Nothing in
+-- the app can ask this way; the function no longer depends on that.
+select is(
+  (select monthly_goal_hours from public.ministry_status_for_month(
+    date_trunc('month', now())::date + 14)),
+  15::smallint,
+  'a mid-month date is read as the month it falls in'
+);
+select is(
+  (select count(*) from public.ministry_status_for_month(
+    (date_trunc('month', now()) + interval '1 month')::date + 14)),
+  0::bigint,
+  'and the one-month status still ends itself when asked mid-month'
 );
 
 -- Correcting a month already lived. There is a row after it (this

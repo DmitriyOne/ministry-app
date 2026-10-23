@@ -106,11 +106,15 @@ begin
       using errcode = 'check_violation';
   end if;
 
-  -- Two months of slack: enough for "from next month" in any time zone
-  -- (a phone at UTC+14 on the last evening of a month is already two
-  -- months ahead of UTC's current one), far too little to be worth
-  -- abusing.
-  if p_month > (date_trunc('month', now()) + interval '2 months')::date then
+  -- The outer fence, shared by both write functions: a month or two of
+  -- slack is enough for every time zone's idea of "now" and far too
+  -- little to be worth abusing. set_ministry_status fences itself
+  -- tighter (one month either side of UTC's, because it may only write
+  -- the month under way); amend_ministry_status_month lives inside this
+  -- one. UTC is named outright so the answer does not depend on the
+  -- calling role's TimeZone setting.
+  if p_month > (date_trunc('month', now() at time zone 'utc')
+                + interval '2 months')::date then
     raise exception 'month is too far in the future: %', p_month
       using errcode = 'check_violation';
   end if;
@@ -160,13 +164,17 @@ begin
     return;
   end if;
 
+  -- Past the guard above there is no row after this month, so what the
+  -- next month shows can only come from a row that is still running:
+  -- the read rule's "the month's own row wins" branch has nothing to
+  -- match here, and spelling it out suggested a case that cannot occur.
   select *
     into v_effective
     from public.ministry_status_months
    where user_id = p_user
      and deleted_at is null
-     and month <= v_next
-     and (month = v_next or duration = 'until_changed')
+     and month <= p_month
+     and duration = 'until_changed'
    order by month desc
    limit 1;
 
