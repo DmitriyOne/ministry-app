@@ -258,6 +258,10 @@ export type Database = {
           push_enrollment_token: string
         }[]
       }
+      ministry_days_total_minutes: {
+        Args: { p_from: string; p_to: string }
+        Returns: number
+      }
       ministry_status_for_month: {
         Args: { p_month: string }
         Returns: {
