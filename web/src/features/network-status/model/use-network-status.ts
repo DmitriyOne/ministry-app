@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { APP_EVENTS } from "@/shared/config";
+
 import { checkConnectivity } from "../api/check-connectivity";
 import { NETWORK_CONFIG } from "../config/network-config";
 
@@ -61,7 +63,14 @@ export const useNetworkStatus = (): UseNetworkStatusResult => {
 
         return nextStatus === "online";
       } finally {
-        inFlightRef.current = null;
+        // Only if this run is still the registered one. `markOffline`
+        // and the unmount cleanup drop the reference while a probe is in
+        // the air, and a newer probe may already have taken its place —
+        // clearing unconditionally evicted that newer one and let the
+        // next caller start a second probe alongside it. The probe id is
+        // the same stamp that invalidates the result, so the two cannot
+        // disagree.
+        if (probeId === probeIdRef.current) inFlightRef.current = null;
       }
     })();
 
@@ -85,12 +94,23 @@ export const useNetworkStatus = (): UseNetworkStatusResult => {
     const handleOffline = () => markOffline();
     const handleOnline = () => void probe();
 
+    // Somewhere in the app a request came back with no answer. Nothing
+    // else would ask while we believe we are online — there is no poll
+    // in that state, deliberately (ADR 0055) — so this is what catches
+    // the outage that leaves the Wi-Fi connected: no `offline` event,
+    // `navigator.onLine` still true, and before this the screen went on
+    // claiming everything was fine until the person switched apps and
+    // came back. Harmless when the origin is fine: the probe answers
+    // "reachable" and nothing changes.
+    const handleSuspect = () => void probe();
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") void probe();
     };
 
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
+    window.addEventListener(APP_EVENTS.connectivitySuspect, handleSuspect);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
@@ -111,6 +131,7 @@ export const useNetworkStatus = (): UseNetworkStatusResult => {
 
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
+      window.removeEventListener(APP_EVENTS.connectivitySuspect, handleSuspect);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [markOffline, probe]);

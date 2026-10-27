@@ -1,5 +1,6 @@
 export { APP_VERSION, hasUnreadVersion, showsUnreadDot } from "./app-version";
 export { WEB_API_ROUTES } from "./api-routes";
+export { APP_EVENTS } from "./app-events";
 export { isDebugPageEnabled } from "./debug-pages";
 export { env, getSiteUrl } from "./env";
 export { locale } from "./i18n";
