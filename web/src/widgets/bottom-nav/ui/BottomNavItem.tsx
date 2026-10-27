@@ -15,6 +15,7 @@ type BottomNavItemProps = {
   // The icon, already rendered by BottomNav on the server.
   children: ReactNode;
   isPrimary?: boolean;
+  hasFamily?: boolean;
 };
 
 // The one client piece of the navigation, for the same reason
@@ -25,11 +26,17 @@ type BottomNavItemProps = {
 // LinkButton, not a bare <a>: an internal path has to navigate client-side
 // (ADR 0024), or every tap on the menu runs LaunchGate and its loading
 // screen again (ADR 0017/0019/0028).
-export const BottomNavItem = ({ href, label, children, isPrimary = false }: BottomNavItemProps) => {
+export const BottomNavItem = ({
+  href,
+  label,
+  children,
+  isPrimary = false,
+  hasFamily = false,
+}: BottomNavItemProps) => {
   // `?? ""` guards against the `string | null` signature some toolchains
   // attribute to usePathname; the comparison itself lives in the model,
   // under test.
-  const isCurrent = isNavItemCurrent(usePathname() ?? "", href);
+  const isCurrent = isNavItemCurrent(usePathname() ?? "", href, hasFamily);
 
   return (
     <LinkButton
