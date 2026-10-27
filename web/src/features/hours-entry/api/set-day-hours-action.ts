@@ -2,10 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
-import { parseDayKey } from "@/entities/ministry-day";
+import { dayPath, parseDayKey } from "@/entities/ministry-day";
 import { getSessionClaims } from "@/entities/session";
 import { createServerSupabaseClient, SUPABASE_QUERY_TIMEOUT_MS } from "@/shared/api";
-import { routes } from "@/shared/config";
 import { reportActionFailure } from "@/shared/lib/action-failure";
 
 import { classifySaveFailure, type SetDayHoursStatus } from "../model/hours-save";
@@ -107,7 +106,7 @@ export const setDayHours = async (
     // by the day, so re-rendering the server part around it changes
     // nothing on screen. What it does do is keep the totals honest once
     // the progress block reads them.
-    if (settled) revalidatePath(routes.day);
+    if (settled) revalidatePath(dayPath(dayKey));
 
     return { status: "success" };
   } catch (error) {

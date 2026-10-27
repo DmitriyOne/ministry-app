@@ -1,8 +1,9 @@
 import { getTranslations } from "next-intl/server";
 
 import { HoursCardSkeleton } from "@/features/hours-entry";
-import { CenteredState } from "@/shared/ui/centered-state";
 import { Title } from "@/shared/ui/title";
+
+import { DayScreenFrame } from "./DayScreenFrame";
 
 // What /day shows while the server answers (its loading.tsx re-exports
 // this). Not the waiting screen ADR 0055 rejected: no spinner, nothing
@@ -17,13 +18,8 @@ export const DayScreenSkeleton = async () => {
   const t = await getTranslations("screens.day");
 
   return (
-    // Deliberately the same classes as DayPage's CenteredState: the two
-    // are the same screen in two states, and any difference here would
-    // show up as a jump at the moment the data arrives.
-    <CenteredState fill className="items-stretch justify-start gap-5 px-5 pt-6 text-left">
-      <Title>{t("title")}</Title>
-
+    <DayScreenFrame heading={<Title>{t("title")}</Title>}>
       <HoursCardSkeleton />
-    </CenteredState>
+    </DayScreenFrame>
   );
 };
