@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { currentDayKey, type DayKey } from "@/entities/ministry-day";
+import { APP_EVENTS } from "@/shared/config";
+import { isOffline } from "@/shared/lib/browser";
 import { showToast } from "@/shared/ui/sonner";
 
 import { setDayHours } from "../api/set-day-hours-action";
@@ -12,14 +14,29 @@ import { addMinutes } from "./hours-value";
 import {
   HOURS_SAVE_ATTEMPTS,
   HOURS_SAVE_DELAY_MS,
+  HOURS_SAVE_LOCK_MS,
   HOURS_SAVE_REQUEST_TIMEOUT_MS,
   HOURS_SAVE_RETRY_DELAY_MS,
+  HOURS_SAVED_SHOWN_MS,
+  type HoursSaveState,
   needsSave,
   reactionTo,
+  type RollbackReason,
   rollbackTarget,
   type SettledSaveReaction,
   type SetDayHoursStatus,
 } from "./hours-save";
+
+// What the person is told when the number comes off, one sentence per
+// reason. A full map rather than a chain of conditions, for the reason
+// NetworkGate has one (CLAUDE.md): a fifth reason will not compile until
+// it has something to say.
+const ROLLBACK_MESSAGE = {
+  offline: "saveOffline",
+  refused: "saveRefused",
+  signedOut: "saveSignedOut",
+  unreachable: "saveFailed",
+} as const satisfies Record<RollbackReason, string>;
 
 type UseDayHoursOptions = {
   day: DayKey;
@@ -40,6 +57,21 @@ const wait = (ms: number) => new Promise<void>((resolve) => {
   setTimeout(resolve, ms);
 });
 
+// Says, to whoever is listening, that a request got no answer. The
+// connectivity gate hears it and probes: while it believes the app is
+// online it has no other reason to ask (ADR 0055), so without this an
+// outage that leaves the Wi-Fi connected shows up as a card that saves
+// nothing and says nothing until the person switches apps and comes
+// back — which is how the owner met it (2026-10-27).
+//
+// Not addressed to the gate: `features` may not import each other, and
+// the name both sides agree on lives in shared/config.
+const suspectConnectivity = (): void => {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(APP_EVENTS.connectivitySuspect));
+  }
+};
+
 // One attempt, with a deadline of its own. A Server Action is a request:
 // it can return a status, it can reject (the phone lost signal mid-tap),
 // and it can do neither — and all three have to come back as a status,
@@ -49,11 +81,15 @@ const wait = (ms: number) => new Promise<void>((resolve) => {
 const attemptSave = (
   input: { day: DayKey; minutes: number; settled: boolean },
 ): Promise<SetDayHoursStatus> => new Promise((resolve) => {
-  const deadline = setTimeout(() => resolve("unavailable"), HOURS_SAVE_REQUEST_TIMEOUT_MS);
+  // Both of the client's own failures are "we do not know": the request
+  // had left the phone, so the row may be written and only the answer
+  // missing. The one case where we DO know is handled before we get
+  // here — see the offline check in `flush`.
+  const deadline = setTimeout(() => resolve("unknown"), HOURS_SAVE_REQUEST_TIMEOUT_MS);
 
   setDayHours(input)
     .then((answer) => answer.status)
-    .catch((): SetDayHoursStatus => "unavailable")
+    .catch((): SetDayHoursStatus => "unknown")
     .then((status) => {
       clearTimeout(deadline);
       resolve(status);
@@ -85,6 +121,13 @@ export const useDayHours = ({ day, savedMinutes, timeZone }: UseDayHoursOptions)
   const router = useRouter();
   const [minutes, setMinutes] = useState(savedMinutes);
 
+  // What the header says, and whether the buttons are the person's to
+  // press. Two values rather than one, because they do not end
+  // together: the lock is capped at two seconds (see the constant),
+  // while "Saving…" stands for as long as the save really takes.
+  const [saveState, setSaveState] = useState<HoursSaveState>("idle");
+  const [isLocked, setIsLocked] = useState(false);
+
   // Three refs, none of which may cause a render: what the screen shows
   // (`target` — the save reads it without subscribing to it), what the
   // server is known to hold, and whether a save is already running.
@@ -92,6 +135,17 @@ export const useDayHours = ({ day, savedMinutes, timeZone }: UseDayHoursOptions)
   const confirmedRef = useRef(savedMinutes);
   const savingRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const unlock = useCallback(() => {
+    if (lockTimerRef.current) {
+      clearTimeout(lockTimerRef.current);
+      lockTimerRef.current = null;
+    }
+
+    setIsLocked(false);
+  }, []);
 
   // Sends one value until there is an answer to act on. Separate from
   // the loop below so that the three outcomes the card reacts to are
@@ -107,6 +161,12 @@ export const useDayHours = ({ day, savedMinutes, timeZone }: UseDayHoursOptions)
         minutes: value,
         settled: !needsSave(targetRef.current, value),
       });
+
+      // On the first failed attempt, not after the last: the gate's
+      // probe then runs alongside the retries, so by the time the card
+      // has finished asking, the screen already says what is wrong — or
+      // the probe came back fine and the trouble was never the network.
+      if (status === "unreachable" || status === "unknown") suspectConnectivity();
 
       const reaction = reactionTo(status, attempt);
 
@@ -125,6 +185,28 @@ export const useDayHours = ({ day, savedMinutes, timeZone }: UseDayHoursOptions)
 
     savingRef.current = true;
 
+    // The buttons go out of reach while the request is away — the
+    // owner's call, so that a save in flight cannot be tapped over a
+    // dozen times by somebody who is not sure it registered. Released
+    // either when the save settles or after HOURS_SAVE_LOCK_MS,
+    // whichever comes first: a card locked for the full length of three
+    // failing attempts would be worse than the problem.
+    //
+    // It costs nothing in an ordinary burst: the save starts 600 ms
+    // after the LAST tap, so a run of quick taps is over before this
+    // happens.
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+
+    setSaveState("saving");
+    setIsLocked(true);
+    lockTimerRef.current = setTimeout(unlock, HOURS_SAVE_LOCK_MS);
+
+    // What the header will say once this is over. "saved" only where
+    // the server took the number; every way out below that is not that
+    // sets it back, because a toast is already saying what happened and
+    // a tick beside it would contradict it.
+    let outcome: HoursSaveState = "idle";
+
     try {
       while (needsSave(targetRef.current, confirmedRef.current)) {
         // Midnight, or a page that came back from being frozen since
@@ -136,6 +218,7 @@ export const useDayHours = ({ day, savedMinutes, timeZone }: UseDayHoursOptions)
         // the screen is asked for the day it is now (the card is keyed by
         // the day, so it comes back empty for today).
         if (currentDayKey(timeZone) !== day) {
+          outcome = "idle";
           showToast({ message: t("saveDayChanged"), tone: "negative" });
           router.refresh();
 
@@ -143,14 +226,29 @@ export const useDayHours = ({ day, savedMinutes, timeZone }: UseDayHoursOptions)
         }
 
         const value = targetRef.current;
-        // One value, up to three attempts. Sending the same number again
-        // is safe — the write is an upsert keyed by (person, day) — and
-        // it is the only honest answer to "we did not hear back", since
-        // the row may well have been written and only the reply lost.
-        const reaction = await settleSave(value);
+        // No connection at all: the one failure that needs no guessing.
+        // Nothing can leave the device, so nothing was written, and the
+        // card says that straight away instead of spending three
+        // attempts to learn what the browser already knows. Found by the
+        // owner, 2026-10-27: with the network off the taps moved the
+        // number and nobody was told anything until the gate took the
+        // screen away.
+        //
+        // Asked here, per attempt, rather than once on mount: the
+        // connection goes while the screen is open, which is exactly the
+        // case this is about.
+        const reaction: SettledSaveReaction = isOffline()
+          ? { kind: "rollback", reason: "offline" }
+          // One value, up to three attempts. Sending the same number
+          // again is safe — the write is an upsert keyed by (person,
+          // day) — and it is the only honest answer to "we did not hear
+          // back", since the row may well have been written and only the
+          // reply lost.
+          : await settleSave(value);
 
         if (reaction.kind === "keep") {
           confirmedRef.current = value;
+          outcome = "saved";
 
           continue;
         }
@@ -161,27 +259,38 @@ export const useDayHours = ({ day, savedMinutes, timeZone }: UseDayHoursOptions)
           // that used to be made here, and that was wrong whenever the
           // write had landed and only the reply was lost. `confirmedRef`
           // is left alone, so the next tap sends the whole value again.
+          outcome = "idle";
           showToast({ message: t("saveUnconfirmed"), tone: "negative" });
 
           return;
         }
 
-        // The server answered, and the answer was no. Only the delta it
-        // refused comes off: taps made while the request was away were
-        // never sent to anybody.
+        // We know the server does not have it — either because it said
+        // so, or because the request never got to it. Only the delta
+        // that failed comes off: taps made while the request was away
+        // were never sent to anybody.
         const next = rollbackTarget(targetRef.current, confirmedRef.current, value);
-        const message = reaction.reason === "refused" ? t("saveRefused") : t("saveSignedOut");
 
+        outcome = "idle";
         targetRef.current = next;
         setMinutes(next);
-        showToast({ message, tone: "negative" });
+        showToast({ message: t(ROLLBACK_MESSAGE[reaction.reason]), tone: "negative" });
 
         return;
       }
     } finally {
       savingRef.current = false;
+      unlock();
+      setSaveState(outcome);
+
+      if (outcome === "saved") {
+        savedTimerRef.current = setTimeout(() => {
+          savedTimerRef.current = null;
+          setSaveState("idle");
+        }, HOURS_SAVED_SHOWN_MS);
+      }
     }
-  }, [day, router, settleSave, t, timeZone]);
+  }, [day, router, settleSave, t, timeZone, unlock]);
 
   // The latest flush, reachable from a listener that is registered once.
   // Without it the effect below would re-subscribe whenever `flush`
@@ -245,6 +354,9 @@ export const useDayHours = ({ day, savedMinutes, timeZone }: UseDayHoursOptions)
     return () => {
       document.removeEventListener("visibilitychange", onHidden);
 
+      if (lockTimerRef.current) clearTimeout(lockTimerRef.current);
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+
       // Leaving the screen with a tap still pending: the same loss as
       // above, so the same answer. The request outlives the component —
       // it is a fetch, not a render — and if it fails there is nothing
@@ -254,5 +366,5 @@ export const useDayHours = ({ day, savedMinutes, timeZone }: UseDayHoursOptions)
     };
   }, []);
 
-  return { change, minutes };
+  return { change, isLocked, minutes, saveState };
 };

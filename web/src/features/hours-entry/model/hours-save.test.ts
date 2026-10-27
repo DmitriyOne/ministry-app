@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  classifySaveFailure,
   HOURS_SAVE_ATTEMPTS,
   needsSave,
   reactionTo,
@@ -28,12 +29,67 @@ describe("reactionTo", () => {
   // written and only the reply lost, so rolling back would take away
   // hours the database holds and say they were not saved.
   it("sends the number again while there are attempts left", () => {
-    expect(reactionTo("unavailable", 1)).toEqual({ kind: "retry" });
-    expect(reactionTo("unavailable", HOURS_SAVE_ATTEMPTS - 1)).toEqual({ kind: "retry" });
+    expect(reactionTo("unknown", 1)).toEqual({ kind: "retry" });
+    expect(reactionTo("unknown", HOURS_SAVE_ATTEMPTS - 1)).toEqual({ kind: "retry" });
   });
 
   it("keeps the number and calls it unconfirmed once the attempts run out", () => {
-    expect(reactionTo("unavailable", HOURS_SAVE_ATTEMPTS)).toEqual({ kind: "unconfirmed" });
+    expect(reactionTo("unknown", HOURS_SAVE_ATTEMPTS)).toEqual({ kind: "unconfirmed" });
+  });
+
+  // A connection that was refused is asked about again too — two
+  // seconds of a restarting backend is worth a retry.
+  it("asks a refused connection again before giving up on it", () => {
+    expect(reactionTo("unreachable", 1)).toEqual({ kind: "retry" });
+  });
+
+  // And then it rolls back, because here we DO know: nothing was
+  // written, so keeping the number would promise hours the database
+  // does not hold (the owner, 2026-10-27).
+  it("takes the number back once the server is known not to have it", () => {
+    expect(reactionTo("unreachable", HOURS_SAVE_ATTEMPTS))
+      .toEqual({ kind: "rollback", reason: "unreachable" });
+  });
+});
+
+describe("classifySaveFailure", () => {
+  // The shape postgrest-js produces for a failed fetch: every kind of
+  // failure arrives with an empty `code`, and the cause is in `details`.
+  it("knows a connection that was never established", () => {
+    expect(classifySaveFailure({
+      message: "TypeError: fetch failed",
+      details: "Caused by: Error: connect ECONNREFUSED 127.0.0.1:54321 (ECONNREFUSED)",
+      hint: "",
+      code: "",
+    })).toBe("unreachable");
+  });
+
+  it("knows a host that did not resolve", () => {
+    expect(classifySaveFailure({ message: "TypeError: fetch failed", details: "ENOTFOUND" }))
+      .toBe("unreachable");
+  });
+
+  // An abort may have fired after Postgres committed, so this one is
+  // not knowing — which is the whole point of the two statuses.
+  it("does not claim to know when the deadline fired", () => {
+    expect(classifySaveFailure({
+      message: "AbortError: This operation was aborted",
+      details: "",
+      hint: "Request was aborted (timeout or manual cancellation)",
+      code: "",
+    })).toBe("unknown");
+  });
+
+  // A reset arrives after the socket was open: the server may have
+  // taken the request and died answering it.
+  it("does not claim to know when the connection was reset", () => {
+    expect(classifySaveFailure({ message: "TypeError: fetch failed", details: "ECONNRESET" }))
+      .toBe("unknown");
+  });
+
+  it("answers for anything that is not an error object at all", () => {
+    expect(classifySaveFailure(undefined)).toBe("unknown");
+    expect(classifySaveFailure("boom")).toBe("unknown");
   });
 });
 

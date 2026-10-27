@@ -8,7 +8,7 @@ import { createServerSupabaseClient, SUPABASE_QUERY_TIMEOUT_MS } from "@/shared/
 import { routes } from "@/shared/config";
 import { reportActionFailure } from "@/shared/lib/action-failure";
 
-import type { SetDayHoursStatus } from "../model/hours-save";
+import { classifySaveFailure, type SetDayHoursStatus } from "../model/hours-save";
 import { MAX_DAY_MINUTES } from "../model/hours-value";
 
 // A check constraint or a raise from set_ministry_day_minutes: the day
@@ -111,8 +111,26 @@ export const setDayHours = async (
 
     return { status: "success" };
   } catch (error) {
-    reportActionFailure({ scope: "set-day-hours", error, outcome: "failed" });
+    // Two answers, not one. A connection the database refused means
+    // nothing was written and the card may take the number back; a
+    // deadline or a reply lost on the way means we do not know, and the
+    // card keeps it (ADR 0062, the 2026-10-27 update). The server is the only place
+    // that can tell these apart — from the browser both look like "no
+    // answer" — which is why the classification lives on this side of
+    // the call.
+    const status = classifySaveFailure(error);
 
-    return { status: "unavailable" };
+    // Reported either way: on this project an unreachable database is a
+    // fact worth a page in Sentry, whatever the card does about it. The
+    // classification travels with it — which of the two it was is the
+    // first question anybody reading the line will have.
+    reportActionFailure({
+      scope: "set-day-hours",
+      error,
+      outcome: "failed",
+      context: { status },
+    });
+
+    return { status };
   }
 };

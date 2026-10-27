@@ -1,6 +1,7 @@
-// Three questions this app asks the browser it is running in, and
+// Four questions this app asks the browser it is running in, and
 // nothing else: how the page was launched, how much of the screen the
-// keyboard covers, and whether a haptic tick is worth attempting.
+// keyboard covers, whether a haptic tick is worth attempting, and
+// whether there is a connection at all.
 //
 // Named `browser`, not `device`: ADR 0015/0016 had a `shared/lib/device`
 // for "what kind of device is this" (screen size), and it was deleted
@@ -21,6 +22,7 @@
 // renders, and each answers "no" instead of throwing when the browser has
 // no opinion. A module that reads configuration, or anything a build
 // decides, does not belong here.
+export { isOffline } from "./is-offline";
 export { isStandaloneDisplayMode } from "./is-standalone-display-mode";
 export { resolveKeyboardInset } from "./resolve-keyboard-inset";
 export { supportsHapticTap } from "./supports-haptic-tap";

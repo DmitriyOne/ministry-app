@@ -1,12 +1,13 @@
 "use client";
 
-import { useId } from "react";
+import { type ReactNode, useId } from "react";
 import { useTranslations } from "next-intl";
 
 import type { DayKey } from "@/entities/ministry-day";
 import { HapticButton } from "@/shared/ui/haptic-button";
-import { MinusIcon, PlusIcon } from "@/shared/ui/icons";
+import { CheckCircleIcon, MinusIcon, PlusIcon } from "@/shared/ui/icons";
 
+import type { HoursSaveState } from "../model/hours-save";
 import { useDayHours } from "../model/use-day-hours";
 import { HoursCardShell } from "./HoursCardShell";
 import {
@@ -48,13 +49,36 @@ type HoursCardProps = {
 export const HoursCard = ({ day, savedMinutes, timeZone }: HoursCardProps) => {
   const t = useTranslations("screens.day.hours");
   const headingId = useId();
-  const { change, minutes } = useDayHours({ day, savedMinutes, timeZone });
+  const { change, isLocked, minutes, saveState } = useDayHours({ day, savedMinutes, timeZone });
 
+  // The header's right-hand slot, which the card already had: it says
+  // what the buttons do, and while a save is away it says that instead.
+  // Nothing moves, nothing covers the number, and there is no spinner —
+  // this app has none anywhere (ADR 0055), and here there is nothing to
+  // wait for either: the number is already the person's.
+  //
+  // A full map rather than two ternaries, so a fourth state cannot be
+  // added without saying what it shows.
+  const statusSlot: Record<HoursSaveState, ReactNode> = {
+    idle: t("step", { minutes: HOURS_STEP_MINUTES }),
+    saving: t("saving"),
+    saved: (
+      <span className="flex items-center gap-1">
+        <CheckCircleIcon size={13} aria-hidden="true" />
+        {t("saved")}
+      </span>
+    ),
+  };
+
+  // Not announced to a screen reader on purpose: the number itself
+  // already sits in a live region and says what the tap did, and a
+  // failure arrives as a toast, which sonner announces. A third voice
+  // on every tap would be noise.
   return (
     <HoursCardShell
       headingId={headingId}
       label={t("label")}
-      step={t("step", { minutes: HOURS_STEP_MINUTES })}
+      step={statusSlot[saveState]}
     >
       <div className="flex items-center justify-between gap-3.5">
         {/* HapticButton, not Button: these are the taps meant to be felt
@@ -62,9 +86,18 @@ export const HoursCard = ({ day, savedMinutes, timeZone }: HoursCardProps) => {
             keyboard, so there is nothing here to keep in sync. */}
         <HapticButton
           variant="heroGhost"
-          className="size-14 rounded-full px-0"
+          // `data-disabled`, not `disabled`: react-aria puts
+          // `aria-disabled` on the button and never the native
+          // attribute, so button.tsx's own `disabled:opacity-50` matches
+          // nothing (CLAUDE.md records this as a defect waiting on a
+          // decision about every button in the app). Here it cannot
+          // wait: a button that is out of reach while a save is away and
+          // looks exactly as it did before is a button somebody taps
+          // harder. Applied to this card only, which changes nothing
+          // anywhere else.
+          className="size-14 rounded-full px-0 data-disabled:opacity-45"
           aria-label={t("decrease", { minutes: HOURS_STEP_MINUTES })}
-          isDisabled={!wouldChange(minutes, -HOURS_STEP_MINUTES)}
+          isDisabled={isLocked || !wouldChange(minutes, -HOURS_STEP_MINUTES)}
           onTap={() => change(-HOURS_STEP_MINUTES)}
         >
           <MinusIcon size={28} />
@@ -83,9 +116,9 @@ export const HoursCard = ({ day, savedMinutes, timeZone }: HoursCardProps) => {
 
         <HapticButton
           variant="action"
-          className="size-14 rounded-full px-0"
+          className="size-14 rounded-full px-0 data-disabled:opacity-45"
           aria-label={t("increase", { minutes: HOURS_STEP_MINUTES })}
-          isDisabled={!wouldChange(minutes, HOURS_STEP_MINUTES)}
+          isDisabled={isLocked || !wouldChange(minutes, HOURS_STEP_MINUTES)}
           onTap={() => change(HOURS_STEP_MINUTES)}
         >
           <PlusIcon size={28} />
@@ -101,8 +134,8 @@ export const HoursCard = ({ day, savedMinutes, timeZone }: HoursCardProps) => {
             key={delta}
             radius="sm"
             variant="heroGhost"
-            className="h-10 w-full rounded-sm px-0 text-sm font-560"
-            isDisabled={!wouldChange(minutes, delta)}
+            className="h-10 w-full rounded-sm px-0 text-sm font-560 data-disabled:opacity-45"
+            isDisabled={isLocked || !wouldChange(minutes, delta)}
             onTap={() => change(delta)}
           >
             {t("quickAdd", { minutes: delta })}
