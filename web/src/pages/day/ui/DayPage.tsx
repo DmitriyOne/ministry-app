@@ -8,6 +8,7 @@ import { WelcomeToast } from "@/features/welcome-toast";
 import { readDayPage } from "../api/read-day-page";
 import { DayHeader } from "./DayHeader";
 import { DayScreenFrame } from "./DayScreenFrame";
+import { RefreshOnDayChange } from "./RefreshOnDayChange";
 
 // Next hands the segment as a promise (15+), so it is awaited rather
 // than read.
@@ -50,6 +51,11 @@ export const DayPage = async ({ params }: DayPageProps) => {
       heading={(
         <>
           <WelcomeToast />
+          {/* "Today" is relative, so a screen left open past midnight
+              would go on saying it. This asks the server for the screen
+              again once the date has turned over — which is where the
+              card's own midnight check went (ADR 0063). */}
+          <RefreshOnDayChange />
           {/* The zone is unknown when the read failed, so the heading
               falls back to the default calendar. It may then name the
               wrong day by a few hours — but it is a LABEL, and no card
@@ -85,7 +91,6 @@ export const DayPage = async ({ params }: DayPageProps) => {
               key={day}
               day={day}
               savedMinutes={page.savedMinutes}
-              timeZone={page.timeZone}
             />
           )}
     </DayScreenFrame>

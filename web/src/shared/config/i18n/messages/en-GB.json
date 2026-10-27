@@ -79,8 +79,7 @@
         "saveOffline": "You’re offline, so those hours weren’t saved.",
         "saveRefused": "Those hours couldn’t be saved. Check the date on your phone.",
         "saveSignedOut": "You’re signed out, so those hours weren’t saved. Sign in again.",
-        "saveUnconfirmed": "We couldn’t confirm those hours. Open the day again to check.",
-        "saveDayChanged": "It’s a new day now, so nothing was saved to the old one."
+        "saveUnconfirmed": "We couldn’t confirm those hours. Open the day again to check."
       },
       "welcomeBack": "Welcome back, {name}",
       "metadata": {

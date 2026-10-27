@@ -1,10 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-import { currentDayKey, type DayKey } from "@/entities/ministry-day";
+import type { DayKey } from "@/entities/ministry-day";
 import { APP_EVENTS } from "@/shared/config";
 import { isOffline } from "@/shared/lib/browser";
 import { showToast } from "@/shared/ui/sonner";
@@ -39,12 +38,13 @@ const ROLLBACK_MESSAGE = {
 } as const satisfies Record<RollbackReason, string>;
 
 type UseDayHoursOptions = {
+  // Which day is being written. It comes from the address (ADR 0063),
+  // so it does not drift: a page opened in the evening still means that
+  // day at one in the morning, and writing to it then is right. The
+  // card used to carry the person's time zone as well, to refuse a save
+  // after midnight — the screen handles that now, by re-rendering the
+  // heading rather than by refusing the write (RefreshOnDayChange).
   day: DayKey;
-  // The calendar the day above was named in — the person's own zone, as
-  // the screen read it from their profile. The card needs it to notice
-  // midnight: comparing against the DEVICE's zone would call every save
-  // a day apart for anyone whose phone is not in the profile's zone.
-  timeZone: string | null;
   // What the database held for this day when the screen was rendered.
   // Read ONCE, at mount: from then on the person's taps are the truth
   // about the number and a re-render must not pull it back. The card is
@@ -113,12 +113,8 @@ const attemptSave = (
 //     loops until the server holds what the screen shows, so the last
 //     tap wins — rather than whichever request happened to come back
 //     last.
-//   * nothing is written to yesterday. The day was decided when the
-//     screen was rendered, and a page left open past midnight would
-//     otherwise go on writing to it — overwriting what is already there.
-export const useDayHours = ({ day, savedMinutes, timeZone }: UseDayHoursOptions) => {
+export const useDayHours = ({ day, savedMinutes }: UseDayHoursOptions) => {
   const t = useTranslations("screens.day.hours");
-  const router = useRouter();
   const [minutes, setMinutes] = useState(savedMinutes);
 
   // What the header says, and whether the buttons are the person's to
@@ -209,22 +205,6 @@ export const useDayHours = ({ day, savedMinutes, timeZone }: UseDayHoursOptions)
 
     try {
       while (needsSave(targetRef.current, confirmedRef.current)) {
-        // Midnight, or a page that came back from being frozen since
-        // yesterday evening — which is exactly what the
-        // `visibilitychange` flush below walks into. The day this card
-        // was drawn for is no longer the day it is, and writing anyway
-        // would not just record the hours in the wrong place: it would
-        // REPLACE what yesterday already holds. So nothing is sent, and
-        // the screen is asked for the day it is now (the card is keyed by
-        // the day, so it comes back empty for today).
-        if (currentDayKey(timeZone) !== day) {
-          outcome = "idle";
-          showToast({ message: t("saveDayChanged"), tone: "negative" });
-          router.refresh();
-
-          return;
-        }
-
         const value = targetRef.current;
         // No connection at all: the one failure that needs no guessing.
         // Nothing can leave the device, so nothing was written, and the
@@ -290,7 +270,9 @@ export const useDayHours = ({ day, savedMinutes, timeZone }: UseDayHoursOptions)
         }, HOURS_SAVED_SHOWN_MS);
       }
     }
-  }, [day, router, settleSave, t, timeZone, unlock]);
+    // No `day` here: nothing in this function names it any more — the
+    // save that does is `settleSave`, which depends on it itself.
+  }, [settleSave, t, unlock]);
 
   // The latest flush, reachable from a listener that is registered once.
   // Without it the effect below would re-subscribe whenever `flush`
