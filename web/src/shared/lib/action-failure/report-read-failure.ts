@@ -2,7 +2,7 @@ import "server-only";
 
 import * as Sentry from "@sentry/nextjs";
 
-import { redactEmails } from "../observability";
+import { describeFailure } from "./describe-failure";
 
 // What a screen does with a read that did not answer, in one place.
 //
@@ -37,29 +37,23 @@ type ReportReadFailureInput = {
   error: unknown;
 };
 
-const codeOf = (error: unknown): string =>
-  typeof error === "object" && error !== null && "code" in error
-    ? String((error as { code: unknown }).code)
-    : "";
-
-const messageOf = (error: unknown): string =>
-  typeof error === "object" && error !== null && "message" in error
-    ? String((error as { message: unknown }).message)
-    : String(error);
-
 export const reportReadFailure = ({ scope, step, error }: ReportReadFailureInput): void => {
-  const code = codeOf(error);
+  const { code, hint, message } = describeFailure(error);
   // An aborted request comes back with an empty code and the hint
   // "Request was aborted (timeout or manual cancellation)" — so the
   // deadline we set ourselves is nameable, rather than filed as an
   // unknown outage.
   const named = code === "" ? "aborted-or-network" : code;
-  const message = redactEmails(messageOf(error));
 
   Sentry.captureException(
     new Error(`[${scope}] ${step} failed (${named}): ${message}`),
     { tags: { read: scope, step, postgrestCode: named } },
   );
 
-  console.warn(`[${scope}] unavailable`, { step, code: named, message });
+  console.warn(`[${scope}] unavailable`, {
+    step,
+    code: named,
+    message,
+    ...(hint === "" ? {} : { hint }),
+  });
 };
