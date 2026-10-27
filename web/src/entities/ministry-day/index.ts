@@ -11,3 +11,4 @@ export {
   parseDayKey,
   toDayKey,
 } from "./model/day-key";
+export { dayPath } from "./model/day-path";
