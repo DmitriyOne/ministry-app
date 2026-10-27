@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { addDays, dayHeading, type DayKey, dayPath, formatDayDate } from "@/entities/ministry-day";
 import { LinkButton } from "@/shared/ui/button";
-import { Caption } from "@/shared/ui/caption";
+import { Eyebrow } from "@/shared/ui/eyebrow";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/shared/ui/icons";
 import { Title } from "@/shared/ui/title";
 
@@ -15,7 +15,12 @@ type DayHeaderProps = {
   today: DayKey;
 };
 
-// The heading, and the two steps either side of it.
+// The heading, and the two steps beside it.
+//
+// The date is the heading and the weekday sits above it as an eyebrow —
+// the owner's design, and the right way round: the date is what names
+// the day, while "Tuesday" (or "Today") is how a person recognises it.
+// Both arrows are together on the right, where a thumb is.
 //
 // Here rather than in a slice of its own: FSD v2.1 keeps code where it
 // is used until there is real reuse, and this has exactly one user. When
@@ -24,55 +29,57 @@ type DayHeaderProps = {
 //
 // The arrows are links, not buttons, and that is the whole navigation:
 // the address carries the day (ADR 0063), so a step is a navigation and
-// the browser's own back button walks the days too. LinkButton keeps it
+// the browser's own back gesture walks the days too. LinkButton keeps it
 // client-side (ADR 0024) and lets Next prefetch the neighbour, so the
 // step lands without a round trip of waiting.
-const ARROW = "size-9.5 shrink-0 rounded-full p-0 [--press-scale:0.94]";
+const ARROW = "size-11 shrink-0 rounded-full p-0 [--press-scale:0.94]";
 
 export const DayHeader = async ({ day, today }: DayHeaderProps) => {
   const t = await getTranslations("screens.day");
   const heading = dayHeading(day, today);
 
   return (
-    <header className="flex items-center gap-3">
-      {/* No floor on how far back this goes (the owner, 2026-10-27): the
-          database accepts any past day, and somebody catching up on a
-          month they forgot is the person this screen is for. */}
-      <LinkButton
-        href={dayPath(addDays(day, -1))}
-        variant="plain"
-        aria-label={t("previousDay")}
-        className={ARROW}
-      >
-        <ChevronLeftIcon size={18} />
-      </LinkButton>
-
-      <div className="min-w-0 flex-1">
+    <header className="flex items-center justify-between gap-3">
+      <div className="flex min-w-0 flex-col gap-0.5">
         {/* A weekday is formatted data and comes from the domain; "Today"
             and "Yesterday" are interface text and come from the
             dictionary (ADR 0014). */}
-        <Title>{heading.kind === "weekday" ? heading.weekday : t(heading.kind)}</Title>
-        <Caption>{formatDayDate(day, today)}</Caption>
+        <Eyebrow>{heading.kind === "weekday" ? heading.weekday : t(heading.kind)}</Eyebrow>
+        <Title>{formatDayDate(day, today)}</Title>
       </div>
 
-      {/* The slot holds its width with nothing in it, so the heading does
-          not shift sideways between today and every other day. Forward
-          is not DISABLED on today, it is absent: a day that has not
-          happened cannot have been served, and in this project a
-          disabled button does not look disabled (DESIGN.md). */}
-      <div className={ARROW}>
-        {day < today
-          ? (
-              <LinkButton
-                href={dayPath(addDays(day, 1))}
-                variant="plain"
-                aria-label={t("nextDay")}
-                className={ARROW}
-              >
-                <ChevronRightIcon size={18} />
-              </LinkButton>
-            )
-          : null}
+      <div className="flex shrink-0 items-center gap-2">
+        {/* No floor on how far back this goes (the owner, 2026-10-27):
+            the database accepts any past day, and somebody catching up
+            on a month they forgot is the person this screen is for. */}
+        <LinkButton
+          href={dayPath(addDays(day, -1))}
+          variant="plain"
+          aria-label={t("previousDay")}
+          className={ARROW}
+        >
+          <ChevronLeftIcon size={20} />
+        </LinkButton>
+
+        {/* The slot holds its width with nothing in it, so the pair does
+            not slide sideways between today and every other day.
+            Forward is not DISABLED on today, it is absent: a day that
+            has not happened cannot have been served, and in this project
+            a disabled button does not look disabled (DESIGN.md). */}
+        <div className={ARROW}>
+          {day < today
+            ? (
+                <LinkButton
+                  href={dayPath(addDays(day, 1))}
+                  variant="plain"
+                  aria-label={t("nextDay")}
+                  className={ARROW}
+                >
+                  <ChevronRightIcon size={20} />
+                </LinkButton>
+              )
+            : null}
+        </div>
       </div>
     </header>
   );

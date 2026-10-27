@@ -21,15 +21,16 @@ export const DayScreenSkeleton = () => (
       // would be a jump on every navigation between days. The arrows
       // are plates for the same reason: their addresses are the
       // neighbours of a day nobody has told us yet.
-      <header className="flex items-center gap-3">
-        <Skeleton className="size-9.5 shrink-0 rounded-full" />
-
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <Skeleton className="h-7 w-32 rounded-md" />
-          <Skeleton className="h-3.5 w-20 rounded-sm" />
+      <header className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <Skeleton className="h-3 w-20 rounded-sm" />
+          <Skeleton className="h-8 w-36 rounded-md" />
         </div>
 
-        <div className="size-9.5 shrink-0" />
+        <div className="flex shrink-0 items-center gap-2">
+          <Skeleton className="size-11 rounded-full" />
+          <div className="size-11" />
+        </div>
       </header>
     )}
   >
