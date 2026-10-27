@@ -5,9 +5,8 @@ import { currentDayKey, parseDayKey } from "@/entities/ministry-day";
 import { HoursCard } from "@/features/hours-entry";
 import { ScreenLoadFailure } from "@/features/screen-retry";
 import { WelcomeToast } from "@/features/welcome-toast";
-import { Title } from "@/shared/ui/title";
-
 import { readDayPage } from "../api/read-day-page";
+import { DayHeader } from "./DayHeader";
 import { DayScreenFrame } from "./DayScreenFrame";
 
 // Next hands the segment as a promise (15+), so it is awaited rather
@@ -27,7 +26,6 @@ type DayPageProps = {
 // WelcomeToast stays: it is what greets someone by name right after they
 // sign in (ADR 0046), and /day is where the gate sends them.
 export const DayPage = async ({ params }: DayPageProps) => {
-  const t = await getTranslations("screens.day");
   const day = parseDayKey((await params).day);
 
   // The boundary. Anything that is not an ISO date — and that includes
@@ -44,12 +42,20 @@ export const DayPage = async ({ params }: DayPageProps) => {
   // that, we do not know, so the failure below speaks instead of a 404.
   if (page.status === "ready" && day > currentDayKey(page.timeZone)) notFound();
 
+  const t = await getTranslations("screens.day");
+  const today = currentDayKey(page.status === "ready" ? page.timeZone : null);
+
   return (
     <DayScreenFrame
       heading={(
         <>
           <WelcomeToast />
-          <Title>{t("title")}</Title>
+          {/* The zone is unknown when the read failed, so the heading
+              falls back to the default calendar. It may then name the
+              wrong day by a few hours — but it is a LABEL, and no card
+              is drawn to write against it, so nothing can be recorded
+              in the wrong place. */}
+          <DayHeader day={day} today={today} />
         </>
       )}
     >
