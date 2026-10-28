@@ -62,3 +62,32 @@ export const dayHeading = (day: DayKey, today: DayKey): DayHeading => {
 // a heading that says "2 June" for both is the one that misleads.
 export const formatDayDate = (day: DayKey, today: DayKey): string =>
   (yearOf(day) === yearOf(today) ? DATE : DATE_WITH_YEAR).format(asUtcDate(day));
+
+// The same day as two short parts: the weekday and the date, for a
+// chip in a row of them (the last-days strip on /day, ADR 0065).
+//
+// Here and not in pages/day, where its only caller is, because this is
+// the third way this app names a DayKey and the other two are already
+// here: a formatter living beside the screen that wants it would be the
+// mistake three copies of MINUTES_IN_HOUR were (ADR 0064, decision 13).
+// The zone argument the others take is absent on purpose — a chip says
+// WHICH day it is, never "today", so nothing here depends on today.
+//
+// One function returning both parts rather than two formatters: the
+// caller always wants the pair, and the chip is the only shape they are
+// used in.
+//
+// `weekday: "short"` ("Wed"), not "narrow": narrow gives one letter, and
+// in English Tuesday and Thursday are both "T" — a strip of seven where
+// two cannot be told apart. Three letters fit the column at 390px,
+// which is the width this app is built for.
+const WEEKDAY_SHORT = new Intl.DateTimeFormat("en-GB", { weekday: "short", timeZone: "UTC" });
+const DAY_OF_MONTH = new Intl.DateTimeFormat("en-GB", { day: "numeric", timeZone: "UTC" });
+
+export type ShortDayLabel = { weekday: string; dayOfMonth: string };
+
+export const shortDayLabel = (day: DayKey): ShortDayLabel => {
+  const date = asUtcDate(day);
+
+  return { weekday: WEEKDAY_SHORT.format(date), dayOfMonth: DAY_OF_MONTH.format(date) };
+};
