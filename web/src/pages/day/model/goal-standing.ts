@@ -1,4 +1,4 @@
-const MINUTES_IN_HOUR = 60;
+import { MINUTES_IN_HOUR } from "@/entities/ministry-day";
 
 // How a total stands against its goal. The arithmetic behind the bracket
 // on each progress row (ADR 0064, decision 10) — out of the component

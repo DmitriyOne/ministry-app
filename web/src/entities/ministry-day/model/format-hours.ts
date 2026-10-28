@@ -1,4 +1,11 @@
-const MINUTES_IN_HOUR = 60;
+// The one place this project writes down how long an hour is. Three
+// files held their own copy of it — this one, pages/day's bracket
+// arithmetic and the bar's own maxValue — and three constants with the
+// same name and the same value are noise a reader has to check rather
+// than read (ADR 0064, decision 13). Exported from here because this is
+// where minutes and hours meet: `ministry_days.minutes` is what the
+// database holds, and a goal is set in hours.
+export const MINUTES_IN_HOUR = 60;
 
 // Minutes as whole hours and the rest of them. Every amount of ministry
 // this app prints is one of those two numbers or both, so they are split

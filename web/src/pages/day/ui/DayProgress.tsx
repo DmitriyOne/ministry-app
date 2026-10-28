@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { formatHours } from "@/entities/ministry-day";
+import { formatHours, MINUTES_IN_HOUR } from "@/entities/ministry-day";
 import { formatMonthName } from "@/entities/ministry-status";
 import { Caption } from "@/shared/ui/caption";
 import { Eyebrow } from "@/shared/ui/eyebrow";
@@ -13,8 +13,6 @@ import {
   type ProgressTone,
   progressStanding,
 } from "../model/progress-text";
-
-const MINUTES_IN_HOUR = 60;
 
 // A constant, not useId: this is a server component, and there is one
 // progress block on the screen — the day's hours card uses a generated

@@ -1,4 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// Same reason as progress-span.test.ts: this module now takes
+// MINUTES_IN_HOUR from entities/ministry-day, whose barrel reaches
+// `@/shared/config` — and that barrel validates `env` at import time,
+// so the real one fails in the runner before a single assertion.
+vi.mock("@/shared/config", () => ({ routes: { day: "/day" } }));
 
 import { goalStanding } from "./goal-standing";
 
