@@ -21,6 +21,7 @@ export {
   ministryStatusChoiceFor,
 } from "./model/choices";
 export { addMonths, type MonthKey, parseMonthKey, toMonthKey } from "./model/month-key";
+export { formatMonthName } from "./model/month-label";
 export {
   DEFAULT_MINISTRY_STATUS,
   type EffectiveMinistryStatus,

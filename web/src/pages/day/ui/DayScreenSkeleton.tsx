@@ -35,5 +35,30 @@ export const DayScreenSkeleton = () => (
     )}
   >
     <HoursCardSkeleton />
+
+    {/* The progress block's own waiting state. Not beside the block in
+        the way the card's is, because the block has nowhere else to
+        live: it is this screen's (ADR 0064), so both halves are here.
+        The bar's own track tone is the plate tone, so an empty track IS
+        the skeleton and only the text needs plates — the track's classes
+        below are the same line as ProgressTrack in shared/ui/progress.tsx
+        and have to stay that way (ADR 0064, decision 12).
+
+        ONE row, not two: the month's row is the one everybody gets,
+        while the service year's appears only for a regular pioneer (ADR
+        0064, decision 11). A second row here would be a promise this
+        screen cannot keep for most people — and a plate that turns into
+        nothing is worse than a row that arrives. */}
+    <div className="flex flex-col gap-2.5 px-1">
+      <Skeleton className="h-3 w-16 rounded-sm" />
+
+      <div className="flex flex-col gap-2 pt-1">
+        <div className="flex items-center justify-between gap-2">
+          <Skeleton className="h-3.5 w-28 rounded-sm" />
+          <Skeleton className="h-3.5 w-20 rounded-sm" />
+        </div>
+        <div className="h-1.5 rounded-full bg-ink-a09" />
+      </div>
+    </div>
   </DayScreenFrame>
 );
