@@ -1,10 +1,12 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { currentDayKey, parseDayKey } from "@/entities/ministry-day";
+import { getSessionClaims } from "@/entities/session";
 import { HoursCard } from "@/features/hours-entry";
 import { ScreenLoadFailure } from "@/features/screen-retry";
 import { WelcomeToast } from "@/features/welcome-toast";
+import { routes } from "@/shared/config";
 import { readDayPage } from "../api/read-day-page";
 import { DayHeader } from "./DayHeader";
 import { DayScreenFrame } from "./DayScreenFrame";
@@ -33,6 +35,16 @@ export const DayPage = async ({ params }: DayPageProps) => {
   // the shapes close enough to be dangerous, like 2026-02-30 — is not
   // this app's address at all.
   if (!day) notFound();
+
+  // proxy.ts already keeps this screen behind a session, so this should
+  // be unreachable — except that DEV_MODE switches proxy off entirely
+  // (CLAUDE.md), and that is exactly where it was met: with no session
+  // the reads below run as `anon`, the database answers "permission
+  // denied for table profiles", and the screen drew "could not load" at
+  // somebody who simply was not signed in. /profile has had this line
+  // since ADR 0044 and redirected correctly, which is why only this
+  // screen got it wrong (the owner, 2026-10-28).
+  if (!await getSessionClaims()) redirect(routes.login);
 
   const page = await readDayPage(day);
 

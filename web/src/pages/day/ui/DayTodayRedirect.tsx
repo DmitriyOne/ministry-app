@@ -2,7 +2,9 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { currentDayKey, dayPath } from "@/entities/ministry-day";
+import { getSessionClaims } from "@/entities/session";
 import { ScreenLoadFailure } from "@/features/screen-retry";
+import { routes } from "@/shared/config";
 import { Title } from "@/shared/ui/title";
 
 import { readTimeZone } from "../api/read-time-zone";
@@ -21,6 +23,16 @@ import { DayScreenFrame } from "./DayScreenFrame";
 // called outside any try/catch (the Next.js rule — a catch would swallow
 // the navigation and the person would stay here).
 export const DayTodayRedirect = async () => {
+  // proxy.ts already keeps this screen behind a session, so this should
+  // be unreachable — except that DEV_MODE switches proxy off entirely
+  // (CLAUDE.md), and that is exactly where it was met: with no session
+  // the reads below run as `anon`, the database answers "permission
+  // denied for table profiles", and the screen drew "could not load" at
+  // somebody who simply was not signed in. /profile has had this line
+  // since ADR 0044 and redirected correctly, which is why only this
+  // screen got it wrong (the owner, 2026-10-28).
+  if (!await getSessionClaims()) redirect(routes.login);
+
   const zone = await readTimeZone();
 
   if (zone.status === "ready") redirect(dayPath(currentDayKey(zone.timeZone)));
