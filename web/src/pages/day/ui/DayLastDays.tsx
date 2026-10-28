@@ -48,7 +48,29 @@ const HEADING_ID = "day-last-days-heading";
 
 // Only the six links press. The chip's outline, and why `pressable` is
 // not part of it, are in LastDaysShell beside the card.
-const CHIP_LINK = `${LAST_DAYS_CHIP} bg-background pressable`;
+//
+// Under the finger a chip also takes COLOUR (the owner, 2026-10-28):
+// `pressable` alone is a 2% squeeze, which answers a thumb but does not
+// read as "this one". The tint is the app's own green, and it is the
+// first half of a sentence the arrival finishes — the day it opens on
+// becomes the dark chip on the right.
+//
+// Pure CSS, so it costs no JavaScript and happens on touch rather than
+// after a round trip: the same `:active` the whole app presses on. No
+// `transition-colors` with it — `.pressable` lives in @layer components
+// and a transition utility sits above that layer, so adding one would
+// replace `transition: transform` and take the squeeze away. An instant
+// tint is also the more honest answer to a finger.
+//
+// The TEXT goes full ink with it, and that is not decoration: measured,
+// --ink-faint on the tinted ground is 4.05:1, which fails AA for an
+// 11px label — the same trap written down for mint on --primary in
+// GoalCard (ADR 0012). Ink on that ground is 9.58:1. So the whole chip
+// steps forward together, and the faint weekday needs the group to hear
+// it: a colour set on the parent does not reach a child that names its
+// own.
+const CHIP_LINK
+  = `group/chip ${LAST_DAYS_CHIP} bg-background pressable active:bg-primary/20 active:text-foreground`;
 
 // A day with hours stands in full ink, a day without recedes: the strip
 // is read for its gaps, and a faint chip is the one being offered.
@@ -60,6 +82,7 @@ const CHIP_RECORDED = `${CHIP_LINK} text-foreground`;
 const CHIP_EMPTY = `${CHIP_LINK} text-ink-faint`;
 const CHIP_OPEN = `${LAST_DAYS_CHIP} bg-hero text-hero-foreground`;
 const WEEKDAY = "text-eyebrow font-600 tracking-eyebrow uppercase";
+const WEEKDAY_QUIET = `${WEEKDAY} text-ink-faint group-active/chip:text-foreground`;
 const DATE = "text-body font-600 tabular-nums";
 const VALUE = "text-eyebrow font-540 tabular-nums";
 
@@ -90,7 +113,7 @@ export const DayLastDays = async ({ openDay, days }: DayLastDaysProps) => {
                 })}
             className={minutes === null ? CHIP_EMPTY : CHIP_RECORDED}
           >
-            <span className={`${WEEKDAY} text-ink-faint`}>{weekday}</span>
+            <span className={WEEKDAY_QUIET}>{weekday}</span>
             <span className={DATE}>{dayOfMonth}</span>
             <span className={VALUE}>
               {minutes === null ? t("none") : formatHours(minutes)}
