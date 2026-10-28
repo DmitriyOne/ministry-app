@@ -3,7 +3,7 @@
 import { type ReactNode, useId } from "react";
 import { useTranslations } from "next-intl";
 
-import type { DayKey } from "@/entities/ministry-day";
+import { type DayKey, formatHours } from "@/entities/ministry-day";
 import { HapticButton } from "@/shared/ui/haptic-button";
 import { CheckCircleIcon, MinusIcon, PlusIcon } from "@/shared/ui/icons";
 
@@ -11,7 +11,6 @@ import type { HoursSaveState } from "../model/hours-save";
 import { useDayHours } from "../model/use-day-hours";
 import { HoursCardShell } from "./HoursCardShell";
 import {
-  formatHours,
   HOURS_QUICK_ADD_MINUTES,
   HOURS_STEP_MINUTES,
   wouldChange,
