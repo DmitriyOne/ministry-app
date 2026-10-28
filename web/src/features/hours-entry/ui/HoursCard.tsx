@@ -82,16 +82,7 @@ export const HoursCard = ({ day, savedMinutes }: HoursCardProps) => {
             keyboard, so there is nothing here to keep in sync. */}
         <HapticButton
           variant="heroGhost"
-          // `data-disabled`, not `disabled`: react-aria puts
-          // `aria-disabled` on the button and never the native
-          // attribute, so button.tsx's own `disabled:opacity-50` matches
-          // nothing (CLAUDE.md records this as a defect waiting on a
-          // decision about every button in the app). Here it cannot
-          // wait: a button that is out of reach while a save is away and
-          // looks exactly as it did before is a button somebody taps
-          // harder. Applied to this card only, which changes nothing
-          // anywhere else.
-          className="size-14 rounded-full px-0 data-disabled:opacity-45"
+          className="size-14 rounded-full px-0"
           aria-label={t("decrease", { minutes: HOURS_STEP_MINUTES })}
           isDisabled={isLocked || !wouldChange(minutes, -HOURS_STEP_MINUTES)}
           onTap={() => change(-HOURS_STEP_MINUTES)}
@@ -112,7 +103,7 @@ export const HoursCard = ({ day, savedMinutes }: HoursCardProps) => {
 
         <HapticButton
           variant="action"
-          className="size-14 rounded-full px-0 data-disabled:opacity-45"
+          className="size-14 rounded-full px-0"
           aria-label={t("increase", { minutes: HOURS_STEP_MINUTES })}
           isDisabled={isLocked || !wouldChange(minutes, HOURS_STEP_MINUTES)}
           onTap={() => change(HOURS_STEP_MINUTES)}
@@ -130,7 +121,7 @@ export const HoursCard = ({ day, savedMinutes }: HoursCardProps) => {
             key={delta}
             radius="sm"
             variant="heroGhost"
-            className="h-10 w-full rounded-sm px-0 text-sm font-560 data-disabled:opacity-45"
+            className="h-10 w-full rounded-sm px-0 text-sm font-560"
             isDisabled={isLocked || !wouldChange(minutes, delta)}
             onTap={() => change(delta)}
           >

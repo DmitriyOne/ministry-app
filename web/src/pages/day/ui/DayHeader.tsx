@@ -36,7 +36,6 @@ type DayHeaderProps = {
 // client-side (ADR 0024) and lets Next prefetch the neighbour, so the
 // step lands without a round trip of waiting.
 const ARROW = "size-11 shrink-0 rounded-full p-0 [--press-scale:0.94]";
-const SPENT_ARROW = `${ARROW} data-disabled:pointer-events-none data-disabled:opacity-40`;
 
 export const DayHeader = async ({ day, today }: DayHeaderProps) => {
   const t = await getTranslations("screens.day");
@@ -69,18 +68,12 @@ export const DayHeader = async ({ day, today }: DayHeaderProps) => {
             pair never moves, and the arrow says by looking spent that
             there is nowhere further to go, rather than disappearing and
             leaving a gap to wonder about (the owner, 2026-10-27).
-            `data-disabled`, not `disabled` — react-aria sets the aria
-            attribute, so `disabled:opacity-50` in button.tsx never
-            applies to anything in this project (ADR 0012, the defect).
-            The dimming is spelled here for the same reason the hours
-            card spells it: the general fix changes every disabled button
-            in the app and waits on the owner.
-            `pointer-events-none` is the other half, and not belt-and-
-            braces: `variant="plain"` carries `.pressable`, whose
-            `:active` lands on a button that is only aria-disabled — so
-            without this the dead arrow would squeeze under a thumb
-            exactly as if it had stepped (the same trap HapticButton
-            documents). */}
+            Nothing is said here about how a disabled button looks:
+            button.tsx dims it and takes it out of reach of a thumb
+            (ADR 0012, fixed app-wide 2026-10-28). That second half
+            matters on this one — `variant="plain"` carries
+            `.pressable`, and its `:active` would otherwise squeeze a
+            dead arrow exactly as if it had stepped. */}
         {day < today
           ? (
               <LinkButton
@@ -97,7 +90,7 @@ export const DayHeader = async ({ day, today }: DayHeaderProps) => {
                 isDisabled
                 variant="plain"
                 aria-label={t("nextDay")}
-                className={SPENT_ARROW}
+                className={ARROW}
               >
                 <ChevronRightIcon size={20} />
               </Button>
