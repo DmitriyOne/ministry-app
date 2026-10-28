@@ -81,6 +81,20 @@
         "saveSignedOut": "You’re signed out, so those hours weren’t saved. Sign in again.",
         "saveUnconfirmed": "We couldn’t confirm those hours. Open the day again to check."
       },
+      "progress": {
+        "label": "Progress",
+        "year": "Service year",
+        "goal": "goal {hours} h",
+        "ahead": "(+{amount})",
+        "behind": "(−{amount})",
+        "level": "(+0)",
+        "hours": "{hours} h",
+        "minutes": "{minutes} min",
+        "hoursMinutes": "{hours} h {minutes} min",
+        "monthBar": "Hours served this month against the goal",
+        "yearBar": "Hours served this service year against the goal",
+        "barValue": "{served} of {goal} hours"
+      },
       "welcomeBack": "Welcome back, {name}",
       "metadata": {
         "title": "Day",

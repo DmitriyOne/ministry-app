@@ -9,6 +9,7 @@ import { WelcomeToast } from "@/features/welcome-toast";
 import { routes } from "@/shared/config";
 import { readDayPage } from "../api/read-day-page";
 import { DayHeader } from "./DayHeader";
+import { DayProgress } from "./DayProgress";
 import { DayScreenFrame } from "./DayScreenFrame";
 import { RefreshOnDayChange } from "./RefreshOnDayChange";
 
@@ -105,6 +106,16 @@ export const DayPage = async ({ params }: DayPageProps) => {
               savedMinutes={page.savedMinutes}
             />
           )}
+
+      {/* Drawn only when all four of its reads answered (ADR 0064): a
+          bar is a fraction, and a fraction with one number missing is
+          wrong rather than incomplete. Nothing stands in its place —
+          unlike the card, this block is not what the person came to
+          change, and an apology where the month's figure belongs would
+          be louder than the figure. */}
+      {page.status === "ready" && page.progress !== null
+        ? <DayProgress progress={page.progress} />
+        : null}
     </DayScreenFrame>
   );
 };
