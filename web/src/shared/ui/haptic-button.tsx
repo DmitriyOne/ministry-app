@@ -83,16 +83,15 @@ const OVERLAY_CLIP: Record<NonNullable<HapticButtonProps["radius"]>, string> = {
 // 0012); the brightening exists only here, because nothing else had
 // asked. A call site may override either through `className`.
 //
-// `data-disabled:pointer-events-none` is not belt-and-braces, it is the
-// only thing stopping a dead button from pretending: react-aria puts
-// `aria-disabled` on a `<button>` and NOT the native `disabled`
-// attribute (see useButton — `disabled: elementType === "input" ?
-// isDisabled : undefined`), so `button.tsx`'s own
-// `disabled:pointer-events-none` never matches and CSS `:active` lands
-// on the button as usual. RAC does set `data-disabled`, which is the
-// hook that works. Without this, tapping minus at 0:00 — or plus at
-// 24:00 — squeezed and brightened exactly as if it had worked.
-const PRESS_FEEL = "duration-75 data-disabled:pointer-events-none [--press-brightness:1.18] [--press-scale:0.9]";
+// Taking a dead button out of a thumb's reach is button.tsx's job now,
+// not this file's (ADR 0012, fixed app-wide 2026-10-28) — without it,
+// tapping minus at 0:00 squeezed and brightened exactly as if it had
+// worked, because react-aria only ever sets `aria-disabled` and CSS
+// `:active` lands on the button regardless. What stays here is the
+// overlay's own half: it is removed while the button is disabled, in
+// the JSX below, because the overlay is what the finger touches and no
+// rule on the button reaches it.
+const PRESS_FEEL = "duration-75 [--press-brightness:1.18] [--press-scale:0.9]";
 
 // The environment answer is a fact about the browser, not state: read
 // through useSyncExternalStore (never an effect plus setState, which the

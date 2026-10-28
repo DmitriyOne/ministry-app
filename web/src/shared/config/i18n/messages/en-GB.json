@@ -59,6 +59,10 @@
   "screens": {
     "day": {
       "title": "Day",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "previousDay": "Go to the day before",
+      "nextDay": "Go to the day after",
       "loadFailure": {
         "title": "The day’s hours didn’t load",
         "text": "Nothing is lost — we just can’t show or change them until the server answers."
@@ -75,13 +79,13 @@
         "saveOffline": "You’re offline, so those hours weren’t saved.",
         "saveRefused": "Those hours couldn’t be saved. Check the date on your phone.",
         "saveSignedOut": "You’re signed out, so those hours weren’t saved. Sign in again.",
-        "saveUnconfirmed": "We couldn’t confirm those hours. Open the day again to check.",
-        "saveDayChanged": "It’s a new day now, so nothing was saved to the old one."
+        "saveUnconfirmed": "We couldn’t confirm those hours. Open the day again to check."
       },
       "welcomeBack": "Welcome back, {name}",
       "metadata": {
         "title": "Day",
-        "description": "Record today's ministry hours and Bible studies in a few taps, and see how you're tracking against your monthly and yearly goal."
+        "description": "Record today's ministry hours and Bible studies in a few taps, and see how you're tracking against your monthly and yearly goal.",
+        "dayTitle": "{label}, {date}"
       }
     },
     "calendar": {

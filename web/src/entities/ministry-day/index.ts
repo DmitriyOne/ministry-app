@@ -11,3 +11,5 @@ export {
   parseDayKey,
   toDayKey,
 } from "./model/day-key";
+export { type DayHeading, dayHeading, formatDayDate } from "./model/day-label";
+export { dayPath } from "./model/day-path";

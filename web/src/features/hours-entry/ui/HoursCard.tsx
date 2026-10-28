@@ -18,17 +18,13 @@ import {
 } from "../model/hours-value";
 
 type HoursCardProps = {
-  // Which day is being dialled. The screen decides it, from the person's
-  // own calendar, and the card never asks the clock itself.
+  // Which day is being dialled. It comes from the address (ADR 0063),
+  // and the card never asks the clock itself.
   day: DayKey;
   // What the database holds for that day. Zero both for a day recorded
   // as nothing and for a day with no row at all — the difference matters
   // to the table, not to this card (ADR 0062).
   savedMinutes: number;
-  // The calendar the day was named in. The card does not read it to
-  // show anything — it reads it to notice that the day has turned over
-  // while the screen stayed open (ADR 0062).
-  timeZone: string | null;
 };
 
 // The hours served on one day, dialled by hand — the one interactive
@@ -46,10 +42,10 @@ type HoursCardProps = {
 // whether a button has anywhere to go come from ../model/hours-value,
 // and when and how a tap is saved comes from ../model/use-day-hours.
 // What is left is markup.
-export const HoursCard = ({ day, savedMinutes, timeZone }: HoursCardProps) => {
+export const HoursCard = ({ day, savedMinutes }: HoursCardProps) => {
   const t = useTranslations("screens.day.hours");
   const headingId = useId();
-  const { change, isLocked, minutes, saveState } = useDayHours({ day, savedMinutes, timeZone });
+  const { change, isLocked, minutes, saveState } = useDayHours({ day, savedMinutes });
 
   // The header's right-hand slot, which the card already had: it says
   // what the buttons do, and while a save is away it says that instead.
@@ -86,16 +82,7 @@ export const HoursCard = ({ day, savedMinutes, timeZone }: HoursCardProps) => {
             keyboard, so there is nothing here to keep in sync. */}
         <HapticButton
           variant="heroGhost"
-          // `data-disabled`, not `disabled`: react-aria puts
-          // `aria-disabled` on the button and never the native
-          // attribute, so button.tsx's own `disabled:opacity-50` matches
-          // nothing (CLAUDE.md records this as a defect waiting on a
-          // decision about every button in the app). Here it cannot
-          // wait: a button that is out of reach while a save is away and
-          // looks exactly as it did before is a button somebody taps
-          // harder. Applied to this card only, which changes nothing
-          // anywhere else.
-          className="size-14 rounded-full px-0 data-disabled:opacity-45"
+          className="size-14 rounded-full px-0"
           aria-label={t("decrease", { minutes: HOURS_STEP_MINUTES })}
           isDisabled={isLocked || !wouldChange(minutes, -HOURS_STEP_MINUTES)}
           onTap={() => change(-HOURS_STEP_MINUTES)}
@@ -116,7 +103,7 @@ export const HoursCard = ({ day, savedMinutes, timeZone }: HoursCardProps) => {
 
         <HapticButton
           variant="action"
-          className="size-14 rounded-full px-0 data-disabled:opacity-45"
+          className="size-14 rounded-full px-0"
           aria-label={t("increase", { minutes: HOURS_STEP_MINUTES })}
           isDisabled={isLocked || !wouldChange(minutes, HOURS_STEP_MINUTES)}
           onTap={() => change(HOURS_STEP_MINUTES)}
@@ -134,7 +121,7 @@ export const HoursCard = ({ day, savedMinutes, timeZone }: HoursCardProps) => {
             key={delta}
             radius="sm"
             variant="heroGhost"
-            className="h-10 w-full rounded-sm px-0 text-sm font-560 data-disabled:opacity-45"
+            className="h-10 w-full rounded-sm px-0 text-sm font-560"
             isDisabled={isLocked || !wouldChange(minutes, delta)}
             onTap={() => change(delta)}
           >

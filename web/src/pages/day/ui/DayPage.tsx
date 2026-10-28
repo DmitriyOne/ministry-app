@@ -1,12 +1,22 @@
+import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { currentDayKey, parseDayKey } from "@/entities/ministry-day";
+import { getSessionClaims } from "@/entities/session";
 import { HoursCard } from "@/features/hours-entry";
 import { ScreenLoadFailure } from "@/features/screen-retry";
 import { WelcomeToast } from "@/features/welcome-toast";
-import { CenteredState } from "@/shared/ui/centered-state";
-import { Title } from "@/shared/ui/title";
-
+import { routes } from "@/shared/config";
 import { readDayPage } from "../api/read-day-page";
+import { DayHeader } from "./DayHeader";
+import { DayScreenFrame } from "./DayScreenFrame";
+import { RefreshOnDayChange } from "./RefreshOnDayChange";
+
+// Next hands the segment as a promise (15+), so it is awaited rather
+// than read.
+type DayPageProps = {
+  params: Promise<{ day: string }>;
+};
 
 // The day screen. The hours card on it now keeps what it is given (ADR
 // 0062) — until 2.3 it kept nothing and a reload cleared it (ADR 0060) —
@@ -18,17 +28,55 @@ import { readDayPage } from "../api/read-day-page";
 //
 // WelcomeToast stays: it is what greets someone by name right after they
 // sign in (ADR 0046), and /day is where the gate sends them.
-export const DayPage = async () => {
+export const DayPage = async ({ params }: DayPageProps) => {
+  const day = parseDayKey((await params).day);
+
+  // The boundary. Anything that is not an ISO date — and that includes
+  // the shapes close enough to be dangerous, like 2026-02-30 — is not
+  // this app's address at all.
+  if (!day) notFound();
+
+  // proxy.ts already keeps this screen behind a session, so this should
+  // be unreachable — except that DEV_MODE switches proxy off entirely
+  // (CLAUDE.md), and that is exactly where it was met: with no session
+  // the reads below run as `anon`, the database answers "permission
+  // denied for table profiles", and the screen drew "could not load" at
+  // somebody who simply was not signed in. /profile has had this line
+  // since ADR 0044 and redirected correctly, which is why only this
+  // screen got it wrong (the owner, 2026-10-28).
+  if (!await getSessionClaims()) redirect(routes.login);
+
+  const page = await readDayPage(day);
+
+  // A day that has not happened cannot have been served, and the only
+  // way to ask for one is to type it: the forward arrow is disabled on
+  // today. Decided after the read, because it takes the person's own
+  // calendar to know what "future" means — and if we could not read
+  // that, we do not know, so the failure below speaks instead of a 404.
+  if (page.status === "ready" && day > currentDayKey(page.timeZone)) notFound();
+
   const t = await getTranslations("screens.day");
-  const page = await readDayPage();
+  const today = currentDayKey(page.status === "ready" ? page.timeZone : null);
 
   return (
-    // Not centred like the state screens: this one grows downwards as the
-    // day gets its remaining sections, so it starts at the top and the
-    // children stretch to the full width.
-    <CenteredState fill className="items-stretch justify-start gap-5 px-5 pt-6 text-left">
-      <WelcomeToast />
-      <Title>{t("title")}</Title>
+    <DayScreenFrame
+      heading={(
+        <>
+          <WelcomeToast />
+          {/* "Today" is relative, so a screen left open past midnight
+              would go on saying it. This asks the server for the screen
+              again once the date has turned over — which is where the
+              card's own midnight check went (ADR 0063). */}
+          <RefreshOnDayChange />
+          {/* The zone is unknown when the read failed, so the heading
+              falls back to the default calendar. It may then name the
+              wrong day by a few hours — but it is a LABEL, and no card
+              is drawn to write against it, so nothing can be recorded
+              in the wrong place. */}
+          <DayHeader day={day} today={today} />
+        </>
+      )}
+    >
 
       {/* A card is drawn only when we know what the day holds. The read
           having failed is not the same as a day with nothing on it: a
@@ -52,12 +100,11 @@ export const DayPage = async () => {
             // about the number. Another day has to be another mount, or
             // the card would open on Tuesday showing Monday's total.
             <HoursCard
-              key={page.day}
-              day={page.day}
+              key={day}
+              day={day}
               savedMinutes={page.savedMinutes}
-              timeZone={page.timeZone}
             />
           )}
-    </CenteredState>
+    </DayScreenFrame>
   );
 };
