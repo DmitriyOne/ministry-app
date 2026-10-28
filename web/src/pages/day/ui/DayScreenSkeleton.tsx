@@ -18,9 +18,9 @@ export const DayScreenSkeleton = () => (
       // Plates, not the word "Day": a loading boundary cannot read the
       // route's segment, so this file has no way to know which day is
       // coming — and a heading that said "Day" and then became "Today"
-      // would be a jump on every navigation between days. The arrows
-      // are plates for the same reason: their addresses are the
-      // neighbours of a day nobody has told us yet.
+      // would be a jump on every navigation between days. Two arrow
+      // plates, because both arrows are always drawn: forward is
+      // disabled on today, not absent.
       <header className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1.5">
           <Skeleton className="h-3 w-20 rounded-sm" />
@@ -29,7 +29,7 @@ export const DayScreenSkeleton = () => (
 
         <div className="flex shrink-0 items-center gap-2">
           <Skeleton className="size-11 rounded-full" />
-          <div className="size-11" />
+          <Skeleton className="size-11 rounded-full" />
         </div>
       </header>
     )}

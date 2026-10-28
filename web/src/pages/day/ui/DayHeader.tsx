@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { addDays, dayHeading, type DayKey, dayPath, formatDayDate } from "@/entities/ministry-day";
-import { LinkButton } from "@/shared/ui/button";
+import { Button, LinkButton } from "@/shared/ui/button";
 import { Eyebrow } from "@/shared/ui/eyebrow";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/shared/ui/icons";
 import { Title } from "@/shared/ui/title";
@@ -27,12 +27,16 @@ type DayHeaderProps = {
 // the calendar wants the same control, that is the moment to extract it
 // — not now, on a guess about which shape it will want.
 //
+// Back is always a step; forward on today is a disabled button, not an
+// absent one, so the pair keeps its shape and the dead end is visible.
+//
 // The arrows are links, not buttons, and that is the whole navigation:
 // the address carries the day (ADR 0063), so a step is a navigation and
 // the browser's own back gesture walks the days too. LinkButton keeps it
 // client-side (ADR 0024) and lets Next prefetch the neighbour, so the
 // step lands without a round trip of waiting.
 const ARROW = "size-11 shrink-0 rounded-full p-0 [--press-scale:0.94]";
+const SPENT_ARROW = `${ARROW} data-disabled:opacity-40`;
 
 export const DayHeader = async ({ day, today }: DayHeaderProps) => {
   const t = await getTranslations("screens.day");
@@ -61,25 +65,37 @@ export const DayHeader = async ({ day, today }: DayHeaderProps) => {
           <ChevronLeftIcon size={20} />
         </LinkButton>
 
-        {/* The slot holds its width with nothing in it, so the pair does
-            not slide sideways between today and every other day.
-            Forward is not DISABLED on today, it is absent: a day that
-            has not happened cannot have been served, and in this project
-            a disabled button does not look disabled (DESIGN.md). */}
-        <div className={ARROW}>
-          {day < today
-            ? (
-                <LinkButton
-                  href={dayPath(addDays(day, 1))}
-                  variant="plain"
-                  aria-label={t("nextDay")}
-                  className={ARROW}
-                >
-                  <ChevronRightIcon size={20} />
-                </LinkButton>
-              )
-            : null}
-        </div>
+        {/* On today, forward is a button that is there and refuses: the
+            pair never moves, and the arrow says by looking spent that
+            there is nowhere further to go, rather than disappearing and
+            leaving a gap to wonder about (the owner, 2026-10-27).
+            `data-disabled`, not `disabled` — react-aria sets the aria
+            attribute, so `disabled:opacity-50` in button.tsx never
+            applies to anything in this project (ADR 0012, the defect).
+            The dimming is spelled here for the same reason the hours
+            card spells it: the general fix changes every disabled button
+            in the app and waits on the owner. */}
+        {day < today
+          ? (
+              <LinkButton
+                href={dayPath(addDays(day, 1))}
+                variant="plain"
+                aria-label={t("nextDay")}
+                className={ARROW}
+              >
+                <ChevronRightIcon size={20} />
+              </LinkButton>
+            )
+          : (
+              <Button
+                isDisabled
+                variant="plain"
+                aria-label={t("nextDay")}
+                className={SPENT_ARROW}
+              >
+                <ChevronRightIcon size={20} />
+              </Button>
+            )}
       </div>
     </header>
   );
