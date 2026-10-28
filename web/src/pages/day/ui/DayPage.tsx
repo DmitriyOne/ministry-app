@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { currentDayKey, parseDayKey } from "@/entities/ministry-day";
 import { getSessionClaims } from "@/entities/session";
-import { HoursCard } from "@/features/hours-entry";
+import { DayHoursProvider, HoursCard } from "@/features/hours-entry";
 import { ScreenLoadFailure } from "@/features/screen-retry";
 import { WelcomeToast } from "@/features/welcome-toast";
 import { routes } from "@/shared/config";
@@ -96,15 +96,15 @@ export const DayPage = async ({ params }: DayPageProps) => {
             />
           )
         : (
-            // Keyed by the day: the card reads what the database holds
-            // once, at mount, and from then on the taps are the truth
-            // about the number. Another day has to be another mount, or
-            // the card would open on Tuesday showing Monday's total.
-            <HoursCard
-              key={day}
-              day={day}
-              savedMinutes={page.savedMinutes}
-            />
+            // Keyed by the day: the hours are read once, at mount, and
+            // from then on the taps are the truth about the number.
+            // Another day has to be another mount, or the card would
+            // open on Tuesday showing Monday's total. The key sits on
+            // the provider because that is where the state is (ADR
+            // 0065) — it used to sit on the card, which held it.
+            <DayHoursProvider key={day} day={day} savedMinutes={page.savedMinutes}>
+              <HoursCard />
+            </DayHoursProvider>
           )}
 
       {/* Drawn only when all four of its reads answered (ADR 0064): a
