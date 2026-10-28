@@ -8,7 +8,11 @@ import { cn } from "@/shared/lib/cn";
 import { Progress } from "@/shared/ui/progress";
 
 import type { DayProgress as DayProgressData } from "../api/read-day-page";
-import { goalStanding, splitDuration } from "../model/goal-standing";
+import {
+  type ProgressStanding,
+  type ProgressTone,
+  progressStanding,
+} from "../model/progress-text";
 
 const MINUTES_IN_HOUR = 60;
 
@@ -28,14 +32,12 @@ const INDICATOR_TONE = {
   hero: "[&_[data-slot=progress-indicator]]:bg-hero",
 } as const;
 
-// Short of the goal is --negative, level with it or past it is the
-// project's green. The owner's mock-ups (2026-10-28) call for the red.
-const STANDING_TONE = {
+// Which class carries each tone the model names. The choice between
+// them is not here — it is progressStanding's, with tests.
+const STANDING_TONE: Record<ProgressTone, string> = {
   met: "text-primary",
   short: "text-negative",
-} as const;
-
-type Standing = { text: string; tone: keyof typeof STANDING_TONE };
+};
 
 type ProgressRowProps = {
   label: string;
@@ -45,7 +47,7 @@ type ProgressRowProps = {
   // answer's zero into null. The row then shows the total, with no bar
   // and no bracket: both would have to pick a goal nobody set.
   goalHours: number | null;
-  standing: Standing | null;
+  standing: ProgressStanding | null;
   goalLabel: (hours: number) => string;
   barLabel: string;
   barValue: (served: string, goal: number) => string;
@@ -153,44 +155,13 @@ export const DayProgress = async ({ progress }: DayProgressProps) => {
   const goalLabel = (hours: number) => t("goal", { hours });
   const barValue = (served: string, goal: number) => t("barValue", { served, goal });
 
-  // "1 h 30 min", "15 min", "134 h" — spelled out rather than as a clock
-  // (the owner's mock-ups). A difference is not a time of day, and
-  // "−1:30" beside "0:30" would be two numbers of the same shape meaning
-  // different things.
-  const amount = (total: number) => {
-    const { hours, minutes } = splitDuration(total);
-
-    if (hours === 0) return t("minutes", { minutes });
-
-    if (minutes === 0) return t("hours", { hours });
-
-    return t("hoursMinutes", { hours, minutes });
-  };
-
-  // The bracket: how this total stands against the WHOLE goal — what is
-  // still owed, or by how much it is beaten (ADR 0064, decision 10).
-  //
-  // Against the whole goal, and not against the share of it due by
-  // today, which is what this said until the owner saw the result on 28
-  // October: "1:50 (−25 h 16 min)". Both the odd minutes (a goal divided
-  // by the days of the month rarely lands on one) and the hidden
-  // reference point made it a number to decipher rather than read. A
-  // monthly goal is a figure people already keep in their heads; this
-  // bracket now says the plain rest of it.
-  //
-  // Level says "(+0)" rather than "+0 min" — the owner's mock-up, and it
-  // reads as a state rather than as a measurement of nothing.
-  const standing = (served: number, goalHours: number): Standing => {
-    const against = goalStanding(served, goalHours);
-
-    if (against.kind === "level") return { text: t("level"), tone: "met" };
-
-    if (against.kind === "ahead") {
-      return { text: t("ahead", { amount: amount(against.minutes) }), tone: "met" };
-    }
-
-    return { text: t("behind", { amount: amount(against.minutes) }), tone: "short" };
-  };
+  // The bracket beside each total, words and colour both, worked out by
+  // model/progress-text.ts: which of "(+0)", "(+1 h 30 min)" and
+  // "(−28 h 10 min)" to say is a decision, and decisions in this project
+  // live in tested functions rather than in markup (the owner,
+  // 2026-10-28). The translator goes in as an argument so that function
+  // stays callable from a test.
+  const standing = (served: number, goalHours: number) => progressStanding(t, served, goalHours);
 
   return (
     // Named by its own heading, like the hours card above it: a section
