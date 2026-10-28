@@ -36,7 +36,7 @@ type DayHeaderProps = {
 // client-side (ADR 0024) and lets Next prefetch the neighbour, so the
 // step lands without a round trip of waiting.
 const ARROW = "size-11 shrink-0 rounded-full p-0 [--press-scale:0.94]";
-const SPENT_ARROW = `${ARROW} data-disabled:opacity-40`;
+const SPENT_ARROW = `${ARROW} data-disabled:pointer-events-none data-disabled:opacity-40`;
 
 export const DayHeader = async ({ day, today }: DayHeaderProps) => {
   const t = await getTranslations("screens.day");
@@ -74,7 +74,13 @@ export const DayHeader = async ({ day, today }: DayHeaderProps) => {
             applies to anything in this project (ADR 0012, the defect).
             The dimming is spelled here for the same reason the hours
             card spells it: the general fix changes every disabled button
-            in the app and waits on the owner. */}
+            in the app and waits on the owner.
+            `pointer-events-none` is the other half, and not belt-and-
+            braces: `variant="plain"` carries `.pressable`, whose
+            `:active` lands on a button that is only aria-disabled — so
+            without this the dead arrow would squeeze under a thumb
+            exactly as if it had stepped (the same trap HapticButton
+            documents). */}
         {day < today
           ? (
               <LinkButton

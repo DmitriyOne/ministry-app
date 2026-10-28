@@ -37,7 +37,7 @@ export const DayPage = async ({ params }: DayPageProps) => {
   const page = await readDayPage(day);
 
   // A day that has not happened cannot have been served, and the only
-  // way to ask for one is to type it: the forward arrow is not drawn on
+  // way to ask for one is to type it: the forward arrow is disabled on
   // today. Decided after the read, because it takes the person's own
   // calendar to know what "future" means — and if we could not read
   // that, we do not know, so the failure below speaks instead of a 404.
