@@ -3,10 +3,9 @@ import { getTranslations } from "next-intl/server";
 
 import { type DayKey, dayPath, formatHours, shortDayLabel } from "@/entities/ministry-day";
 import { DayHoursValue } from "@/features/hours-entry";
-import { Eyebrow } from "@/shared/ui/eyebrow";
-
 import type { PreviousDay } from "../model/last-days";
 import { progressAmount } from "../model/progress-text";
+import { LAST_DAYS_CHIP, LastDaysShell } from "./LastDaysShell";
 
 type DayLastDaysProps = {
   // The day the screen is on. Its chip is the seventh and last, on the
@@ -47,13 +46,9 @@ type DayLastDaysProps = {
 // (ADR 0024).
 const HEADING_ID = "day-last-days-heading";
 
-// Exported so the screen's skeleton builds its chips out of the same
-// classes rather than a copy of them: the two are the same shape by
-// construction, and a padding kept in step by hand is one nobody keeps
-// (ADR 0064, decision 12 — which settled for a comment only because the
-// pair there crossed the client/server boundary; this pair does not).
-export const LAST_DAYS_CHIP
-  = "flex flex-col items-center gap-1 rounded-sm px-0.5 py-2 pressable";
+// Only the six links press. The chip's outline, and why `pressable` is
+// not part of it, are in LastDaysShell beside the card.
+const CHIP_LINK = `${LAST_DAYS_CHIP} bg-background pressable`;
 
 // A day with hours stands in full ink, a day without recedes: the strip
 // is read for its gaps, and a faint chip is the one being offered.
@@ -61,8 +56,8 @@ export const LAST_DAYS_CHIP
 // the dictionary linter reads a bare string in a ternary as text that
 // should have been translated — and it is right to, so the strings stay
 // out of the component.
-const CHIP_RECORDED = `${LAST_DAYS_CHIP} bg-background text-foreground`;
-const CHIP_EMPTY = `${LAST_DAYS_CHIP} bg-background text-ink-faint`;
+const CHIP_RECORDED = `${CHIP_LINK} text-foreground`;
+const CHIP_EMPTY = `${CHIP_LINK} text-ink-faint`;
 const CHIP_OPEN = `${LAST_DAYS_CHIP} bg-hero text-hero-foreground`;
 const WEEKDAY = "text-eyebrow font-600 tracking-eyebrow uppercase";
 const DATE = "text-body font-600 tabular-nums";
@@ -78,55 +73,42 @@ export const DayLastDays = async ({ openDay, days }: DayLastDaysProps) => {
   const open = shortDayLabel(openDay);
 
   return (
-    <section
-      aria-labelledby={HEADING_ID}
-      className="flex flex-col gap-3 rounded-2xl bg-card p-4 shadow-card"
-    >
-      <Eyebrow as="h2" id={HEADING_ID}>
-        {t("label")}
-      </Eyebrow>
+    <LastDaysShell headingId={HEADING_ID} label={t("label")}>
+      {days.map(({ day, minutes }) => {
+        const { weekday, dayOfMonth } = shortDayLabel(day);
 
-      {/* Seven equal columns rather than a scrolling row: at 390px —
-          the width this app is built for — they fit, and nothing a
-          person needs ends up off the edge where it cannot be seen
-          without being scrolled to. */}
-      <div className="grid grid-cols-7 gap-1">
-        {days.map(({ day, minutes }) => {
-          const { weekday, dayOfMonth } = shortDayLabel(day);
+        return (
+          <Link
+            key={day}
+            href={dayPath(day)}
+            aria-label={minutes === null
+              ? t("chipEmpty", { weekday, date: dayOfMonth })
+              : t("chipHours", {
+                  weekday,
+                  date: dayOfMonth,
+                  amount: progressAmount(tProgress, minutes),
+                })}
+            className={minutes === null ? CHIP_EMPTY : CHIP_RECORDED}
+          >
+            <span className={`${WEEKDAY} text-ink-faint`}>{weekday}</span>
+            <span className={DATE}>{dayOfMonth}</span>
+            <span className={VALUE}>
+              {minutes === null ? t("none") : formatHours(minutes)}
+            </span>
+          </Link>
+        );
+      })}
 
-          return (
-            <Link
-              key={day}
-              href={dayPath(day)}
-              aria-label={minutes === null
-                ? t("chipEmpty", { weekday, date: dayOfMonth })
-                : t("chipHours", {
-                    weekday,
-                    date: dayOfMonth,
-                    amount: progressAmount(tProgress, minutes),
-                  })}
-              className={minutes === null ? CHIP_EMPTY : CHIP_RECORDED}
-            >
-              <span className={`${WEEKDAY} text-ink-faint`}>{weekday}</span>
-              <span className={DATE}>{dayOfMonth}</span>
-              <span className={VALUE}>
-                {minutes === null ? t("none") : formatHours(minutes)}
-              </span>
-            </Link>
-          );
-        })}
-
-        {/* The open day. A <div>, not a link to the page it is already
-            on, and not a button: there is nothing to press. aria-current
-            is what says which one it is, since colour cannot. */}
-        <div aria-current="date" className={CHIP_OPEN}>
-          <span className={`${WEEKDAY} text-white/50`}>{open.weekday}</span>
-          <span className={DATE}>{open.dayOfMonth}</span>
-          <span className={VALUE}>
-            <DayHoursValue />
-          </span>
-        </div>
+      {/* The open day. A <div>, not a link to the page it is already on,
+          and not a button: there is nothing to press. aria-current is
+          what says which one it is, since colour cannot. */}
+      <div aria-current="date" className={CHIP_OPEN}>
+        <span className={`${WEEKDAY} text-white/50`}>{open.weekday}</span>
+        <span className={DATE}>{open.dayOfMonth}</span>
+        <span className={VALUE}>
+          <DayHoursValue />
+        </span>
       </div>
-    </section>
+    </LastDaysShell>
   );
 };

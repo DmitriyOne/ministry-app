@@ -15,6 +15,16 @@ import { addDays, type DayKey } from "@/entities/ministry-day";
 // drawing another.
 const PREVIOUS_DAYS = 6;
 
+// How many chips the strip holds: the six read from the database plus
+// the open day. Exported because the skeleton draws that many too, and a
+// literal seven there would stop agreeing with this the first time the
+// strip grew or shrank.
+//
+// One place this number CANNOT reach is the grid itself: Tailwind reads
+// classes as text, so `grid-cols-7` in ui/LastDaysShell.tsx is spelled
+// out and has to be changed by hand along with this.
+export const LAST_DAYS_CHIPS = PREVIOUS_DAYS + 1;
+
 export type PreviousDay = {
   day: DayKey;
   // Null is "nothing is known about that day" — no row — and it is the
