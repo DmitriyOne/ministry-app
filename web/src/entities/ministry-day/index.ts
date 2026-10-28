@@ -13,4 +13,4 @@ export {
 } from "./model/day-key";
 export { type DayHeading, dayHeading, formatDayDate } from "./model/day-label";
 export { dayPath } from "./model/day-path";
-export { formatHours } from "./model/format-hours";
+export { formatHours, splitDuration } from "./model/format-hours";

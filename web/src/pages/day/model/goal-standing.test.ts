@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { goalStanding, splitDuration } from "./goal-standing";
+import { goalStanding } from "./goal-standing";
 
 describe("goalStanding", () => {
   // The case the owner was looking at on 28 October: 1:50 served
@@ -31,13 +31,5 @@ describe("goalStanding", () => {
   // in the number, so nothing downstream has to negate anything.
   it("never answers with a negative size", () => {
     expect(goalStanding(0, 744)).toEqual({ kind: "short", minutes: 744 * 60 });
-  });
-});
-
-describe("splitDuration", () => {
-  it("splits into whole hours and the rest", () => {
-    expect(splitDuration(1690)).toEqual({ hours: 28, minutes: 10 });
-    expect(splitDuration(15)).toEqual({ hours: 0, minutes: 15 });
-    expect(splitDuration(134 * 60)).toEqual({ hours: 134, minutes: 0 });
   });
 });

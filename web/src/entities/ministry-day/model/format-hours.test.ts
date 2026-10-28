@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatHours } from "./format-hours";
+import { formatHours, splitDuration } from "./format-hours";
 
 describe("formatHours", () => {
   it("reads as a clock", () => {
@@ -20,5 +20,14 @@ describe("formatHours", () => {
   // and three digits of hours must not start padding or wrapping.
   it("prints a total bigger than a day", () => {
     expect(formatHours(16_320)).toBe("272:00");
+  });
+});
+
+describe("splitDuration", () => {
+  it("splits into whole hours and the rest", () => {
+    expect(splitDuration(1690)).toEqual({ hours: 28, minutes: 10 });
+    expect(splitDuration(15)).toEqual({ hours: 0, minutes: 15 });
+    expect(splitDuration(134 * 60)).toEqual({ hours: 134, minutes: 0 });
+    expect(splitDuration(0)).toEqual({ hours: 0, minutes: 0 });
   });
 });

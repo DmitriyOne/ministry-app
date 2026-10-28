@@ -1,3 +1,18 @@
+const MINUTES_IN_HOUR = 60;
+
+// Minutes as whole hours and the rest of them. Every amount of ministry
+// this app prints is one of those two numbers or both, so they are split
+// in one place: a clock ("1:05") in the hours card, words ("28 h 10
+// min") in the progress block's bracket (ADR 0064, decision 12).
+//
+// Two copies of this division is what it replaced — one here, one in
+// pages/day — and they would have been two answers to "how many hours is
+// 1690 minutes" on one screen.
+export const splitDuration = (minutes: number): { hours: number; minutes: number } => ({
+  hours: Math.floor(minutes / MINUTES_IN_HOUR),
+  minutes: minutes % MINUTES_IN_HOUR,
+});
+
 // Minutes, read as a clock. The one way this app prints an amount of
 // ministry, and it prints the same way whatever the amount is of: one
 // day in the hours card, a whole month or a service year in the progress
@@ -18,8 +33,7 @@
 // always are, which is how a clock reads; the call sites draw it with
 // tabular figures so the number does not jitter as it changes.
 export const formatHours = (minutes: number): string => {
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
+  const { hours, minutes: rest } = splitDuration(minutes);
 
   return `${hours}:${String(rest).padStart(2, "0")}`;
 };
