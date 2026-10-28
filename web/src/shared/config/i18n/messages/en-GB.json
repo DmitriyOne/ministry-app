@@ -95,6 +95,12 @@
         "yearBar": "Hours served this service year against the goal",
         "barValue": "{served} of {goal} hours"
       },
+      "lastDays": {
+        "label": "Last days",
+        "none": "—",
+        "chipHours": "{weekday} {date}, {amount}",
+        "chipEmpty": "{weekday} {date}, nothing recorded"
+      },
       "welcomeBack": "Welcome back, {name}",
       "metadata": {
         "title": "Day",

@@ -9,6 +9,7 @@ import { WelcomeToast } from "@/features/welcome-toast";
 import { routes } from "@/shared/config";
 import { readDayPage } from "../api/read-day-page";
 import { DayHeader } from "./DayHeader";
+import { DayLastDays } from "./DayLastDays";
 import { DayProgress } from "./DayProgress";
 import { DayScreenFrame } from "./DayScreenFrame";
 import { RefreshOnDayChange } from "./RefreshOnDayChange";
@@ -102,20 +103,32 @@ export const DayPage = async ({ params }: DayPageProps) => {
             // open on Tuesday showing Monday's total. The key sits on
             // the provider because that is where the state is (ADR
             // 0065) — it used to sit on the card, which held it.
+            //
+            // The provider wraps all three blocks, not just the card:
+            // the strip's chip for the open day shows the same number,
+            // and these are server components passed through as
+            // children — being inside it makes none of them client.
             <DayHoursProvider key={day} day={day} savedMinutes={page.savedMinutes}>
               <HoursCard />
+
+              {/* Drawn only when all four of its reads answered (ADR
+                  0064): a bar is a fraction, and a fraction with one
+                  number missing is wrong rather than incomplete.
+                  Nothing stands in its place — unlike the card, this
+                  block is not what the person came to change, and an
+                  apology where the month's figure belongs would be
+                  louder than the figure. */}
+              {page.progress !== null ? <DayProgress progress={page.progress} /> : null}
+
+              {/* Same rule, same reason (ADR 0065): a strip missing a
+                  chip would say "nothing recorded" about a day that may
+                  hold hours, and that is read as an invitation to fill
+                  it in. */}
+              {page.previousDays !== null
+                ? <DayLastDays openDay={day} days={page.previousDays} />
+                : null}
             </DayHoursProvider>
           )}
-
-      {/* Drawn only when all four of its reads answered (ADR 0064): a
-          bar is a fraction, and a fraction with one number missing is
-          wrong rather than incomplete. Nothing stands in its place —
-          unlike the card, this block is not what the person came to
-          change, and an apology where the month's figure belongs would
-          be louder than the figure. */}
-      {page.status === "ready" && page.progress !== null
-        ? <DayProgress progress={page.progress} />
-        : null}
     </DayScreenFrame>
   );
 };

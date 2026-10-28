@@ -1,6 +1,7 @@
 import { HoursCardSkeleton } from "@/features/hours-entry";
 import { Skeleton } from "@/shared/ui/skeleton";
 
+import { LAST_DAYS_CHIP } from "./DayLastDays";
 import { DayScreenFrame } from "./DayScreenFrame";
 
 // What /day shows while the server answers (its loading.tsx re-exports
@@ -58,6 +59,25 @@ export const DayScreenSkeleton = () => (
           <Skeleton className="h-3.5 w-20 rounded-sm" />
         </div>
         <div className="h-1.5 rounded-full bg-ink-a09" />
+      </div>
+    </div>
+
+    {/* The strip, in its own card and with all SEVEN chips — unlike the
+        progress block above, every one of them always arrives (ADR
+        0065), so a plate per chip promises nothing it cannot keep.
+        The chips are built from the strip's own class string, so the
+        two cannot drift apart in height or padding. */}
+    <div className="flex flex-col gap-3 rounded-2xl bg-card p-4 shadow-card">
+      <Skeleton className="h-3 w-20 rounded-sm" />
+
+      <div className="grid grid-cols-7 gap-1">
+        {Array.from({ length: 7 }, (_, index) => (
+          <div key={index} className={`${LAST_DAYS_CHIP} bg-background`}>
+            <Skeleton className="h-2.5 w-6 rounded-xs" />
+            <Skeleton className="h-4 w-5 rounded-xs" />
+            <Skeleton className="h-2.5 w-7 rounded-xs" />
+          </div>
+        ))}
       </div>
     </div>
   </DayScreenFrame>
