@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(57);
+select plan(83);
 
 -- What this file is really about: the rules that live nowhere else.
 -- The carry-forward rule, the catalogue's numbers, the month bounds and
@@ -452,6 +452,261 @@ select is(
   2::bigint,
   'and the second person has exactly the two months they wrote'
 );
+
+
+-- ---------------------------------------------------------------------
+-- "I have been on this status since September" — set_ministry_status_from
+-- ---------------------------------------------------------------------
+-- The third intention (ADR 0061, update 2026-10-29). A pioneer who only
+-- signs up in February still served from September, and the year has to
+-- add up to its 600 hours. Neither existing function can say that:
+-- set_ministry_status refuses any month but the one under way, and
+-- amend_ministry_status_month pins the month after it so a correction
+-- cannot spread.
+--
+-- A third person, so the rows below start from nothing.
+insert into auth.users (id, email) values
+  ('33333333-3333-3333-3333-333333333333', 'three@jw.fenko.dev');
+
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}';
+
+select ok(
+  has_function_privilege('authenticated',
+    'public.set_ministry_status_from(date, text, smallint, date)', 'execute'),
+  'a signed-in person may say since when'
+);
+select ok(
+  not has_function_privilege('anon',
+    'public.set_ministry_status_from(date, text, smallint, date)', 'execute'),
+  'and anon may not'
+);
+
+-- The history this is meant to overwrite: a publisher month marked in
+-- between, which without the sweep would shadow the backdated row for
+-- every month after it.
+select is(
+  (select status from public.set_ministry_status(
+    (date_trunc('month', now()) - interval '1 month')::date, 'publisher')),
+  'publisher',
+  'a month in between is marked first, so the sweep has something to do'
+);
+
+select is(
+  (select monthly_goal_hours from public.set_ministry_status_from(
+    (date_trunc('month', now()) - interval '3 months')::date,
+    'regular_pioneer')),
+  50::smallint,
+  'the pioneer is written three months back, where set_ministry_status refuses to reach'
+);
+select is(
+  (select count(*) from public.ministry_status_months
+    where user_id = '33333333-3333-3333-3333-333333333333'
+      and deleted_at is null),
+  1::bigint,
+  'and the month marked in between is swept: one row governs them all'
+);
+select is(
+  (select monthly_goal_hours from public.ministry_status_for_month(
+    (date_trunc('month', now()) - interval '2 months')::date)),
+  50::smallint,
+  'a month between the start and now reads the pioneer'
+);
+select is(
+  (select monthly_goal_hours from public.ministry_status_for_month(
+    date_trunc('month', now())::date)),
+  50::smallint,
+  'and so does the month under way, which is the whole point'
+);
+select is(
+  (select user_id from public.ministry_status_months
+    where deleted_at is null
+      and month = (date_trunc('month', now()) - interval '3 months')::date),
+  '33333333-3333-3333-3333-333333333333'::uuid,
+  'the definer function wrote the caller''s own row, not the first one it found'
+);
+
+-- A one-month status cannot be backdated: "auxiliary pioneer since
+-- September" is not a statement this table can hold — it would mean one
+-- month, and the one it would mean is in the past.
+select throws_ok(
+  $$select public.set_ministry_status_from(
+      (date_trunc('month', now()) - interval '3 months')::date,
+      'auxiliary_pioneer', 15::smallint)$$,
+  '23514',
+  null,
+  'a status that lasts one month cannot be backdated'
+);
+-- The shared fence still holds in both directions.
+select throws_ok(
+  $$select public.set_ministry_status_from(
+      (date_trunc('month', now()) - interval '24 months')::date, 'regular_pioneer')$$,
+  '23514',
+  null,
+  'and neither can a month from before the account existed'
+);
+select throws_ok(
+  $$select public.set_ministry_status_from(
+      (date_trunc('month', now()) + interval '6 months')::date, 'regular_pioneer')$$,
+  '23514',
+  null,
+  'nor one far in the future: this function reaches back, never forward'
+);
+
+reset role;
+
+
+-- ---------------------------------------------------------------------
+-- A one-month status ends the assignment behind it
+-- ---------------------------------------------------------------------
+-- The owner's rule (2026-10-29), found through the year's figure: with
+-- September set to regular pioneer and this month taken as a one-month
+-- auxiliary pioneer, the month after reached back PAST the auxiliary row
+-- and was a pioneer again — eleven months of the year were still counted
+-- as pioneered. Choosing the auxiliary row means the appointment is
+-- over, so the next month is written out as a publisher.
+insert into auth.users (id, email) values
+  ('44444444-4444-4444-4444-444444444444', 'four@jw.fenko.dev');
+
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"44444444-4444-4444-4444-444444444444","role":"authenticated"}';
+
+select is(
+  (select status from public.set_ministry_status_from(
+    (date_trunc('month', now()) - interval '1 month')::date, 'regular_pioneer')),
+  'regular_pioneer',
+  'a pioneer from last month on'
+);
+select is(
+  (select status from public.set_ministry_status(
+    date_trunc('month', now())::date, 'auxiliary_pioneer', 30::smallint)),
+  'auxiliary_pioneer',
+  'and a month of auxiliary pioneering now'
+);
+select is(
+  (select status from public.ministry_status_for_month(
+    (date_trunc('month', now()) + interval '1 month')::date)),
+  'publisher',
+  'the month after a one-month status is a publisher, not the pioneer again'
+);
+select is(
+  (select monthly_goal_hours from public.ministry_status_for_month(
+    (date_trunc('month', now()) + interval '1 month')::date)),
+  null::smallint,
+  'and it carries no goal: the 50 belonged to the appointment that ended'
+);
+select is(
+  public.ministry_status_year_goal((date_trunc('month', now()) - interval '1 month')::date),
+  50,
+  'so the year counts the one month actually pioneered'
+);
+
+reset role;
+
+-- A publisher's own number is not an appointment and survives the same
+-- move: a month of auxiliary pioneering, and then back to the goal they
+-- set themselves. A fifth person, because the goal has to be set in an
+-- EARLIER month than the auxiliary one — a month holds one row, so a
+-- publisher who sets 20 and then takes the auxiliary row in the same
+-- month has overwritten their own number, and there is nothing left to
+-- come back to.
+insert into auth.users (id, email) values
+  ('55555555-5555-5555-5555-555555555555', 'five@jw.fenko.dev');
+
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"55555555-5555-5555-5555-555555555555","role":"authenticated"}';
+
+select is(
+  (select monthly_goal_hours from public.set_ministry_status(
+    (date_trunc('month', now()) - interval '1 month')::date, 'publisher', 20::smallint)),
+  20::smallint,
+  'a publisher sets a goal of their own last month'
+);
+select is(
+  (select monthly_goal_hours from public.set_ministry_status(
+    date_trunc('month', now())::date, 'auxiliary_pioneer', 15::smallint)),
+  15::smallint,
+  'then takes a month of auxiliary pioneering'
+);
+select is(
+  (select status from public.ministry_status_for_month(
+    (date_trunc('month', now()) + interval '1 month')::date)),
+  'publisher',
+  'the month after is a publisher again'
+);
+select is(
+  (select monthly_goal_hours from public.ministry_status_for_month(
+    (date_trunc('month', now()) + interval '1 month')::date)),
+  20::smallint,
+  'and keeps their own number, because it was never an appointment'
+);
+
+reset role;
+
+
+-- ---------------------------------------------------------------------
+-- "From this month" has to UNSAY an earlier "since September"
+-- ---------------------------------------------------------------------
+-- The owner picked the service year, then changed to this month, and
+-- the year still read 600: the September row nobody had retracted went
+-- on being counted. The fourth argument is that retraction, and it
+-- reaches only pioneer rows inside the service year it is given.
+insert into auth.users (id, email) values
+  ('88888888-8888-8888-8888-888888888888', 'eight@jw.fenko.dev');
+
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"88888888-8888-8888-8888-888888888888","role":"authenticated"}';
+
+select is(
+  (select status from public.set_ministry_status_from(
+    (date_trunc('month', now()) - interval '2 months')::date, 'regular_pioneer')),
+  'regular_pioneer',
+  'a pioneer backdated two months, as "since the year began" does'
+);
+select is(
+  (select status from public.set_ministry_status_from(
+    date_trunc('month', now())::date,
+    'regular_pioneer',
+    null,
+    (date_trunc('month', now()) - interval '2 months')::date)),
+  'regular_pioneer',
+  'then the same person says it started this month instead'
+);
+select is(
+  (select count(*) from public.ministry_status_for_month(
+    (date_trunc('month', now()) - interval '2 months')::date)),
+  0::bigint,
+  'and the earlier pioneer month is retracted: it reads the default again'
+);
+
+-- What the retraction does NOT touch: a month marked with something
+-- that is not an appointment. It carries no yearly norm, so it says
+-- nothing about when the pioneering began — and the owner keeps the
+-- monthly goal they recorded for it.
+select is(
+  (select monthly_goal_hours from public.amend_ministry_status_month(
+    (date_trunc('month', now()) - interval '2 months')::date,
+    'auxiliary_pioneer', 15::smallint)),
+  15::smallint,
+  'that month is marked a one-month auxiliary pioneer instead'
+);
+select is(
+  (select status from public.set_ministry_status_from(
+    date_trunc('month', now())::date,
+    'regular_pioneer',
+    null,
+    (date_trunc('month', now()) - interval '2 months')::date)),
+  'regular_pioneer',
+  'and the pioneer is set from this month again'
+);
+select is(
+  (select monthly_goal_hours from public.ministry_status_for_month(
+    (date_trunc('month', now()) - interval '2 months')::date)),
+  15::smallint,
+  'the auxiliary month survives with its own hours: only pioneering is retracted'
+);
+
+reset role;
 
 select * from finish();
 
