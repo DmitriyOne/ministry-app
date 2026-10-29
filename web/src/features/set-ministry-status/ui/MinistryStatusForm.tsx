@@ -16,10 +16,14 @@ import { SubmitButton } from "@/shared/ui/submit-button";
 
 import type { UseSetMinistryStatusResult } from "../model/use-set-ministry-status";
 import { GoalHoursField } from "./GoalHoursField";
+import { PioneerStartField } from "./PioneerStartField";
 
 type MinistryStatusFormProps = {
   form: UseSetMinistryStatusResult["form"];
   monthLabel: string;
+  // The two months the pioneer's sub-question names, or null when there
+  // is nothing to ask — see the hook.
+  pioneerStart: UseSetMinistryStatusResult["pioneerStart"];
   // Saving asks for confirmation first, so submitting this form opens
   // the dialog; the status is sent from there.
   onSave: () => void;
@@ -49,6 +53,7 @@ const fieldId = (choiceId: string) => `ministry-status-${choiceId.replace(":", "
 export const MinistryStatusForm = ({
   form,
   monthLabel,
+  pioneerStart,
   onSave,
 }: MinistryStatusFormProps) => {
   const t = useTranslations("screens.profile.ministrySheet");
@@ -136,6 +141,21 @@ export const MinistryStatusForm = ({
                   ? (
                       <div className="mb-3.5 ml-6">
                         <GoalHoursField control={form.control} />
+                      </div>
+                    )
+                  : null}
+
+                {/* The pioneer's row asks one more thing, in the same
+                    shape and the same place: since when. Only outside
+                    September, where the question has two different
+                    answers — pioneerStart is null otherwise and the row
+                    stays as plain as the rest. */}
+                {choice.status === "regular_pioneer"
+                  && choice.id === pickedId
+                  && pioneerStart !== null
+                  ? (
+                      <div className="mb-3.5 ml-6">
+                        <PioneerStartField control={form.control} months={pioneerStart} />
                       </div>
                     )
                   : null}

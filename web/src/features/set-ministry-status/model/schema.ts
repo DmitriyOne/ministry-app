@@ -11,6 +11,15 @@ import {
 // number they typed. The month is not part of it, because it is read
 // from the device at the moment of submitting rather than when the sheet
 // was drawn.
+// Where a status STARTS, asked only of the regular pioneer and only
+// outside September (ADR 0061, update 2026-10-29). "current" is what
+// every other status does and what this one did until now: the month the
+// person is in. "service_year" backdates to the September that began the
+// service year, so the year adds up to the 600 hours a pioneer knows.
+export type MinistryStatusStart = "current" | "service_year";
+
+export const MINISTRY_STATUS_STARTS = ["current", "service_year"] as const;
+
 export type MinistryChoiceValues = {
   // One of the ids from MINISTRY_STATUS_CHOICES. The hours of every
   // other status are not sent: the server reads them off the id, so a
@@ -19,6 +28,11 @@ export type MinistryChoiceValues = {
   // A string, not a number: it is what a text field holds, and empty is
   // a real answer — a publisher with no goal at all.
   goalHours: string;
+  // Answered by the sub-question under the pioneer's row. Every other
+  // row leaves it at "current", and the server ignores it for them —
+  // the same arrangement as the goal field, which only the publisher
+  // owns.
+  startFrom: MinistryStatusStart;
 };
 
 export type SetMinistryStatusValues = MinistryChoiceValues & {
@@ -88,6 +102,7 @@ const choiceFields = (t: SetMinistryStatusTranslator) => ({
     .string()
     .refine((id) => findMinistryStatusChoice(id) !== null, t("invalidChoice")),
   goalHours: z.string(),
+  startFrom: z.enum(MINISTRY_STATUS_STARTS),
 });
 
 const checkGoal = (t: SetMinistryStatusTranslator) =>

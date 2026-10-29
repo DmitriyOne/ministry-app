@@ -17,6 +17,10 @@ type MinistryStatusSheetProps = {
   // Null when the read failed: the row then says so instead of naming a
   // status nobody confirmed.
   status: EffectiveMinistryStatus | null;
+  // Whether the appointment already covers the start of the service
+  // year, so the sub-question opens on the answer in force rather than
+  // on one that would retract September on the next Save.
+  pioneeringSinceYearStart: boolean;
 };
 
 // Widget: the row on the profile and the panel it opens. Everything the
@@ -33,11 +37,14 @@ type MinistryStatusSheetProps = {
 // the probe notices comes back as "unavailable" and raises a toast; and a
 // backend that is down while the origin answers is only ever visible that
 // second way.
-export const MinistryStatusSheet = ({ status }: MinistryStatusSheetProps) => {
+export const MinistryStatusSheet = ({
+  status,
+  pioneeringSinceYearStart,
+}: MinistryStatusSheetProps) => {
   const t = useTranslations("screens.profile.ministrySheet");
   const statusName = useTranslations("screens.profile.ministryStatus");
 
-  const { sheet, confirm, monthLabel, form } = useSetMinistryStatus({ status });
+  const { sheet, confirm, monthLabel, pioneerStart, form } = useSetMinistryStatus({ status, pioneeringSinceYearStart });
 
   return (
     <>
@@ -76,6 +83,7 @@ export const MinistryStatusSheet = ({ status }: MinistryStatusSheetProps) => {
         <MinistryStatusForm
           form={form}
           monthLabel={monthLabel}
+          pioneerStart={pioneerStart}
           onSave={confirm.ask}
         />
       </Sheet>
