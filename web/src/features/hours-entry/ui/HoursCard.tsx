@@ -1,53 +1,75 @@
 "use client";
 
-import { useId, useState } from "react";
+import { type ReactNode, useId } from "react";
 import { useTranslations } from "next-intl";
 
-import { Caption } from "@/shared/ui/caption";
-import { Eyebrow } from "@/shared/ui/eyebrow";
+import { formatHours } from "@/entities/ministry-day";
 import { HapticButton } from "@/shared/ui/haptic-button";
-import { MinusIcon, PlusIcon } from "@/shared/ui/icons";
+import { CheckCircleIcon, MinusIcon, PlusIcon } from "@/shared/ui/icons";
 
+import { useDayHoursControls } from "../model/day-hours-context";
+import type { HoursSaveState } from "../model/hours-save";
+import { HoursCardShell } from "./HoursCardShell";
 import {
-  addMinutes,
-  formatHours,
   HOURS_QUICK_ADD_MINUTES,
   HOURS_STEP_MINUTES,
   wouldChange,
 } from "../model/hours-value";
 
-// Today's hours, dialled by hand — the one interactive island on /day,
-// which stays a server component around it.
+// The hours served on one day, dialled by hand — the one interactive
+// island on /day, which stays a server component around it.
 //
-// It remembers nothing on purpose (ADR 0060): the number lives in React
-// state, a reload puts it back to zero, and neither the profile nor any
-// total hears about it. The screen exists to settle the shape of the
-// control — the step, the cap, the feel of a tap — before there is a
-// table to write into.
+// It saves itself now (ADR 0062). Until 2.3 it kept nothing at all: the
+// number lived in React state and a reload put it back to zero (ADR
+// 0060), because the card existed to settle the shape of the control
+// before there was a table to write into. There is one now, so every tap
+// goes to the server — debounced, rolled back if it does not land, and
+// without a Save button (the owner's rule).
 //
 // Everything this component decides is one line long, because the
 // decisions are not here: the step, the quick-add row, the cap and
-// whether a button has anywhere to go all come from ../model, where they
-// are covered by tests. What is left is markup and one piece of state.
+// whether a button has anywhere to go come from ../model/hours-value,
+// and when and how a tap is saved comes from ../model/use-day-hours.
+// What is left is markup.
+//
+// It takes no props any more: which day, and what the server held for
+// it, are the provider's above (ADR 0065). The card asks for the state
+// instead of owning it, because the strip's chip for the same day shows
+// the same number and two copies of it would disagree on the first tap.
 export const HoursCard = () => {
   const t = useTranslations("screens.day.hours");
   const headingId = useId();
-  const [minutes, setMinutes] = useState(0);
+  const { change, isLocked, minutes, saveState } = useDayHoursControls();
 
-  const add = (delta: number) => setMinutes((current) => addMinutes(current, delta));
+  // The header's right-hand slot, which the card already had: it says
+  // what the buttons do, and while a save is away it says that instead.
+  // Nothing moves, nothing covers the number, and there is no spinner —
+  // this app has none anywhere (ADR 0055), and here there is nothing to
+  // wait for either: the number is already the person's.
+  //
+  // A full map rather than two ternaries, so a fourth state cannot be
+  // added without saying what it shows.
+  const statusSlot: Record<HoursSaveState, ReactNode> = {
+    idle: t("step", { minutes: HOURS_STEP_MINUTES }),
+    saving: t("saving"),
+    saved: (
+      <span className="flex items-center gap-1">
+        <CheckCircleIcon size={13} aria-hidden="true" />
+        {t("saved")}
+      </span>
+    ),
+  };
 
+  // Not announced to a screen reader on purpose: the number itself
+  // already sits in a live region and says what the tap did, and a
+  // failure arrives as a toast, which sonner announces. A third voice
+  // on every tap would be noise.
   return (
-    <section
-      aria-labelledby={headingId}
-      className="flex flex-col gap-4.5 rounded-2xl bg-hero px-5.5 pt-5.5 pb-4.5 text-hero-foreground"
+    <HoursCardShell
+      headingId={headingId}
+      label={t("label")}
+      step={statusSlot[saveState]}
     >
-      <div className="flex items-center justify-between gap-3">
-        <Eyebrow as="h2" id={headingId} className="text-white/50">
-          {t("label")}
-        </Eyebrow>
-        <Caption className="text-white/50">{t("step", { minutes: HOURS_STEP_MINUTES })}</Caption>
-      </div>
-
       <div className="flex items-center justify-between gap-3.5">
         {/* HapticButton, not Button: these are the taps meant to be felt
             (ADR 0040). It takes one callback for both the finger and the
@@ -56,8 +78,8 @@ export const HoursCard = () => {
           variant="heroGhost"
           className="size-14 rounded-full px-0"
           aria-label={t("decrease", { minutes: HOURS_STEP_MINUTES })}
-          isDisabled={!wouldChange(minutes, -HOURS_STEP_MINUTES)}
-          onTap={() => add(-HOURS_STEP_MINUTES)}
+          isDisabled={isLocked || !wouldChange(minutes, -HOURS_STEP_MINUTES)}
+          onTap={() => change(-HOURS_STEP_MINUTES)}
         >
           <MinusIcon size={28} />
         </HapticButton>
@@ -77,8 +99,8 @@ export const HoursCard = () => {
           variant="action"
           className="size-14 rounded-full px-0"
           aria-label={t("increase", { minutes: HOURS_STEP_MINUTES })}
-          isDisabled={!wouldChange(minutes, HOURS_STEP_MINUTES)}
-          onTap={() => add(HOURS_STEP_MINUTES)}
+          isDisabled={isLocked || !wouldChange(minutes, HOURS_STEP_MINUTES)}
+          onTap={() => change(HOURS_STEP_MINUTES)}
         >
           <PlusIcon size={28} />
         </HapticButton>
@@ -94,13 +116,13 @@ export const HoursCard = () => {
             radius="sm"
             variant="heroGhost"
             className="h-10 w-full rounded-sm px-0 text-sm font-560"
-            isDisabled={!wouldChange(minutes, delta)}
-            onTap={() => add(delta)}
+            isDisabled={isLocked || !wouldChange(minutes, delta)}
+            onTap={() => change(delta)}
           >
             {t("quickAdd", { minutes: delta })}
           </HapticButton>
         ))}
       </div>
-    </section>
+    </HoursCardShell>
   );
 };

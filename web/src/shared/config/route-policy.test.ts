@@ -66,6 +66,26 @@ describe("ROUTE_POLICY", () => {
     }
   });
 
+  // Every /day carries its date, so this family is the address people
+  // actually use — and an unclassified address is one the proxy leaves
+  // alone: no device shield, no session, no home-screen icon. The screen
+  // would have opened in an ordinary Safari tab, which is the exact way
+  // /admin/users/new shipped broken once (ADR 0050).
+  it("shields a day under its own date like the bare /day", () => {
+    for (const pathname of ["/day/2026-06-02", "/day/2025-12-31"]) {
+      expect(resolveRoutePolicy(pathname), pathname).toEqual(ROUTE_POLICY[routes.day]);
+    }
+  });
+
+  // A prefix without the separator is a coincidence of spelling, not a
+  // family: an address nobody has classified must stay unclassified, or
+  // a typo gets the app's own policy.
+  it("does not adopt an address that merely starts with the same letters", () => {
+    for (const pathname of ["/dayz", "/day-summary", "/days/2026-06-02"]) {
+      expect(resolveRoutePolicy(pathname), pathname).toBeNull();
+    }
+  });
+
   it("asks for the home-screen icon on no address that opens in a tab", () => {
     // The public side is reached BEFORE the app is installed, so
     // requiring the icon there would make it unreachable.

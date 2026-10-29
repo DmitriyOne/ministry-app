@@ -34,6 +34,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ministry_days: {
+        Row: {
+          created_at: string
+          day: string
+          deleted_at: string | null
+          minutes: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          deleted_at?: string | null
+          minutes: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          deleted_at?: string | null
+          minutes?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ministry_status_months: {
         Row: {
           created_at: string
@@ -231,6 +258,10 @@ export type Database = {
           push_enrollment_token: string
         }[]
       }
+      ministry_days_total_minutes: {
+        Args: { p_from: string; p_to: string }
+        Returns: number
+      }
       ministry_status_for_month: {
         Args: { p_month: string }
         Returns: {
@@ -275,6 +306,23 @@ export type Database = {
           p_token: string
         }
         Returns: boolean
+      }
+      set_ministry_day_minutes: {
+        Args: { p_day: string; p_minutes: number }
+        Returns: {
+          created_at: string
+          day: string
+          deleted_at: string | null
+          minutes: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ministry_days"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       set_ministry_status: {
         Args: { p_month: string; p_monthly_goal?: number; p_status: string }

@@ -22,8 +22,20 @@ import {
 // Careful with the wording here: Tailwind scans these files as plain text,
 // so spelling a utility class inside a comment is enough to emit its CSS.
 // That is literally how the rule this change removed came back once.
+//
+// The `data-disabled:` pair beside the `disabled:` one is not a
+// duplicate. react-aria sets `aria-disabled` on a <button> and never the
+// native attribute (useButton: `disabled: elementType === "input" ?
+// isDisabled : undefined`), so the `disabled:` rules matched nothing on
+// any button in this project: a button that was out of reach looked
+// untouched and, worse, still squeezed under a thumb, because CSS
+// `:active` lands on an element that is not really disabled. The
+// `disabled:` half stays for the native elements that use
+// `buttonVariants` without react-aria. Found on review (ADR 0012), fixed
+// across the app on the owner's say-so, 2026-10-28 — until then three
+// call sites spelled it by hand.
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-negative aria-invalid:ring-3 aria-invalid:ring-negative/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 data-disabled:pointer-events-none data-disabled:opacity-50 aria-invalid:border-negative aria-invalid:ring-3 aria-invalid:ring-negative/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {

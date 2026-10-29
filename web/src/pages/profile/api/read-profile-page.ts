@@ -6,8 +6,14 @@ import {
   toEffectiveMinistryStatus,
   toMonthKey,
 } from "@/entities/ministry-status";
-import { createServerSupabaseClient } from "@/shared/api";
+import {
+  createServerSupabaseClient,
+  queryDeadline,
+  SCREEN_UNAVAILABLE,
+  type ScreenRead,
+} from "@/shared/api";
 import { APP_VERSION, hasUnreadVersion } from "@/shared/config";
+import { reportReadFailure } from "@/shared/lib/action-failure";
 
 // Everything /profile asks the database, in one place and in the order
 // the questions depend on each other. The screen above composes widgets
@@ -22,28 +28,62 @@ import { APP_VERSION, hasUnreadVersion } from "@/shared/config";
 // ("как у меня везде, по одному стилю"). The reads that are a page's own
 // orchestration therefore live in the page's api segment, which is a
 // normal FSD segment and imports downwards like any other.
-export type ProfilePageData = {
-  // Empty when the read failed or the name is blank: the badge then
+// Two outcomes, not one shape with blanks in it — the owner's call on
+// 2026-10-23: a failed read must look like /day's, not like data. A
+// profile row that did not load used to come back as an empty name,
+// which the screen drew as "Your account" next to a real role from the
+// token: a page that looks like somebody's profile and is nobody's.
+// The shape itself is ScreenRead, the one every screen's read answers
+// in, so /day and /profile no longer say the same thing two ways.
+export type ProfilePageData = ScreenRead<{
+  // Blank when the row exists and the name is not set: the badge then
   // shows nothing rather than a stray letter from a fallback string.
   displayName: string;
   hasUnreadWhatsNew: boolean;
-  // Null is the read having failed. Nothing about how this person serves
-  // is then drawn: "Publisher, no goal" is a statement about them, not a
-  // safe fallback for a query that did not answer.
+  // Null is THAT read having failed while the profile itself loaded.
+  // Nothing about how this person serves is then drawn: "Publisher, no
+  // goal" is a statement about them, not a safe fallback for a query
+  // that did not answer.
   ministryStatus: EffectiveMinistryStatus | null;
   yearGoalHours: number | null;
-};
+}>;
+
+const SCOPE = "read-profile-page";
 
 export const readProfilePage = async (): Promise<ProfilePageData> => {
   // Read under the person's own session: the "read own profile" policy
-  // (ADR 0043) allows exactly this row, so no id filter is needed. A
-  // failed read leaves the name out rather than failing the screen — the
-  // role and the way out are the parts that matter here.
+  // (ADR 0043) allows exactly this row, so no id filter is needed.
   const supabase = await createServerSupabaseClient();
-  const { data: profile } = await supabase
+  // One budget for all three reads (ADR 0062). They run in sequence —
+  // the month comes out of the profile — so a deadline each would add up
+  // to three timeouts of skeleton in a row. What they do NOT do is share
+  // one signal: that one kept counting while the profile was being read,
+  // and a profile that took 4.8s left the two RPCs 200ms, after which
+  // the screen rendered as loaded with the status and the goals missing
+  // and nothing saying why. `queryDeadline` spends the same budget and
+  // keeps a floor for whatever asks last.
+  const started = Date.now();
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("display_name, whats_new_seen, time_zone")
+    .abortSignal(queryDeadline(started))
     .maybeSingle();
+
+  // The row is this screen's subject: without it there is no name, no
+  // calendar to ask the month of, and nothing true to put in the header.
+  // The two reads below are skipped as well — they would be answers
+  // about a person we could not load, and the deadline above is better
+  // spent not waiting for them.
+  //
+  // A missing row is NOT this case: handle_new_user writes one for every
+  // account (ADR 0043), so `profile === null` without an error means an
+  // account from before that trigger, and the screen can still show the
+  // role and the way out. Only an error means "we do not know".
+  if (error) {
+    reportReadFailure({ scope: SCOPE, step: "profile", error });
+
+    return SCREEN_UNAVAILABLE;
+  }
 
   // Which month this person is in, in their own calendar (ADR 0061). The
   // zone is read from the profile; nothing writes it yet, so it is the
@@ -63,11 +103,24 @@ export const readProfilePage = async (): Promise<ProfilePageData> => {
   // They go together because neither can start before the month is
   // known, and the month comes from the profile above.
   const [status, yearGoal] = await Promise.all([
-    supabase.rpc("ministry_status_for_month", { p_month: currentMonth }).maybeSingle(),
-    supabase.rpc("ministry_status_year_goal", { p_year_start: yearStartsIn }),
+    supabase
+      .rpc("ministry_status_for_month", { p_month: currentMonth })
+      .abortSignal(queryDeadline(started))
+      .maybeSingle(),
+    supabase
+      .rpc("ministry_status_year_goal", { p_year_start: yearStartsIn })
+      .abortSignal(queryDeadline(started)),
   ]);
 
+  // Neither of the two is fatal to the screen — the header and the way
+  // out stand without them — but both used to fail in silence, and a
+  // profile drawn without the status it could not read looks exactly
+  // like a profile of somebody who has no status.
+  if (status.error) reportReadFailure({ scope: SCOPE, step: "status", error: status.error });
+  if (yearGoal.error) reportReadFailure({ scope: SCOPE, step: "year-goal", error: yearGoal.error });
+
   return {
+    status: "ready",
     displayName: profile?.display_name ?? "",
     // A profile that did not load is a separate case from unread news
     // and gets no dot: it means the read failed, not that there is
