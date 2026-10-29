@@ -4,6 +4,7 @@ import {
   SERVICE_YEAR_FIRST_MONTH,
   serviceYearOf,
   toEffectiveMinistryStatus,
+  visibleYearGoalHours,
   toMonthKey,
 } from "@/entities/ministry-status";
 import {
@@ -46,6 +47,13 @@ export type ProfilePageData = ScreenRead<{
   // that did not answer.
   ministryStatus: EffectiveMinistryStatus | null;
   yearGoalHours: number | null;
+  // Was this person already a regular pioneer in the first month of the
+  // service year? The sheet's sub-question opens on the answer that is
+  // in force, and without this it would always open on "from this
+  // month" — so somebody who IS a pioneer since September could open
+  // the sheet, change nothing, press Save and silently retract
+  // September (ADR 0061, update 2026-10-29).
+  pioneeringSinceYearStart: boolean;
 }>;
 
 const SCOPE = "read-profile-page";
@@ -102,7 +110,7 @@ export const readProfilePage = async (): Promise<ProfilePageData> => {
   // exist once, in SQL (ADR 0061, decision 5, обновление 2026-10-23).
   // They go together because neither can start before the month is
   // known, and the month comes from the profile above.
-  const [status, yearGoal] = await Promise.all([
+  const [status, yearGoal, yearStartStatus] = await Promise.all([
     supabase
       .rpc("ministry_status_for_month", { p_month: currentMonth })
       .abortSignal(queryDeadline(started))
@@ -110,6 +118,14 @@ export const readProfilePage = async (): Promise<ProfilePageData> => {
     supabase
       .rpc("ministry_status_year_goal", { p_year_start: yearStartsIn })
       .abortSignal(queryDeadline(started)),
+    // The same question about September. Only one thing is wanted from
+    // it — whether the appointment already covers the start of the
+    // year — and it travels with the other two rather than after them,
+    // so it costs no round trip of its own.
+    supabase
+      .rpc("ministry_status_for_month", { p_month: yearStartsIn })
+      .abortSignal(queryDeadline(started))
+      .maybeSingle(),
   ]);
 
   // Neither of the two is fatal to the screen — the header and the way
@@ -118,6 +134,8 @@ export const readProfilePage = async (): Promise<ProfilePageData> => {
   // like a profile of somebody who has no status.
   if (status.error) reportReadFailure({ scope: SCOPE, step: "status", error: status.error });
   if (yearGoal.error) reportReadFailure({ scope: SCOPE, step: "year-goal", error: yearGoal.error });
+
+  const effective = toEffectiveMinistryStatus(status);
 
   return {
     status: "ready",
@@ -128,7 +146,17 @@ export const readProfilePage = async (): Promise<ProfilePageData> => {
     // version is in ADR 0057 — a release with nothing worth reading
     // lights the dot as well.
     hasUnreadWhatsNew: profile ? hasUnreadVersion(profile.whats_new_seen, APP_VERSION) : false,
-    ministryStatus: toEffectiveMinistryStatus(status),
-    yearGoalHours: yearGoal.error ? null : yearGoal.data,
+    ministryStatus: effective,
+    // The year's figure is a regular pioneer's and nobody else's, even
+    // when the sum behind it is above zero because of months already
+    // served (the owner, 2026-10-29) — the rule itself is in the entity,
+    // with its tests.
+    yearGoalHours: yearGoal.error ? null : visibleYearGoalHours(effective?.status, yearGoal.data),
+    // A failed read answers "no", which opens the sub-question on "from
+    // this month" — the answer that changes the least: it writes the
+    // month the person is in and retracts pioneering they have not
+    // claimed in the sheet itself.
+    pioneeringSinceYearStart: !yearStartStatus.error
+      && toEffectiveMinistryStatus(yearStartStatus)?.status === "regular_pioneer",
   };
 };

@@ -1,5 +1,9 @@
 import type { DayKey } from "@/entities/ministry-day";
-import { type MonthKey, toEffectiveMinistryStatus } from "@/entities/ministry-status";
+import {
+  type MonthKey,
+  toEffectiveMinistryStatus,
+  visibleYearGoalHours,
+} from "@/entities/ministry-status";
 import {
   createServerSupabaseClient,
   queryDeadline,
@@ -225,7 +229,10 @@ const readProgress = (
     monthMinutes: monthTotal.data ?? 0,
     monthGoalHours: noGoal(effective.monthlyGoalHours),
     yearMinutes: yearTotal.data ?? 0,
-    yearGoalHours: noGoal(yearGoal.data),
+    // Not noGoal: the year's figure belongs to a regular pioneer and to
+    // nobody else, however many pioneered months the sum found behind
+    // them (the owner, 2026-10-29).
+    yearGoalHours: visibleYearGoalHours(effective.status, yearGoal.data),
   };
 };
 

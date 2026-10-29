@@ -20,7 +20,13 @@ export {
   type MinistryStatusChoice,
   ministryStatusChoiceFor,
 } from "./model/choices";
-export { addMonths, type MonthKey, parseMonthKey, toMonthKey } from "./model/month-key";
+export {
+  addMonths,
+  type MonthKey,
+  monthsBetween,
+  parseMonthKey,
+  toMonthKey,
+} from "./model/month-key";
 export { formatMonthName } from "./model/month-label";
 export {
   DEFAULT_MINISTRY_STATUS,
@@ -29,8 +35,11 @@ export {
 export {
   SERVICE_YEAR_FIRST_MONTH,
   type ServiceYear,
+  serviceYearGoalFrom,
   serviceYearOf,
+  serviceYearStartMonth,
 } from "./model/service-year";
+export { visibleYearGoalHours } from "./model/year-goal";
 // The zone itself is not this entity's — it lives in shared/lib/time-zone,
 // because ministry-day asks the same clock the same question.
 export { currentMonthKey, deviceMonthKey } from "./model/time-zone";
