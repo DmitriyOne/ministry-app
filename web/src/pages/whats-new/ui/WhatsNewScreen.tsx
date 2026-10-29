@@ -27,6 +27,7 @@ import {
   CalendarMonthIcon,
   CalendarWeekIcon,
   ChartArrowIcon,
+  ChartBarIcon,
   CheckCircleIcon,
   ChevronLeftIcon,
   CompassIcon,
@@ -93,7 +94,35 @@ export const WhatsNewScreen = async () => {
             target for the year's goal (the same one 2.1 and 2.2 use for
             aiming at something), the tick for a fix that landed, and the
             warning circle for the message that carries it. */}
-        <VersionHeading name={t("v2_4.name")} date={t("v2_4.date")} pill={t("currentPill")} />
+        {/* The glyphs: the month for the screen it is about, the bars
+            for a figure that accumulates, and the two locks for the two
+            halves of closing — shut and open again. */}
+        <VersionHeading name={t("v2_5.name")} date={t("v2_5.date")} pill={t("currentPill")} />
+        <ListCard>
+          <ListRow
+            icon={<CalendarMonthIcon size={18} />}
+            title={t("v2_5.monthScreen.title")}
+            text={t("v2_5.monthScreen.text")}
+          />
+          <ListRow
+            icon={<ChartBarIcon size={18} />}
+            title={t("v2_5.runningTotal.title")}
+            text={t("v2_5.runningTotal.text")}
+          />
+          <ListRow
+            icon={<LockClosedIcon size={18} />}
+            title={t("v2_5.closeMonth.title")}
+            text={t("v2_5.closeMonth.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<LockOpenIcon size={18} />}
+            title={t("v2_5.reopenMonth.title")}
+            text={t("v2_5.reopenMonth.text")}
+          />
+        </ListCard>
+
+        <VersionHeading name={t("v2_4.name")} date={t("v2_4.date")} pill={t("releasedPill")} />
         <ListCard>
           <ListRow
             icon={<CalendarMonthIcon size={18} />}

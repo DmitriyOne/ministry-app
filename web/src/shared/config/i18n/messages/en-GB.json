@@ -270,6 +270,26 @@
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
       },
+      "v2_5": {
+        "name": "Version 2.5",
+        "date": "29 October 2026",
+        "monthScreen": {
+          "title": "The month has a screen",
+          "text": "Hours, goal and service year at the top, then every day you recorded, each a tap away from the day itself."
+        },
+        "runningTotal": {
+          "title": "A running total beside every day",
+          "text": "The third column is what the month came to by the end of that day, so you can see where you stood without adding anything up."
+        },
+        "closeMonth": {
+          "title": "Close a month when it is reported",
+          "text": "Once the month is over you can close it, and its hours stop changing — on the month, on the day, and for anything asking the server."
+        },
+        "reopenMonth": {
+          "title": "And open it again",
+          "text": "One tap, no questions asked. Closing is there to stop a stray tap, not to lock you out of your own figures."
+        }
+      },
       "v2_4": {
         "name": "Version 2.4",
         "date": "29 October 2026",
