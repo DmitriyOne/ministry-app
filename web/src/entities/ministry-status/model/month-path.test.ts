@@ -38,7 +38,7 @@ describe("parseMonthSlug", () => {
     expect(parseMonthSlug("2026-6")).toBeNull();
     expect(parseMonthSlug("2026-06-01")).toBeNull();
     expect(parseMonthSlug("2026")).toBeNull();
-    expect(parseMonthSlug("июнь")).toBeNull();
+    expect(parseMonthSlug("june")).toBeNull();
     expect(parseMonthSlug("")).toBeNull();
   });
 });
