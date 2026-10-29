@@ -8,6 +8,7 @@ import {
 } from "@/shared/api";
 import { reportReadFailure } from "@/shared/lib/action-failure";
 
+import { type PreviousDay, previousDays, previousDaysSpan } from "../model/last-days";
 import {
   monthOfDay,
   monthSpanOf,
@@ -65,6 +66,12 @@ export type DayPageData = ScreenRead<{
   savedMinutes: number;
   timeZone: string | null;
   progress: DayProgress | null;
+  // The six days behind the open one, or null when that read failed —
+  // the same all-or-nothing rule the progress block follows. A strip
+  // with a chip missing would say "nothing recorded" about a day that
+  // may hold hours, and that is the one thing it must never say: it is
+  // read as "go back and fill this in".
+  previousDays: PreviousDay[] | null;
 }>;
 
 const SCOPE = "read-day-page";
@@ -80,8 +87,9 @@ export const readDayPage = async (day: DayKey): Promise<DayPageData> => {
   const yearStart = serviceYearStartOf(month);
   const monthSpan = monthSpanOf(month);
   const yearSpan = serviceYearSpanOf(yearStart);
+  const stripSpan = previousDaysSpan(day);
 
-  const [zone, recorded, monthTotal, yearTotal, status, yearGoal] = await Promise.all([
+  const [zone, recorded, monthTotal, yearTotal, status, yearGoal, strip] = await Promise.all([
     readTimeZone(),
     supabase
       .from("ministry_days")
@@ -110,6 +118,24 @@ export const readDayPage = async (day: DayKey): Promise<DayPageData> => {
     supabase
       .rpc("ministry_status_year_goal", { p_year_start: yearStart })
       .abortSignal(queryDeadline(started)),
+    // The strip's own rows, read from the table rather than through a
+    // function: `ministry_days` grants select to authenticated and its
+    // policy scopes the rows to the caller, so there is nothing for a
+    // function to add — and the primary key (user_id, day) is the index
+    // for exactly this, equality on the person with a range on the day.
+    // The filter on deleted_at repeats what the policy already does,
+    // the way ministry_days_total_minutes repeats its own conditions:
+    // it costs nothing and keeps the query right on its own terms.
+    //
+    // At most six rows, so no order and no limit: the strip is built
+    // from the days, not from the order they arrive in.
+    supabase
+      .from("ministry_days")
+      .select("day, minutes")
+      .gte("day", stripSpan.from)
+      .lte("day", stripSpan.to)
+      .is("deleted_at", null)
+      .abortSignal(queryDeadline(started)),
   ]);
 
   // Each read gets the full budget rather than sharing one countdown,
@@ -132,6 +158,7 @@ export const readDayPage = async (day: DayKey): Promise<DayPageData> => {
     // the card opens where the day starts.
     savedMinutes: recorded.data?.minutes ?? 0,
     progress: readProgress({ month, monthTotal, yearTotal, status, yearGoal }),
+    previousDays: readStrip(day, strip),
   };
 };
 
@@ -200,4 +227,19 @@ const readProgress = (
     yearMinutes: yearTotal.data ?? 0,
     yearGoalHours: noGoal(yearGoal.data),
   };
+};
+
+// The strip stands or falls on its one read, for the reason the progress
+// block does: what it draws is a claim about which days are empty.
+const readStrip = (
+  day: DayKey,
+  strip: { data: { day: string; minutes: number }[] | null; error: unknown },
+): PreviousDay[] | null => {
+  if (strip.error) {
+    reportReadFailure({ scope: SCOPE, step: "last-days", error: strip.error });
+
+    return null;
+  }
+
+  return previousDays(day, strip.data ?? []);
 };

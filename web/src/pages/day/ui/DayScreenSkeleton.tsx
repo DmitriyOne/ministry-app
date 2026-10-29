@@ -1,6 +1,7 @@
 import { HoursCardSkeleton } from "@/features/hours-entry";
 import { Skeleton } from "@/shared/ui/skeleton";
 
+import { DayLastDaysSkeleton } from "./DayLastDaysSkeleton";
 import { DayScreenFrame } from "./DayScreenFrame";
 
 // What /day shows while the server answers (its loading.tsx re-exports
@@ -60,5 +61,10 @@ export const DayScreenSkeleton = () => (
         <div className="h-1.5 rounded-full bg-ink-a09" />
       </div>
     </div>
+
+    {/* The strip's waiting state lives beside the strip, not here —
+        unlike the progress block above, which has nowhere else to live
+        (ADR 0064). */}
+    <DayLastDaysSkeleton />
   </DayScreenFrame>
 );

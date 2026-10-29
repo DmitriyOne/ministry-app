@@ -113,7 +113,24 @@ const attemptSave = (
 //     loops until the server holds what the screen shows, so the last
 //     tap wins — rather than whichever request happened to come back
 //     last.
-export const useDayHours = ({ day, savedMinutes }: UseDayHoursOptions) => {
+// What the day's hours are, and what can be done to them. Named so
+// that the context holding it (./day-hours-context) states its shape
+// rather than inferring it from this hook — the provider is the only
+// place that knows HOW the state is kept, and the two readers of it
+// (the card and the strip's chip for the open day) see this and no
+// more.
+export type DayHoursControls = {
+  // Adds a delta of minutes, clamped by hours-value, and schedules the
+  // save. Everything else about a tap happens inside.
+  change: (delta: number) => void;
+  isLocked: boolean;
+  minutes: number;
+  saveState: HoursSaveState;
+};
+
+export const useDayHours = (
+  { day, savedMinutes }: UseDayHoursOptions,
+): DayHoursControls => {
   const t = useTranslations("screens.day.hours");
   const [minutes, setMinutes] = useState(savedMinutes);
 

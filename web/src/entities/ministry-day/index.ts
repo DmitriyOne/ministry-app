@@ -11,6 +11,12 @@ export {
   parseDayKey,
   toDayKey,
 } from "./model/day-key";
-export { type DayHeading, dayHeading, formatDayDate } from "./model/day-label";
+export {
+  type DayHeading,
+  dayHeading,
+  formatDayDate,
+  type ShortDayLabel,
+  shortDayLabel,
+} from "./model/day-label";
 export { dayPath } from "./model/day-path";
 export { formatHours, MINUTES_IN_HOUR, splitDuration } from "./model/format-hours";

@@ -3,28 +3,18 @@
 import { type ReactNode, useId } from "react";
 import { useTranslations } from "next-intl";
 
-import { type DayKey, formatHours } from "@/entities/ministry-day";
+import { formatHours } from "@/entities/ministry-day";
 import { HapticButton } from "@/shared/ui/haptic-button";
 import { CheckCircleIcon, MinusIcon, PlusIcon } from "@/shared/ui/icons";
 
+import { useDayHoursControls } from "../model/day-hours-context";
 import type { HoursSaveState } from "../model/hours-save";
-import { useDayHours } from "../model/use-day-hours";
 import { HoursCardShell } from "./HoursCardShell";
 import {
   HOURS_QUICK_ADD_MINUTES,
   HOURS_STEP_MINUTES,
   wouldChange,
 } from "../model/hours-value";
-
-type HoursCardProps = {
-  // Which day is being dialled. It comes from the address (ADR 0063),
-  // and the card never asks the clock itself.
-  day: DayKey;
-  // What the database holds for that day. Zero both for a day recorded
-  // as nothing and for a day with no row at all — the difference matters
-  // to the table, not to this card (ADR 0062).
-  savedMinutes: number;
-};
 
 // The hours served on one day, dialled by hand — the one interactive
 // island on /day, which stays a server component around it.
@@ -41,10 +31,15 @@ type HoursCardProps = {
 // whether a button has anywhere to go come from ../model/hours-value,
 // and when and how a tap is saved comes from ../model/use-day-hours.
 // What is left is markup.
-export const HoursCard = ({ day, savedMinutes }: HoursCardProps) => {
+//
+// It takes no props any more: which day, and what the server held for
+// it, are the provider's above (ADR 0065). The card asks for the state
+// instead of owning it, because the strip's chip for the same day shows
+// the same number and two copies of it would disagree on the first tap.
+export const HoursCard = () => {
   const t = useTranslations("screens.day.hours");
   const headingId = useId();
-  const { change, isLocked, minutes, saveState } = useDayHours({ day, savedMinutes });
+  const { change, isLocked, minutes, saveState } = useDayHoursControls();
 
   // The header's right-hand slot, which the card already had: it says
   // what the buttons do, and while a save is away it says that instead.

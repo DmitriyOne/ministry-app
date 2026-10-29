@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { DayKey } from "./day-key";
-import { dayHeading, formatDayDate } from "./day-label";
+import { dayHeading, formatDayDate, shortDayLabel } from "./day-label";
 
 const day = (value: string) => value as DayKey;
 
@@ -57,5 +57,25 @@ describe("formatDayDate", () => {
   it("does not shift the date by a day", () => {
     expect(formatDayDate(day("2026-01-01"), day("2026-01-05"))).toBe("1 January");
     expect(formatDayDate(day("2026-12-31"), day("2026-01-05"))).toBe("31 December");
+  });
+});
+
+describe("shortDayLabel", () => {
+  it("gives the weekday and the date of the day it is handed", () => {
+    expect(shortDayLabel(day("2026-06-02"))).toEqual({ weekday: "Tue", dayOfMonth: "2" });
+  });
+
+  // The two days English narrows to the same letter. Three letters is
+  // why the formatter asks for "short".
+  it("tells Tuesday and Thursday apart", () => {
+    expect(shortDayLabel(day("2026-06-02")).weekday).toBe("Tue");
+    expect(shortDayLabel(day("2026-06-04")).weekday).toBe("Thu");
+  });
+
+  // Same trap as every other formatter here: read as UTC midnight, so a
+  // server west of UTC does not label the chip with the day before.
+  it("does not shift the day", () => {
+    expect(shortDayLabel(day("2026-01-01"))).toEqual({ weekday: "Thu", dayOfMonth: "1" });
+    expect(shortDayLabel(day("2026-12-31"))).toEqual({ weekday: "Thu", dayOfMonth: "31" });
   });
 });
