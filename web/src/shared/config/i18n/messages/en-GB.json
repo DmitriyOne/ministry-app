@@ -214,6 +214,26 @@
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
       },
+      "v2_3": {
+        "name": "Version 2.3",
+        "date": "29 October 2026",
+        "hours": {
+          "title": "Your hours are kept",
+          "text": "Dial the hours you served and they are saved as you go — there is no button to press, and closing the app no longer loses them."
+        },
+        "anyDay": {
+          "title": "Fill in any day",
+          "text": "Every day has its own screen, with arrows to step back as far as you need. Forgot Tuesday? Open it on Thursday and record it there."
+        },
+        "progress": {
+          "title": "How the month is going",
+          "text": "Under the hours, a bar each for the month and the service year, with how much of your goal is still to go."
+        },
+        "lastDays": {
+          "title": "The week behind you",
+          "text": "Seven days at a glance, so an empty one is easy to spot. Tap it to go and fill it in."
+        }
+      },
       "v2_2": {
         "name": "Version 2.2",
         "date": "22 October 2026",
