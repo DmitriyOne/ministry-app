@@ -58,7 +58,12 @@ export const DayPage = async ({ params }: DayPageProps) => {
   if (page.status === "ready" && day > currentDayKey(page.timeZone)) notFound();
 
   const t = await getTranslations("screens.day");
-  const today = currentDayKey(page.status === "ready" ? page.timeZone : null);
+  // Null rather than a guess when the read failed: the heading falls back
+  // to the default calendar itself, while the forward arrow stays out of
+  // reach. Both halves used to come from one guessed date, and the arrow
+  // then offered a day the person had not lived yet (found on review of
+  // 2.3).
+  const today = page.status === "ready" ? currentDayKey(page.timeZone) : null;
 
   return (
     <DayScreenFrame
@@ -74,7 +79,9 @@ export const DayPage = async ({ params }: DayPageProps) => {
               falls back to the default calendar. It may then name the
               wrong day by a few hours — but it is a LABEL, and no card
               is drawn to write against it, so nothing can be recorded
-              in the wrong place. */}
+              in the wrong place. The arrow forward is the half of this
+              that is NOT a label, which is why today arrives as null
+              here rather than as that fallback. */}
           <DayHeader day={day} today={today} />
         </>
       )}
