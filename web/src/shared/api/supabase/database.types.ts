@@ -241,6 +241,10 @@ export type Database = {
         Args: { p_month: string; p_user: string }
         Returns: undefined
       }
+      close_ministry_assignment_after: {
+        Args: { p_month: string; p_user: string }
+        Returns: undefined
+      }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       forget_user_push_subscription: {
         Args: { p_endpoint: string; p_user_id: string }
@@ -326,6 +330,30 @@ export type Database = {
       }
       set_ministry_status: {
         Args: { p_month: string; p_monthly_goal?: number; p_status: string }
+        Returns: {
+          created_at: string
+          deleted_at: string | null
+          duration: string
+          month: string
+          monthly_goal_hours: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ministry_status_months"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_ministry_status_from: {
+        Args: {
+          p_month: string
+          p_monthly_goal?: number
+          p_pioneering_cleared_from?: string
+          p_status: string
+        }
         Returns: {
           created_at: string
           deleted_at: string | null

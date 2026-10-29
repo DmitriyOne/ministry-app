@@ -18,6 +18,19 @@ export type SignInActionState = {
   fieldErrors?: Partial<Record<keyof SignInFormValues, string>>;
   formError?: string;
   displayName?: string;
+  // The calendar this person keeps, carried back so that signing in lands
+  // on /day/<date> rather than on /day, which only redirects there — one
+  // navigation instead of two, and the loading boundary therefore drawn
+  // once (ADR 0063, update 2026-10-29).
+  //
+  // Absent means the profile read did not answer, NOT "no zone set": a
+  // person whose profile holds no zone is served the default calendar,
+  // and the action resolves that to a real zone name. The difference
+  // matters — guessing a calendar can send somebody to a day they have
+  // not lived yet, which this app answers with a 404 — so when it is
+  // absent the redirect falls back to /day and lets the server work it
+  // out.
+  timeZone?: string;
 };
 
 export const signInInitialState: SignInActionState = { status: "idle" };

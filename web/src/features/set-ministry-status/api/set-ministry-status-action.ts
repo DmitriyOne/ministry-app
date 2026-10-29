@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
-import { findMinistryStatusChoice, parseMonthKey } from "@/entities/ministry-status";
+import {
+  findMinistryStatusChoice,
+  parseMonthKey,
+  serviceYearStartMonth,
+} from "@/entities/ministry-status";
 import { getSessionClaims } from "@/entities/session";
 import { createServerSupabaseClient } from "@/shared/api";
 import { routes } from "@/shared/config";
@@ -61,20 +65,56 @@ export const setMinistryStatus = async (
       ? parseGoalHours(result.data.goalHours)
       : choice.hours;
 
-    // The month the device sent, and no arithmetic on it: a choice is
-    // the status the person is on NOW, changed again whenever they need
-    // (the owner's rule — nothing is ever set ahead), so there is no
-    // second month to work out here. The database refuses a month that
-    // is nobody's present, which is what keeps a runaway clock out.
-    const { error } = await supabase.rpc("set_ministry_status", {
-      p_month: currentMonth,
-      p_status: choice.status,
-      // Omitted rather than null for a status with no hours: the
-      // generated signature has the argument optional, and leaving it
-      // out lets the function's own default (null) stand — which is
-      // exactly "a publisher with no goal".
-      p_monthly_goal: goalHours ?? undefined,
-    });
+    // Where this status starts. Normally the month the device sent, with
+    // no arithmetic on it: a choice is the status the person is on NOW
+    // (the owner's rule — nothing is ever set ahead). The one exception
+    // is a regular pioneer saying they have served since the service
+    // year began, which is the only way the year can add up to the 600
+    // hours they are counted against (ADR 0061, update 2026-10-29).
+    //
+    // Asked of the choice rather than of what arrived: the start only
+    // means anything for the pioneer, so a request pairing
+    // "publisher" with "service_year" is not refused — it simply has
+    // nothing to apply it to, the same way a goal typed and then
+    // abandoned for another status is ignored.
+    const isPioneer = choice.status === "regular_pioneer";
+    const startMonth = isPioneer && result.data.startFrom === "service_year"
+      ? serviceYearStartMonth(currentMonth)
+      : currentMonth;
+
+    // BOTH answers of the pioneer's sub-question go through
+    // set_ministry_status_from, because both of them are statements
+    // about where the appointment began. "Since September" reaches back
+    // and sweeps what was marked after it. "From this month" reaches
+    // back too, in the other direction: it retracts pioneer months
+    // earlier in the same service year, or an answer given before —
+    // "since September" — would go on being counted and the year would
+    // still read 600 after the person had just said otherwise (the
+    // owner, 2026-10-29).
+    //
+    // Every other status, and the pioneer in September (where the two
+    // answers are one statement and the sheet asks nothing), takes the
+    // ordinary path: "this is what I am on now".
+    const { error } = isPioneer
+      ? await supabase.rpc("set_ministry_status_from", {
+          p_month: startMonth,
+          p_status: choice.status,
+          p_monthly_goal: goalHours ?? undefined,
+          // Only when the start is the month under way. Backdating to
+          // September has nothing earlier in the year to retract.
+          p_pioneering_cleared_from: startMonth === currentMonth
+            ? serviceYearStartMonth(currentMonth)
+            : undefined,
+        })
+      : await supabase.rpc("set_ministry_status", {
+          p_month: currentMonth,
+          p_status: choice.status,
+          // Omitted rather than null for a status with no hours: the
+          // generated signature has the argument optional, and leaving it
+          // out lets the function's own default (null) stand — which is
+          // exactly "a publisher with no goal".
+          p_monthly_goal: goalHours ?? undefined,
+        });
 
     if (error) {
       // A refusal from the database is the person's problem to see, an

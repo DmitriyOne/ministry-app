@@ -63,7 +63,10 @@ export const ProfileScreen = async () => {
                 {/* Above the notifications, because it is the one row here
                     that changes what the rest of the app counts. */}
                 <ListCard>
-                  <MinistryStatusSheet status={page.ministryStatus} />
+                  <MinistryStatusSheet
+                    status={page.ministryStatus}
+                    pioneeringSinceYearStart={page.pioneeringSinceYearStart}
+                  />
                 </ListCard>
               </>
             )

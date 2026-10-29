@@ -8,6 +8,8 @@ import {
   type EffectiveMinistryStatus,
   ministryStatusChoiceFor,
   type MonthKey,
+  serviceYearGoalFrom,
+  serviceYearStartMonth,
 } from "@/entities/ministry-status";
 import { useActionForm } from "@/shared/lib/forms";
 import { type SheetDragHandlers, useSheetDrag } from "@/shared/ui/sheet";
@@ -17,6 +19,7 @@ import { setMinistryStatus } from "../api/set-ministry-status-action";
 import {
   createMinistryChoiceSchema,
   type MinistryChoiceValues,
+  type MinistryStatusStart,
   type SetMinistryStatusActionState,
   setMinistryStatusInitialState,
 } from "./schema";
@@ -25,6 +28,9 @@ type UseSetMinistryStatusOptions = {
   // What the person is on this month, as the screen read it. Null when
   // the read failed.
   status: EffectiveMinistryStatus | null;
+  // Whether they were already a regular pioneer in the first month of
+  // the service year — the answer the sub-question opens on.
+  pioneeringSinceYearStart: boolean;
 };
 
 export type UseSetMinistryStatusResult = {
@@ -45,6 +51,19 @@ export type UseSetMinistryStatusResult = {
   // in their own words. Formatted once, here, because both the sheet
   // and the dialog say it and they must not be able to disagree.
   monthLabel: string;
+  // The two months the pioneer's sub-question names, already in words,
+  // or null when there is nothing to ask: in September the service year
+  // and the month under way are the same month, and a question with one
+  // answer is furniture (ADR 0061, update 2026-10-29).
+  pioneerStart: {
+    serviceYear: string;
+    currentMonth: string;
+    // What the service year comes to under each answer — 600 from
+    // September, one month less for every month after it. The sheet
+    // says it out loud, because that difference is the only reason the
+    // question is worth asking.
+    yearGoalHours: { serviceYear: number; currentMonth: number };
+  } | null;
   form: ReturnType<typeof useActionForm<MinistryChoiceValues, SetMinistryStatusActionState>>;
 };
 
@@ -68,8 +87,24 @@ export type UseSetMinistryStatusResult = {
 // whatever produces them, so the schema, the server's field errors, the
 // refusal of a second submit in flight and the "backend did not answer"
 // toast all still come from it.
+// Midday rather than midnight: the key is a plain date, and a date
+// parsed as UTC midnight is the previous day in any zone behind it,
+// which would print the month before.
+//
+// The year is spelt out only in the sub-question, where two months from
+// two different years can sit one under the other: "September" above
+// "February" says nothing about which September it is.
+const monthName = (
+  format: ReturnType<typeof useFormatter>,
+  month: MonthKey,
+  withYear = false,
+): string => format.dateTime(
+  new Date(`${month}T12:00:00`),
+  withYear ? { month: "long", year: "numeric" } : { month: "long" },
+);
+
 export const useSetMinistryStatus = (
-  { status }: UseSetMinistryStatusOptions,
+  { status, pioneeringSinceYearStart }: UseSetMinistryStatusOptions,
 ): UseSetMinistryStatusResult => {
   const t = useTranslations("screens.profile.ministrySheet");
   const format = useFormatter();
@@ -99,13 +134,21 @@ export const useSetMinistryStatus = (
     ? String(status.monthlyGoalHours)
     : "";
 
+  const startedWith: MinistryStatusStart = pioneeringSinceYearStart ? "service_year" : "current";
+
   const schema = useMemo(() => createMinistryChoiceSchema(t), [t]);
 
   const form = useActionForm<MinistryChoiceValues, SetMinistryStatusActionState>({
     state,
     isPending,
     schema,
-    defaultValues: { choiceId: currentChoiceId, goalHours: currentGoalHours },
+    // The answer in force, not a fixed one. A row holds a status, not
+    // the sentence that produced it, so "since when" is reconstructed
+    // from the only thing that shows it: whether September is pioneered
+    // too. Opening on the wrong answer is not cosmetic here — pressing
+    // Save with "from this month" retracts September (ADR 0061, update
+    // 2026-10-29).
+    defaultValues: { choiceId: currentChoiceId, goalHours: currentGoalHours, startFrom: startedWith },
     submitAction: (values) => {
       startTransition(async () => {
         // The month is read HERE, as the form is submitted, and not when
@@ -138,7 +181,7 @@ export const useSetMinistryStatus = (
     // Back to what is actually in force. Without this, picking a row,
     // dismissing the sheet and opening it again would show the abandoned
     // pick as though it had been saved.
-    form.reset({ choiceId: currentChoiceId, goalHours: currentGoalHours });
+    form.reset({ choiceId: currentChoiceId, goalHours: currentGoalHours, startFrom: startedWith });
 
     // The month to name in the sheet and in the dialog. There is only
     // ever one candidate: the choice applies to the month under way, and
@@ -155,6 +198,21 @@ export const useSetMinistryStatus = (
     if (await form.validate()) setIsConfirming(true);
   };
 
+  // The September this month belongs to, and whether it is worth asking
+  // about: equal months mean the person is IN September, where "since
+  // the service year began" and "from this month" say the same thing.
+  const serviceYearStart = month ? serviceYearStartMonth(month) : null;
+  const pioneerStart = month && serviceYearStart && serviceYearStart !== month
+    ? {
+        serviceYear: monthName(format, serviceYearStart, true),
+        currentMonth: monthName(format, month, true),
+        yearGoalHours: {
+          serviceYear: serviceYearGoalFrom(serviceYearStart),
+          currentMonth: serviceYearGoalFrom(month),
+        },
+      }
+    : null;
+
   return {
     sheet: { isOpen, open, onOpenChange: setIsOpen, dragY, dragHandlers },
     confirm: {
@@ -166,9 +224,8 @@ export const useSetMinistryStatus = (
     // Midday rather than midnight: the key is a plain date, and a date
     // parsed as UTC midnight is the previous day in any zone behind it,
     // which would print the month before.
-    monthLabel: month
-      ? format.dateTime(new Date(`${month}T12:00:00`), { month: "long" })
-      : "",
+    monthLabel: month ? monthName(format, month) : "",
+    pioneerStart,
     form,
   };
 };

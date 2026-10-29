@@ -23,7 +23,9 @@ what it is given**. Every day has its own address — `/day/2026-06-02` —
 with arrows stepping back as far as needed, so a Tuesday that was missed
 can be filled in on Thursday; the bare `/day` redirects to today's, which
 only the database can work out, since it depends on the person's own time
-zone. On it: the hours card (minus and plus by five minutes, quick-adds of
+zone. The menu and the sign-in skip that hop and link to the date itself,
+because by then the zone is known and going through a redirect would draw
+the loading skeleton twice. On it: the hours card (minus and plus by five minutes, quick-adds of
 15/30/45, capped at a day, a system haptic tick under the finger) which
 **saves itself, with no button** — a tap moves the number at once and one
 write goes out for the whole burst; a progress block with a bar each for
@@ -33,7 +35,10 @@ dash rather than a zero, because a zero would claim somebody had looked.
 
 `/profile` carries the name, role, ministry status (publisher through
 regular pioneer), the monthly and service-year goals, the push toggle and
-sign-out. `/calendar`, `/month` and `/year` are still placeholders
+sign-out. Choosing "regular pioneer" asks one more thing — since when,
+the start of the service year or this month — because the year's goal is
+the months actually served added up, not a fixed 600; and that goal is
+shown to a regular pioneer only, for as long as they are one. `/calendar`, `/month` and `/year` are still placeholders
 carrying a title each, and `/admin/users/new` creates an account.
 `/whats-new` tells a person what each version added, with a dot on the
 profile row while they have not read the current one. There is no

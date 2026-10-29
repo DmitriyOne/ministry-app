@@ -62,3 +62,12 @@ export const addMonths = (key: MonthKey, delta: number): MonthKey => {
     (absolute % MONTHS_IN_YEAR) + 1,
   );
 };
+
+// How many whole months lie between two keys, counted from the first to
+// the second. Negative when the second is earlier, 0 for the same month.
+export const monthsBetween = (from: MonthKey, to: MonthKey): number => {
+  const start = monthParts(from);
+  const end = monthParts(to);
+
+  return (end.year - start.year) * MONTHS_IN_YEAR + (end.month - start.month);
+};

@@ -13,6 +13,7 @@ import { DayLastDays } from "./DayLastDays";
 import { DayProgress } from "./DayProgress";
 import { DayScreenFrame } from "./DayScreenFrame";
 import { RefreshOnDayChange } from "./RefreshOnDayChange";
+import { RememberTimeZone } from "./RememberTimeZone";
 
 // Next hands the segment as a promise (15+), so it is awaited rather
 // than read.
@@ -75,6 +76,12 @@ export const DayPage = async ({ params }: DayPageProps) => {
               again once the date has turned over — which is where the
               card's own midnight check went (ADR 0063). */}
           <RefreshOnDayChange />
+          {/* Writes this person's zone down on the device, so the menu
+              can link to today's date and skip the redirect at /day.
+              Only when the read succeeded: the fallback above is a
+              calendar nobody confirmed, and a guess written down would
+              be believed by every later navigation. */}
+          {page.status === "ready" ? <RememberTimeZone timeZone={page.timeZone} /> : null}
           {/* The zone is unknown when the read failed, so the heading
               falls back to the default calendar. It may then name the
               wrong day by a few hours — but it is a LABEL, and no card

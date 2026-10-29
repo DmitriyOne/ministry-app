@@ -1,13 +1,20 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 
+import { currentDayKey, dayPath } from "@/entities/ministry-day";
 import type { AppRoute } from "@/shared/config";
 import { cn } from "@/shared/lib/cn";
+import { readStoredTimeZone, subscribeToStoredTimeZone } from "@/shared/lib/time-zone";
 import { LinkButton } from "@/shared/ui/button";
 
 import { isNavItemCurrent } from "../model/is-nav-item-current";
+
+// The zone this device has written down, read the way React reads any
+// external store. Null on the server and while hydrating, which is the
+// honest answer: the markup Next sent knows nothing about this browser.
+const getServerSnapshot = (): string | null => null;
 
 type BottomNavItemProps = {
   href: AppRoute;
@@ -37,10 +44,27 @@ export const BottomNavItem = ({
   // attribute to usePathname; the comparison itself lives in the model,
   // under test.
   const isCurrent = isNavItemCurrent(usePathname() ?? "", href, hasFamily);
+  const storedZone = useSyncExternalStore(
+    subscribeToStoredTimeZone,
+    readStoredTimeZone,
+    getServerSnapshot,
+  );
+
+  // The day item points at the DATE once this device knows the person's
+  // calendar. /day is a redirect — it reads the profile, works out
+  // today and sends the browser on — so going through it draws the
+  // loading boundary twice, which is the flicker the owner saw when
+  // opening the day from here and never saw stepping between days.
+  //
+  // Until the zone is known (first launch, hydration, storage refused)
+  // this stays /day and behaves exactly as it did. Which item is lit is
+  // decided above, from the item's own path, so nothing about that
+  // depends on this.
+  const target = hasFamily && storedZone ? dayPath(currentDayKey(storedZone)) : href;
 
   return (
     <LinkButton
-      href={href}
+      href={target}
       variant="plain"
       // aria-current is the HTML attribute, read by assistive tech; the
       // classes below are presentation. Two independent things, as in

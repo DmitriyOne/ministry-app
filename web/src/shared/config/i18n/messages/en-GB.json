@@ -176,6 +176,12 @@
           "hint": "Leave it empty for no goal at all.",
           "outOfRange": "A monthly goal has to be a whole number between 1 and 744."
         },
+        "since": {
+          "legend": "Since when?",
+          "serviceYear": "Since the service year began",
+          "currentMonth": "From this month",
+          "hint": "Your 50 h a month is filled in from then on, and the service year comes to {hours} h."
+        },
         "save": "Save",
         "confirm": {
           "title": "Change your status?",
@@ -213,6 +219,30 @@
       "hero": {
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
+      },
+      "v2_4": {
+        "name": "Version 2.4",
+        "date": "29 October 2026",
+        "pioneerStart": {
+          "title": "Pioneering since September?",
+          "text": "Choosing regular pioneer now asks when it began. Say it started with the service year and every month since then is filled in, so the year adds up to the figure you know."
+        },
+        "yearGoal": {
+          "title": "The year's goal is a pioneer's",
+          "text": "It is shown while you are a regular pioneer and goes once you are not, instead of counting a year you are no longer serving."
+        },
+        "afterAuxiliary": {
+          "title": "After a month of auxiliary pioneering",
+          "text": "You come back as a publisher rather than to the appointment you had before it, since a regular pioneer is not appointed for a single month. Your own monthly goal comes back with you."
+        },
+        "dayOpens": {
+          "title": "The day opens in one step",
+          "text": "Tapping the day in the menu, and signing in, now go straight to today's date instead of passing through an address that only redirects — so the screen no longer flickers on the way."
+        },
+        "signInError": {
+          "title": "A refusal you can read",
+          "text": "When signing in is refused, the message is now a filled plate with a sign beside it, rather than a thin outline in a washed-out colour."
+        }
       },
       "v2_3": {
         "name": "Version 2.3",
