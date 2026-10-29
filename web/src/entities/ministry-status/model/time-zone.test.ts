@@ -1,29 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { currentMonthKey, DEFAULT_TIME_ZONE, resolveTimeZone } from "./time-zone";
-
-describe("resolveTimeZone", () => {
-  it("keeps a zone this runtime knows", () => {
-    expect(resolveTimeZone("Europe/Moscow")).toBe("Europe/Moscow");
-  });
-
-  it("falls back when the column is empty", () => {
-    expect(resolveTimeZone(null)).toBe(DEFAULT_TIME_ZONE);
-    expect(resolveTimeZone("")).toBe(DEFAULT_TIME_ZONE);
-  });
-
-  // The database only checks the SHAPE of the string, so a well-formed
-  // name for a zone that does not exist can reach us. Without the
-  // fallback, formatting a date with it throws and takes the screen.
-  it("falls back on a well-formed name that is not a real zone", () => {
-    expect(resolveTimeZone("Europe/Atlantis")).toBe(DEFAULT_TIME_ZONE);
-  });
-});
+import { currentMonthKey } from "./time-zone";
 
 describe("currentMonthKey", () => {
   // The only moment this function is interesting: 23:00 UTC on the last
   // day of October. Both answers are right, which is the whole reason
-  // the zone is stored on the profile at all.
+  // the zone is stored on the profile at all. How a date is read in a
+  // zone is tested where it lives, in shared/lib/time-zone; what is
+  // tested here is that a month key comes out of it.
   const lastEveningOfOctober = new Date("2026-10-31T23:00:00Z");
 
   it("is still October in London", () => {

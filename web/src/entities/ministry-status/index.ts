@@ -21,6 +21,7 @@ export {
   ministryStatusChoiceFor,
 } from "./model/choices";
 export { addMonths, type MonthKey, parseMonthKey, toMonthKey } from "./model/month-key";
+export { formatMonthName } from "./model/month-label";
 export {
   DEFAULT_MINISTRY_STATUS,
   type EffectiveMinistryStatus,
@@ -30,9 +31,6 @@ export {
   type ServiceYear,
   serviceYearOf,
 } from "./model/service-year";
-export {
-  currentMonthKey,
-  DEFAULT_TIME_ZONE,
-  deviceMonthKey,
-  resolveTimeZone,
-} from "./model/time-zone";
+// The zone itself is not this entity's — it lives in shared/lib/time-zone,
+// because ministry-day asks the same clock the same question.
+export { currentMonthKey, deviceMonthKey } from "./model/time-zone";

@@ -4,7 +4,7 @@ import { unstable_rethrow } from "next/navigation";
 
 import * as Sentry from "@sentry/nextjs";
 
-import { redactEmails } from "../observability";
+import { describeFailure } from "./describe-failure";
 
 // What a Server Action does with an exception it did not expect, in one
 // place.
@@ -71,12 +71,33 @@ export const reportActionFailure = (
   // know that rule.
   unstable_rethrow(error);
 
-  Sentry.captureException(error);
+  const described = describeFailure(error);
 
+  // A real exception goes to Sentry as itself — its stack is the most
+  // useful thing about it. Anything else is wrapped in one, for the
+  // reason reportReadFailure spells out: Sentry files a plain object as
+  // "Non-Error exception captured" and groups every such event
+  // together, so the day an action starts failing, "which one, and what
+  // did it say" would have no answer in the dashboard.
+  if (error instanceof Error) {
+    Sentry.captureException(error);
+  } else {
+    Sentry.captureException(
+      new Error(`[${scope}] ${described.name}: ${described.message}`),
+      { tags: { action: scope, postgrestCode: described.code || "none" } },
+    );
+  }
+
+  // Both facts, always: `error instanceof Error` is false for a
+  // PostgrestError, and this line used to answer "object" and
+  // "undefined" for every database failure there is (the owner,
+  // 2026-10-27).
   console.warn(`[${scope}] ${outcome}`, {
     reason: "threw",
     ...context,
-    error: error instanceof Error ? error.name : typeof error,
-    message: error instanceof Error ? redactEmails(error.message) : undefined,
+    error: described.name,
+    message: described.message,
+    ...(described.code === "" ? {} : { code: described.code }),
+    ...(described.hint === "" ? {} : { hint: described.hint }),
   });
 };

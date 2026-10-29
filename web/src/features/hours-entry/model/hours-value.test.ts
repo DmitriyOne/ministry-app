@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   addMinutes,
-  formatHours,
   HOURS_QUICK_ADD_MINUTES,
   HOURS_STEP_MINUTES,
   MAX_DAY_MINUTES,
@@ -32,21 +31,6 @@ describe("addMinutes", () => {
 
   it("holds every quick-add on an empty day", () => {
     expect(HOURS_QUICK_ADD_MINUTES.map((delta) => addMinutes(0, delta))).toEqual([15, 30, 45]);
-  });
-});
-
-describe("formatHours", () => {
-  it("reads as a clock", () => {
-    expect(formatHours(0)).toBe("0:00");
-    expect(formatHours(5)).toBe("0:05");
-    expect(formatHours(45)).toBe("0:45");
-    expect(formatHours(60)).toBe("1:00");
-    expect(formatHours(65)).toBe("1:05");
-    expect(formatHours(MAX_DAY_MINUTES)).toBe("24:00");
-  });
-
-  it("pads minutes and not hours", () => {
-    expect(formatHours(615)).toBe("10:15");
   });
 });
 

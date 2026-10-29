@@ -23,15 +23,10 @@ export const MAX_DAY_MINUTES = 24 * 60;
 export const addMinutes = (current: number, delta: number): number =>
   Math.min(Math.max(current + delta, 0), MAX_DAY_MINUTES);
 
-// "0:00", "1:05", "24:00". Hours are not padded and minutes always are,
-// which is how a clock reads; the card draws it with tabular figures so
-// the number does not jitter as it changes.
-export const formatHours = (minutes: number): string => {
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-
-  return `${hours}:${String(rest).padStart(2, "0")}`;
-};
+// How the number is PRINTED is not here any more: formatHours moved to
+// entities/ministry-day when the progress block began printing the same
+// thing for a month and a service year (ADR 0064). What stays here is
+// the arithmetic of one day.
 
 // Whether a button with this delta is worth offering at all: false at
 // zero going down and at the cap going up.

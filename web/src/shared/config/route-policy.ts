@@ -90,6 +90,16 @@ const ADMIN_FAMILY_PREFIX = "/admin";
 
 const ADMIN_FAMILY_POLICY: RoutePolicy = { ...APP_SCREEN, adminOnly: true };
 
+// The same reasoning for the day's own family. Every /day carries its
+// date — /day/2026-06-02 — and the bare /day only redirects to today
+// (ADR 0063), so without this line the screen a person actually uses
+// would have NO policy at all: the proxy leaves an unclassified address
+// alone by design, which here means no device shield, no session and no
+// home-screen icon. Measured before writing it, not guessed.
+//
+// `routes.day` is the prefix, so there is nothing new to keep in step:
+// the family and the address it belongs to are the same string.
+
 // null means "not one of this app's addresses": the proxy leaves it
 // alone, so /qwerty gives a real 404 instead of a device placeholder.
 export const resolveRoutePolicy = (pathname: string): RoutePolicy | null => {
@@ -104,6 +114,12 @@ export const resolveRoutePolicy = (pathname: string): RoutePolicy | null => {
   if (pathname === ADMIN_FAMILY_PREFIX || pathname.startsWith(`${ADMIN_FAMILY_PREFIX}/`)) {
     return ADMIN_FAMILY_POLICY;
   }
+
+  // A trailing slash is required, so /dayz and /day-summary stay
+  // unclassified — the same rule the navigation's active state follows,
+  // and for the same reason: a prefix without the separator is not a
+  // family, it is a coincidence of spelling.
+  if (pathname.startsWith(`${routes.day}/`)) return APP_SCREEN;
 
   return null;
 };
