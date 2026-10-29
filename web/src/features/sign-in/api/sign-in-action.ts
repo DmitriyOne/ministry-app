@@ -8,6 +8,7 @@ import { createServerSupabaseClient } from "@/shared/api";
 import { firstFieldErrors } from "@/shared/lib/forms";
 import { reportActionFailure } from "@/shared/lib/action-failure";
 import { getClientIp } from "@/shared/lib/rate-limit";
+import { resolveTimeZone } from "@/shared/lib/time-zone";
 
 import { checkSignInRateLimit, recordSignInFailure } from "./rate-limit";
 import { classifyAuthError } from "../model/classify-auth-error";
@@ -75,7 +76,13 @@ export const signIn = async (
     // consumer yet.
     stage = "profile";
 
-    const { data: profile } = await supabase.from("profiles").select("display_name").maybeSingle();
+    // The zone travels with the name because it is the same row and the
+    // same read: /day is a redirect that exists only to work this out,
+    // and knowing it here lets the sign-in land on the date itself.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name, time_zone")
+      .maybeSingle();
 
     // The client cache still holds what this person saw while signed out
     // — above all the login screen itself. Next.js reuses that cache for
@@ -89,7 +96,14 @@ export const signIn = async (
     // that side effect, for a path that runs once per sign-in.
     revalidatePath("/", "layout");
 
-    return { status: "success", displayName: profile?.display_name };
+    return {
+      status: "success",
+      displayName: profile?.display_name,
+      // Only when the row came back. No row means the read failed, and
+      // the default calendar would then be a guess rather than what the
+      // server is using — see the field's own note in model/schema.ts.
+      timeZone: profile ? resolveTimeZone(profile.time_zone) : undefined,
+    };
   } catch (error) {
     // Which step threw travels with the report: the cookie store, the
     // auth call and the profile read fail for unrelated reasons, and the
