@@ -1,13 +1,16 @@
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { formatHours } from "@/entities/ministry-day";
 import { parseMonthSlug } from "@/entities/ministry-status";
 import { getSessionClaims } from "@/entities/session";
+import { CloseMonthButton } from "@/features/close-month";
 import { ScreenLoadFailure } from "@/features/screen-retry";
 import { routes } from "@/shared/config";
 import { CenteredState } from "@/shared/ui/centered-state";
 
 import { readMonthPage } from "../api/read-month-page";
+import { monthClosingState } from "../model/month-closing";
 import { canStepForward } from "../model/month-span";
 import { MonthDaysTable } from "./MonthDaysTable";
 import { MonthHeader } from "./MonthHeader";
@@ -50,6 +53,11 @@ export const MonthScreen = async ({ params }: MonthScreenProps) => {
   if (page.currentMonth !== null && canStepForward(page.currentMonth, month)) notFound();
 
   const t = await getTranslations("screens.month");
+  const closing = monthClosingState({
+    month,
+    currentMonth: page.currentMonth,
+    isClosed: page.isClosed,
+  });
 
   return (
     <CenteredState fill className="justify-start gap-5 pt-7">
@@ -74,6 +82,44 @@ export const MonthScreen = async ({ params }: MonthScreenProps) => {
             />
           )
         : <MonthDaysTable days={page.days} />}
+
+      {/* Nothing at all while the month is being lived: the button
+          appears after midnight of the following month (the owner,
+          2026-10-29), and a disabled one would raise the question of
+          what it takes to enable it. */}
+      {closing === "hidden"
+        ? null
+        : (
+            <div className="mt-1 flex flex-col gap-3">
+              {closing === "closed"
+                ? (
+                    <p className="rounded-xl bg-primary/10 px-4 py-3.5 text-caption font-500 text-pretty text-hero">
+                      {t("closing.closed")}
+                    </p>
+                  )
+                : null}
+
+              <CloseMonthButton
+                month={month}
+                state={closing}
+                labels={{
+                  close: t("closing.close"),
+                  reopen: t("closing.reopen"),
+                  confirmTitle: t("closing.confirmTitle"),
+                  confirmBody: t("closing.confirmBody"),
+                  confirmHoursLabel: t("closing.hoursLabel"),
+                  // The figure the dialog is about. Dashes when the
+                  // summary did not load — the month still closes, and
+                  // the number is there to recognise it by, not to
+                  // decide by.
+                  hours: page.summary === null ? "—" : formatHours(page.summary.totalMinutes),
+                  cancel: t("closing.cancel"),
+                  refused: t("closing.refused"),
+                  failed: t("closing.failed"),
+                }}
+              />
+            </div>
+          )}
     </CenteredState>
   );
 };
