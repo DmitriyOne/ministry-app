@@ -83,7 +83,42 @@ export const WhatsNewScreen = async () => {
             keep. The other three rows are what the day screen gained
             around it — a day per address, the progress block, the strip
             (ADR 0063/0064/0065). */}
-        <VersionHeading name={t("v2_3.name")} date={t("v2_3.date")} pill={t("currentPill")} />
+        {/* 2.4 is about one question and three answers to things people
+            ran into: when the pioneering began (without it the year
+            could not add up), whose figure the year's goal is, and two
+            rough edges — the day screen flickering on the way in, and a
+            refusal on the sign-in drawn as a thin outline.
+
+            The glyphs: the month for a question about months, the
+            target for the year's goal (the same one 2.1 and 2.2 use for
+            aiming at something), the tick for a fix that landed, and the
+            warning circle for the message that carries it. */}
+        <VersionHeading name={t("v2_4.name")} date={t("v2_4.date")} pill={t("currentPill")} />
+        <ListCard>
+          <ListRow
+            icon={<CalendarMonthIcon size={18} />}
+            title={t("v2_4.pioneerStart.title")}
+            text={t("v2_4.pioneerStart.text")}
+          />
+          <ListRow
+            icon={<TargetIcon size={18} />}
+            title={t("v2_4.yearGoal.title")}
+            text={t("v2_4.yearGoal.text")}
+          />
+          <ListRow
+            icon={<CheckCircleIcon size={18} />}
+            title={t("v2_4.dayOpens.title")}
+            text={t("v2_4.dayOpens.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<AlertCircleIcon size={18} />}
+            title={t("v2_4.signInError.title")}
+            text={t("v2_4.signInError.text")}
+          />
+        </ListCard>
+
+        <VersionHeading name={t("v2_3.name")} date={t("v2_3.date")} pill={t("releasedPill")} />
         <ListCard>
           <ListRow
             icon={<PlusIcon size={18} />}
