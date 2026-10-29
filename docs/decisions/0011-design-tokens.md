@@ -323,7 +323,8 @@ cn("shadow-card", "shadow-red-500")          → "shadow-red-500 shadow-card"   
 - Контраст замерен в браузере (`getComputedStyle` + композиция alpha
   поверх фона + относительная яркость WCAG) после фикса: все 5 вариантов
   `Button` (`deep`/`action`/`alert`/`plain`/`heroGhost`) — от 5.77:1 до
-  13.75:1; `InlineError` на `--hero` — 5.44:1; `HeroCard` текст
+  13.75:1; `InlineError` на `--hero` — 5.44:1 (с 2026-10-29 компонент
+  залит `--negative` и пишет белым, 5.76:1 — ADR 0012); `HeroCard` текст
   (`text-hero-foreground/60` на `--hero`) — 4.74:1. Все ≥ 4.5:1 (WCAG AA).
   Отдельно найдено (не связано с этим багом, значения не менялись фиксом
   — просто перестали теряться): часть caption/eyebrow-текста на светлом
