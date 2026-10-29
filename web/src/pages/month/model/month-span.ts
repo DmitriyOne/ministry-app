@@ -1,5 +1,5 @@
 import { addDays, type DayKey, toDayKey } from "@/entities/ministry-day";
-import { addMonths, type MonthKey, monthsBetween, toMonthKey } from "@/entities/ministry-status";
+import { addMonths, type MonthKey, monthsBetween } from "@/entities/ministry-status";
 
 // Which days this screen is about, worked out from the month in the
 // address and nothing else — the same rule the day screen follows (ADR
