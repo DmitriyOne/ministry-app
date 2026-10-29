@@ -23,7 +23,9 @@ what it is given**. Every day has its own address — `/day/2026-06-02` —
 with arrows stepping back as far as needed, so a Tuesday that was missed
 can be filled in on Thursday; the bare `/day` redirects to today's, which
 only the database can work out, since it depends on the person's own time
-zone. On it: the hours card (minus and plus by five minutes, quick-adds of
+zone. The menu and the sign-in skip that hop and link to the date itself,
+because by then the zone is known and going through a redirect would draw
+the loading skeleton twice. On it: the hours card (minus and plus by five minutes, quick-adds of
 15/30/45, capped at a day, a system haptic tick under the finger) which
 **saves itself, with no button** — a tap moves the number at once and one
 write goes out for the whole burst; a progress block with a bar each for
