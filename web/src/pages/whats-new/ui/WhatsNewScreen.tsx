@@ -17,16 +17,24 @@ import { CenteredState } from "@/shared/ui/centered-state";
 // circle — the same one the new "something's wrong on our side" screen
 // shows, which is the point of that row — and the closed lock for
 // signing out, since that is what leaving does.
+//
+// The 2.3 rows borrow nothing: each one wears the glyph its own screen
+// wears. Plus is the hours card's own button, the left chevron is the
+// step back a day, the week is the same calendar the menu shows, and the
+// rising chart is the progress block.
 import {
   AlertCircleIcon,
   CalendarMonthIcon,
   CalendarWeekIcon,
+  ChartArrowIcon,
   CheckCircleIcon,
+  ChevronLeftIcon,
   CompassIcon,
   EyeIcon,
   InfoCircleIcon,
   LockClosedIcon,
   LockOpenIcon,
+  PlusIcon,
   TargetIcon,
   UserIcon,
   WifiOffIcon,
@@ -67,12 +75,45 @@ export const WhatsNewScreen = async () => {
           />
         </div>
 
+        {/* The release the hours card had been waiting for since 2.1,
+            which is why "your hours are kept" leads: until now the card
+            dialled a number into React state and a reload put it back to
+            zero (ADR 0060/0062), and 2.1 deliberately announced only the
+            tick under the finger rather than a promise the app did not
+            keep. The other three rows are what the day screen gained
+            around it — a day per address, the progress block, the strip
+            (ADR 0063/0064/0065). */}
+        <VersionHeading name={t("v2_3.name")} date={t("v2_3.date")} pill={t("currentPill")} />
+        <ListCard>
+          <ListRow
+            icon={<PlusIcon size={18} />}
+            title={t("v2_3.hours.title")}
+            text={t("v2_3.hours.text")}
+          />
+          <ListRow
+            icon={<ChevronLeftIcon size={18} />}
+            title={t("v2_3.anyDay.title")}
+            text={t("v2_3.anyDay.text")}
+          />
+          <ListRow
+            icon={<ChartArrowIcon size={18} />}
+            title={t("v2_3.progress.title")}
+            text={t("v2_3.progress.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<CalendarWeekIcon size={18} />}
+            title={t("v2_3.lastDays.title")}
+            text={t("v2_3.lastDays.text")}
+          />
+        </ListCard>
+
         {/* The first release where the app learns something ABOUT the
             person rather than only showing them screens: how they serve,
             and what they are aiming for. The third row is here because
             "from next month" is the one rule that would otherwise be
             discovered by surprise. */}
-        <VersionHeading name={t("v2_2.name")} date={t("v2_2.date")} pill={t("currentPill")} />
+        <VersionHeading name={t("v2_2.name")} date={t("v2_2.date")} pill={t("releasedPill")} />
         <ListCard>
           <ListRow
             icon={<UserIcon size={18} />}
