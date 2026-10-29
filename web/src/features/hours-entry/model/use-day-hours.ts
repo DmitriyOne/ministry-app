@@ -35,6 +35,7 @@ const ROLLBACK_MESSAGE = {
   refused: "saveRefused",
   signedOut: "saveSignedOut",
   unreachable: "saveFailed",
+  monthClosed: "saveMonthClosed",
 } as const satisfies Record<RollbackReason, string>;
 
 type UseDayHoursOptions = {
@@ -51,6 +52,12 @@ type UseDayHoursOptions = {
   // keyed by the day, so another day is another mount — which is also
   // why nothing here watches this value.
   savedMinutes: number;
+  // The month this day belongs to has been closed (ADR 0066), so the
+  // card shows what it holds and nothing may be dialled. The lock is
+  // not a substitute for the database's refusal — a Server Action is a
+  // public endpoint and the function refuses on its own — it is how the
+  // screen stops offering what will not be taken.
+  isReadOnly: boolean;
 };
 
 const wait = (ms: number) => new Promise<void>((resolve) => {
@@ -129,7 +136,7 @@ export type DayHoursControls = {
 };
 
 export const useDayHours = (
-  { day, savedMinutes }: UseDayHoursOptions,
+  { day, savedMinutes, isReadOnly }: UseDayHoursOptions,
 ): DayHoursControls => {
   const t = useTranslations("screens.day.hours");
   const [minutes, setMinutes] = useState(savedMinutes);
@@ -302,6 +309,11 @@ export const useDayHours = (
   }, [flush]);
 
   const change = useCallback((delta: number) => {
+    // Nothing to dial in a closed month. The buttons are already out of
+    // reach, so this is the second of the three checks the project
+    // makes everywhere — the third is the database's own.
+    if (isReadOnly) return;
+
     // Computed from the ref rather than inside the state updater: an
     // updater must be pure, and writing the target from inside one makes
     // it run twice under StrictMode. The ref is what the screen shows,
@@ -317,7 +329,7 @@ export const useDayHours = (
       timerRef.current = null;
       void flushRef.current();
     }, HOURS_SAVE_DELAY_MS);
-  }, []);
+  }, [isReadOnly]);
 
   // A tap and then the phone goes in a pocket: iOS freezes the page and
   // may never run the pending timer, so the last change would be lost
@@ -365,5 +377,8 @@ export const useDayHours = (
     };
   }, []);
 
-  return { change, isLocked, minutes, saveState };
+  // One lock, two sources: a save in flight holds the buttons for up to
+  // two seconds, a closed month holds them for good. The card asks one
+  // question and gets one answer.
+  return { change, isLocked: isReadOnly || isLocked, minutes, saveState };
 };

@@ -25,6 +25,14 @@ describe("reactionTo", () => {
     expect(reactionTo("signedOut", 1)).toEqual({ kind: "rollback", reason: "signedOut" });
   });
 
+  // The month was closed — here, or in another tab, or on another
+  // device. The server answered, so there is nothing to ask again: the
+  // number comes off at the first attempt and says why (ADR 0066).
+  it("rolls back a closed month at once, without asking again", () => {
+    expect(reactionTo("monthClosed", 1)).toEqual({ kind: "rollback", reason: "monthClosed" });
+    expect(reactionTo("monthClosed", 3)).toEqual({ kind: "rollback", reason: "monthClosed" });
+  });
+
   // The case that cost the most to find: the row may well have been
   // written and only the reply lost, so rolling back would take away
   // hours the database holds and say they were not saved.

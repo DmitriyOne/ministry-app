@@ -76,6 +76,9 @@ export type DayPageData = ScreenRead<{
   // may hold hours, and that is the one thing it must never say: it is
   // read as "go back and fill this in".
   previousDays: PreviousDay[] | null;
+  // The month this day belongs to has been reported and shut (ADR
+  // 0066): the card shows what it holds and nothing may be dialled.
+  isMonthClosed: boolean;
 }>;
 
 const SCOPE = "read-day-page";
@@ -93,54 +96,65 @@ export const readDayPage = async (day: DayKey): Promise<DayPageData> => {
   const yearSpan = serviceYearSpanOf(yearStart);
   const stripSpan = previousDaysSpan(day);
 
-  const [zone, recorded, monthTotal, yearTotal, status, yearGoal, strip] = await Promise.all([
-    readTimeZone(),
-    supabase
-      .from("ministry_days")
-      .select("minutes")
-      .eq("day", day)
-      .abortSignal(queryDeadline(started))
-      .maybeSingle(),
-    // The totals are sums the database computes, not sums of rows we
-    // fetch: a total built in the browser would be a second authority on
-    // the same number, and the one in the browser is the one that can be
-    // wrong (ADR 0062, обновление). The boundaries are ours, because
-    // September is the app's rule and SQL knows nothing about it.
-    supabase
-      .rpc("ministry_days_total_minutes", { p_from: monthSpan.from, p_to: monthSpan.to })
-      .abortSignal(queryDeadline(started)),
-    supabase
-      .rpc("ministry_days_total_minutes", { p_from: yearSpan.from, p_to: yearSpan.to })
-      .abortSignal(queryDeadline(started)),
-    // The month's goal comes with its status, by the carry-forward rule
-    // that lives in SQL: the open month may have no row of its own and
-    // inherit from an earlier one.
-    supabase
-      .rpc("ministry_status_for_month", { p_month: month })
-      .abortSignal(queryDeadline(started))
-      .maybeSingle(),
-    supabase
-      .rpc("ministry_status_year_goal", { p_year_start: yearStart })
-      .abortSignal(queryDeadline(started)),
-    // The strip's own rows, read from the table rather than through a
-    // function: `ministry_days` grants select to authenticated and its
-    // policy scopes the rows to the caller, so there is nothing for a
-    // function to add — and the primary key (user_id, day) is the index
-    // for exactly this, equality on the person with a range on the day.
-    // The filter on deleted_at repeats what the policy already does,
-    // the way ministry_days_total_minutes repeats its own conditions:
-    // it costs nothing and keeps the query right on its own terms.
-    //
-    // At most six rows, so no order and no limit: the strip is built
-    // from the days, not from the order they arrive in.
-    supabase
-      .from("ministry_days")
-      .select("day, minutes")
-      .gte("day", stripSpan.from)
-      .lte("day", stripSpan.to)
-      .is("deleted_at", null)
-      .abortSignal(queryDeadline(started)),
-  ]);
+  const [zone, recorded, monthTotal, yearTotal, status, yearGoal, strip, closure]
+    = await Promise.all([
+      readTimeZone(),
+      supabase
+        .from("ministry_days")
+        .select("minutes")
+        .eq("day", day)
+        .abortSignal(queryDeadline(started))
+        .maybeSingle(),
+      // The totals are sums the database computes, not sums of rows we
+      // fetch: a total built in the browser would be a second authority on
+      // the same number, and the one in the browser is the one that can be
+      // wrong (ADR 0062, обновление). The boundaries are ours, because
+      // September is the app's rule and SQL knows nothing about it.
+      supabase
+        .rpc("ministry_days_total_minutes", { p_from: monthSpan.from, p_to: monthSpan.to })
+        .abortSignal(queryDeadline(started)),
+      supabase
+        .rpc("ministry_days_total_minutes", { p_from: yearSpan.from, p_to: yearSpan.to })
+        .abortSignal(queryDeadline(started)),
+      // The month's goal comes with its status, by the carry-forward rule
+      // that lives in SQL: the open month may have no row of its own and
+      // inherit from an earlier one.
+      supabase
+        .rpc("ministry_status_for_month", { p_month: month })
+        .abortSignal(queryDeadline(started))
+        .maybeSingle(),
+      supabase
+        .rpc("ministry_status_year_goal", { p_year_start: yearStart })
+        .abortSignal(queryDeadline(started)),
+      // The strip's own rows, read from the table rather than through a
+      // function: `ministry_days` grants select to authenticated and its
+      // policy scopes the rows to the caller, so there is nothing for a
+      // function to add — and the primary key (user_id, day) is the index
+      // for exactly this, equality on the person with a range on the day.
+      // The filter on deleted_at repeats what the policy already does,
+      // the way ministry_days_total_minutes repeats its own conditions:
+      // it costs nothing and keeps the query right on its own terms.
+      //
+      // At most six rows, so no order and no limit: the strip is built
+      // from the days, not from the order they arrive in.
+      supabase
+        .from("ministry_days")
+        .select("day, minutes")
+        .gte("day", stripSpan.from)
+        .lte("day", stripSpan.to)
+        .is("deleted_at", null)
+        .abortSignal(queryDeadline(started)),
+      // Is this day's month closed (ADR 0066)? In the same batch rather
+      // than after it, because it depends on nothing: the month comes
+      // from the address like everything else here, and a read of its own
+      // would rebuild the waterfall ADR 0064 took apart.
+      supabase
+        .from("ministry_month_closures")
+        .select("month")
+        .eq("month", month)
+        .abortSignal(queryDeadline(started))
+        .maybeSingle(),
+    ]);
 
   // Each read gets the full budget rather than sharing one countdown,
   // which is right now that they are parallel: the screen is still
@@ -163,6 +177,12 @@ export const readDayPage = async (day: DayKey): Promise<DayPageData> => {
     savedMinutes: recorded.data?.minutes ?? 0,
     progress: readProgress({ month, monthTotal, yearTotal, status, yearGoal }),
     previousDays: readStrip(day, strip),
+    // A read we could not make answers "open", and that is deliberate:
+    // the lock lives in the database, which refuses the write whatever
+    // this says, while a lock drawn on a guess would take the card away
+    // from somebody entitled to it. The worst case is a tap that comes
+    // back with a sentence instead of a saved number.
+    isMonthClosed: !closure.error && closure.data !== null,
   };
 };
 

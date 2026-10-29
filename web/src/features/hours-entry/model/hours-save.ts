@@ -22,8 +22,12 @@ import { addMinutes } from "./hours-value";
 // confirmed even with the backend plainly down, where "not saved" was
 // the plain truth and the number should have come off (the owner,
 // 2026-10-27).
+// `monthClosed` joined them when a month became something that could be
+// reported and left alone (ADR 0066). It is an answer like `refused` —
+// the server said no — but a different sentence: the date is fine, the
+// month is shut.
 export type SetDayHoursStatus
-  = "success" | "refused" | "signedOut" | "unreachable" | "unknown";
+  = "success" | "refused" | "signedOut" | "unreachable" | "unknown" | "monthClosed";
 
 // How long after the last tap the save goes out. The card is dialled, not
 // typed: a quick-add row and two steppers mean three or four taps land
@@ -76,12 +80,14 @@ export type SaveReaction
     | { kind: "unconfirmed" }
     | { kind: "rollback"; reason: RollbackReason };
 
-// Why the number came off. Four, because the person is owed four
+// Why the number came off. Five, because the person is owed five
 // different sentences: fix the date, sign in again, we could not reach
-// the server, you have no connection. The first two come from the
-// server's own answer, the third from a connection it refused, and the
-// fourth from the browser before anything was sent.
-export type RollbackReason = "refused" | "signedOut" | "unreachable" | "offline";
+// the server, you have no connection, the month is closed. The first two
+// and the last come from the server's own answer, the third from a
+// connection it refused, and the fourth from the browser before anything
+// was sent.
+export type RollbackReason
+  = "refused" | "signedOut" | "unreachable" | "offline" | "monthClosed";
 
 // What is left once the attempts are over: everything but "retry". The
 // loop that sends a value ends in one of these, and naming it is what

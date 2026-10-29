@@ -17,6 +17,12 @@ import { MAX_DAY_MINUTES } from "../model/hours-value";
 // (ADR 0046).
 const CHECK_VIOLATION = "23514";
 
+// The month was closed, here or in another tab or on another device
+// (ADR 0066). Its own sqlstate rather than a check violation, and that
+// is the whole reason it has one: under 23514 the card would tell the
+// person to check the date, which is not what went wrong.
+const MONTH_CLOSED = "55000";
+
 // The two ways "nobody is signed in" reaches us from the database rather
 // than from our own check above. `28000` is set_ministry_day_minutes
 // raising on an empty auth.uid(); `PGRST301` is PostgREST refusing an
@@ -76,6 +82,12 @@ export const setDayHours = async (
       // A dead session is a normal outcome, not a fault: reported
       // nowhere, exactly like the `!claims` return above it.
       if (NOT_AUTHENTICATED.includes(error.code)) return { status: "signedOut" };
+
+      if (error.code === MONTH_CLOSED) {
+        reportActionFailure({ scope: "set-day-hours", error, outcome: "rejected" });
+
+        return { status: "monthClosed" };
+      }
 
       if (error.code === CHECK_VIOLATION) {
         reportActionFailure({ scope: "set-day-hours", error, outcome: "rejected" });
