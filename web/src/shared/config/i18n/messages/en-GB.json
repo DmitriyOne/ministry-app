@@ -231,6 +231,10 @@
           "title": "The year's goal is a pioneer's",
           "text": "It is shown while you are a regular pioneer and goes once you are not, instead of counting a year you are no longer serving."
         },
+        "afterAuxiliary": {
+          "title": "After a month of auxiliary pioneering",
+          "text": "You come back as a publisher rather than to the appointment you had before it, since a regular pioneer is not appointed for a single month. Your own monthly goal comes back with you."
+        },
         "dayOpens": {
           "title": "The day opens in one step",
           "text": "Tapping the day in the menu, and signing in, now go straight to today's date instead of passing through an address that only redirects — so the screen no longer flickers on the way."

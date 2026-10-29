@@ -106,6 +106,11 @@ export const WhatsNewScreen = async () => {
             text={t("v2_4.yearGoal.text")}
           />
           <ListRow
+            icon={<UserIcon size={18} />}
+            title={t("v2_4.afterAuxiliary.title")}
+            text={t("v2_4.afterAuxiliary.text")}
+          />
+          <ListRow
             icon={<CheckCircleIcon size={18} />}
             title={t("v2_4.dayOpens.title")}
             text={t("v2_4.dayOpens.text")}
