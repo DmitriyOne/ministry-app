@@ -9,7 +9,7 @@ import { reportActionFailure } from "@/shared/lib/action-failure";
 
 import type { CloseMonthStatus } from "../model/close-month-status";
 
-// set_ministry_month_closed raising on a month that is still being lived.
+// close_ministry_month raising on a month that is still being lived.
 const CHECK_VIOLATION = "23514";
 
 // The two ways "nobody is signed in" arrives from the database rather

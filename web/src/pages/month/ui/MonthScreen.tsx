@@ -2,17 +2,18 @@ import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { formatHours } from "@/entities/ministry-day";
-import { parseMonthSlug } from "@/entities/ministry-status";
+import { monthHeading, parseMonthSlug } from "@/entities/ministry-status";
 import { getSessionClaims } from "@/entities/session";
 import { CloseMonthButton } from "@/features/close-month";
 import { ScreenLoadFailure } from "@/features/screen-retry";
 import { routes } from "@/shared/config";
-import { CenteredState } from "@/shared/ui/centered-state";
 
 import { readMonthPage } from "../api/read-month-page";
+import { formatClosedOn } from "../model/closed-on";
 import { monthClosingState } from "../model/month-closing";
 import { canStepForward } from "../model/month-span";
 import { MonthDaysTable } from "./MonthDaysTable";
+import { MonthScreenFrame } from "./MonthScreenFrame";
 import { MonthHeader } from "./MonthHeader";
 import { MonthSummary } from "./MonthSummary";
 
@@ -56,11 +57,17 @@ export const MonthScreen = async ({ params }: MonthScreenProps) => {
   const closing = monthClosingState({
     month,
     currentMonth: page.currentMonth,
-    isClosed: page.isClosed,
+    isClosed: page.closedAt !== null,
   });
+  // The day it was closed, when we have it. Null here is not a failure:
+  // a month closed by a build before this column was read has no date to
+  // name, and the notice says the shorter sentence instead.
+  const closedOn = page.closedAt === null
+    ? null
+    : formatClosedOn(page.closedAt, page.timeZone);
 
   return (
-    <CenteredState fill className="justify-start gap-5 pt-7">
+    <MonthScreenFrame>
       <MonthHeader month={month} currentMonth={page.currentMonth} />
 
       {page.summary === null
@@ -94,7 +101,9 @@ export const MonthScreen = async ({ params }: MonthScreenProps) => {
               {closing === "closed"
                 ? (
                     <p className="rounded-xl bg-primary/10 px-4 py-3.5 text-caption font-500 text-pretty text-hero">
-                      {t("closing.closed")}
+                      {closedOn === null
+                        ? t("closing.closed")
+                        : t("closing.closedOn", { date: closedOn })}
                     </p>
                   )
                 : null}
@@ -105,14 +114,19 @@ export const MonthScreen = async ({ params }: MonthScreenProps) => {
                 labels={{
                   close: t("closing.close"),
                   reopen: t("closing.reopen"),
-                  confirmTitle: t("closing.confirmTitle"),
+                  // The month by name, not "this month": the dialog is
+                  // the last thing between a tap and a month that stops
+                  // being editable, and it should say which one.
+                  confirmTitle: t("closing.confirmTitle", { month: monthHeading(month) }),
                   confirmBody: t("closing.confirmBody"),
                   confirmHoursLabel: t("closing.hoursLabel"),
                   // The figure the dialog is about. Dashes when the
                   // summary did not load — the month still closes, and
                   // the number is there to recognise it by, not to
                   // decide by.
-                  hours: page.summary === null ? "—" : formatHours(page.summary.totalMinutes),
+                  hours: page.summary === null
+                    ? t("closing.noHours")
+                    : formatHours(page.summary.totalMinutes),
                   cancel: t("closing.cancel"),
                   refused: t("closing.refused"),
                   failed: t("closing.failed"),
@@ -120,6 +134,6 @@ export const MonthScreen = async ({ params }: MonthScreenProps) => {
               />
             </div>
           )}
-    </CenteredState>
+    </MonthScreenFrame>
   );
 };

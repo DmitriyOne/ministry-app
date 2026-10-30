@@ -121,6 +121,18 @@ revoke all on function public.is_ministry_month_closed(uuid, date)
 -- somebody's present. The interface counts exactly, in the person's own
 -- zone, and simply does not show the button before then.
 --
+-- What the slack admits, said plainly: on the LAST UTC day of a month,
+-- this function accepts that month. Kiritimati (UTC+14) is already in
+-- the next one by 10:00 UTC, and a strict fence would answer "not yet"
+-- to somebody whose own calendar had turned — a button that is offered
+-- and then refuses. The other side of the trade is that a caller who
+-- goes around the interface can shut the month they are still living,
+-- for the rest of that UTC day; nothing in the app offers it
+-- (monthClosingState answers "hidden" until the person's own month has
+-- turned), and one tap reopens it. The exposure is a day of a month
+-- the person owns, which is why the slack points this way rather than
+-- the other (ADR 0066, decision 6).
+--
 -- No floor. Somebody entering a year they served before this app existed
 -- must be able to close those months too.
 create or replace function public.close_ministry_month(p_month date)

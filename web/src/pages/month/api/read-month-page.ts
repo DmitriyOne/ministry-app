@@ -52,7 +52,12 @@ export type MonthPageData = {
   currentMonth: MonthKey | null;
   summary: MonthSummary | null;
   days: MonthDayRow[] | null;
-  isClosed: boolean;
+  // When this month was closed, as the database holds it, or null for a
+  // month that is open. The instant rather than a boolean, because the
+  // notice names the day — and the zone below is what takes it apart in
+  // the person's own calendar rather than the server's.
+  closedAt: string | null;
+  timeZone: string | null;
 };
 
 const SCOPE = "read-month-page";
@@ -109,8 +114,12 @@ export const readMonthPage = async (month: MonthKey): Promise<MonthPageData> => 
     // already hides a reopened one.
     supabase
       .from("ministry_month_closures")
-      .select("month")
+      .select("closed_at")
       .eq("month", month)
+      // Repeats what the policy already does, the way the day strip's
+      // read does: it costs nothing and keeps the query right on its own
+      // terms rather than on the policy's.
+      .is("deleted_at", null)
       .abortSignal(queryDeadline(started))
       .maybeSingle(),
   ]);
@@ -159,6 +168,7 @@ export const readMonthPage = async (month: MonthKey): Promise<MonthPageData> => 
     // to close a month that may already be closed, and the database
     // answers that honestly — which is better than hiding the way out of
     // a month nobody can prove is shut.
-    isClosed: !closure.error && closure.data !== null,
+    closedAt: closure.error ? null : closure.data?.closed_at ?? null,
+    timeZone: zone.status === "ready" ? zone.timeZone : null,
   };
 };

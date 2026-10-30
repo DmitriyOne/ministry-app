@@ -147,12 +147,22 @@ select lives_ok(
 );
 
 -- The owner's rule: the button appears after midnight of the following
--- month, and the database refuses anything earlier with a day of slack.
+-- month, and the database refuses anything earlier.
+--
+-- The month asked about here is the NEXT one, not the current one, and
+-- that is about this file rather than about the rule. The fence carries
+-- a day of slack from UTC (see the migration), so on the last UTC day
+-- of a month the current month is accepted — and an assertion that it
+-- throws would go red on 31 October, 30 November and ten other days a
+-- year, in a file whose own header promises it does not start failing
+-- next month. The next month is refused on every day of every month,
+-- through the same branch.
 select throws_ok(
-  $$select public.close_ministry_month((date_trunc('month', now()))::date)$$,
+  $$select public.close_ministry_month(
+    (date_trunc('month', now() + interval '1 month'))::date)$$,
   '23514',
   null,
-  'the month being lived cannot be closed'
+  'a month that has not started cannot be closed'
 );
 
 -- The other person's view of all of it.

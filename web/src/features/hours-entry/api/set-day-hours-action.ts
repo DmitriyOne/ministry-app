@@ -83,11 +83,12 @@ export const setDayHours = async (
       // nowhere, exactly like the `!claims` return above it.
       if (NOT_AUTHENTICATED.includes(error.code)) return { status: "signedOut" };
 
-      if (error.code === MONTH_CLOSED) {
-        reportActionFailure({ scope: "set-day-hours", error, outcome: "rejected" });
-
-        return { status: "monthClosed" };
-      }
+      // Reported nowhere, unlike the refusal below it: a closed month is
+      // a normal outcome of a product rule, and the card taps three
+      // times in a burst. Three Sentry events per burst for an answer
+      // the product defines is the quota going to the one thing that is
+      // working (the reading ADR 0044 makes about the token hook).
+      if (error.code === MONTH_CLOSED) return { status: "monthClosed" };
 
       if (error.code === CHECK_VIOLATION) {
         reportActionFailure({ scope: "set-day-hours", error, outcome: "rejected" });

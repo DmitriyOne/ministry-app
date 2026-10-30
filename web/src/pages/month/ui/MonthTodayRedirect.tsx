@@ -5,9 +5,9 @@ import { currentMonthKey, monthPath } from "@/entities/ministry-status";
 import { getSessionClaims } from "@/entities/session";
 import { ScreenLoadFailure } from "@/features/screen-retry";
 import { routes } from "@/shared/config";
-import { CenteredState } from "@/shared/ui/centered-state";
 
 import { readTimeZone } from "../api/read-time-zone";
+import { MonthScreenFrame } from "./MonthScreenFrame";
 
 // What the bare /month is: the address that works out which month the
 // person is in and sends them to it — the same arrangement /day has
@@ -35,12 +35,12 @@ export const MonthTodayRedirect = async () => {
   // is not a safe guess: on the last day of a month it would open the
   // wrong one and offer to close it.
   return (
-    <CenteredState fill>
+    <MonthScreenFrame>
       <ScreenLoadFailure
         eyebrow={t("eyebrow")}
         title={t("loadFailure.title")}
         text={t("loadFailure.text")}
       />
-    </CenteredState>
+    </MonthScreenFrame>
   );
 };

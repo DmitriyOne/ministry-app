@@ -152,9 +152,11 @@
         "close": "Close month",
         "reopen": "Reopen the month",
         "closed": "Closed. The days of this month can no longer be edited.",
-        "confirmTitle": "Close this month?",
+        "closedOn": "Closed on {date}. The days of this month can no longer be edited.",
+        "confirmTitle": "Close {month}?",
         "confirmBody": "Once it is closed, the hours of its days can't be changed. You can open it again at any time.",
         "hoursLabel": "Hours",
+        "noHours": "—",
         "cancel": "Cancel",
         "refused": "This month can't be closed yet.",
         "failed": "Couldn't reach the server. Nothing was changed."

@@ -2,7 +2,10 @@ import { getTranslations } from "next-intl/server";
 
 import { Skeleton } from "@/shared/ui/skeleton";
 
+import { cn } from "@/shared/lib/cn";
+
 import { MONTH_DAY_ROW, MonthDaysShell } from "./MonthDaysShell";
+import { MonthScreenFrame } from "./MonthScreenFrame";
 
 // The month while the database is still answering (ADR 0059). Only what
 // the database has to answer gets a plate: the eyebrow, the column
@@ -23,7 +26,7 @@ export const MonthScreenSkeleton = async () => {
   const t = await getTranslations("screens.month");
 
   return (
-    <div className="flex flex-col gap-5">
+    <MonthScreenFrame>
       <header className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1.5">
           <Skeleton className="h-2.5 w-14 rounded-xs" />
@@ -53,7 +56,11 @@ export const MonthScreenSkeleton = async () => {
           {Array.from({ length: ROWS }, (_, index) => (
             <div
               key={index}
-              className={`${MONTH_DAY_ROW} ${index === ROWS - 1 ? "" : "border-b border-ink-a09"} py-4`}
+              className={cn(
+                MONTH_DAY_ROW,
+                "py-4",
+                index === ROWS - 1 ? null : "border-b border-ink-a09",
+              )}
             >
               <Skeleton className="h-3.5 w-16 rounded-xs" />
               <Skeleton className="h-3.5 w-12 justify-self-end rounded-xs" />
@@ -62,6 +69,6 @@ export const MonthScreenSkeleton = async () => {
           ))}
         </div>
       </MonthDaysShell>
-    </div>
+    </MonthScreenFrame>
   );
 };
