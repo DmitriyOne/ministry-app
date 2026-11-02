@@ -3,7 +3,13 @@
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/shared/ui/button";
-import { Dialog, DialogDescription, DialogFooter, DialogTitle } from "@/shared/ui/dialog";
+import {
+  Dialog,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
 import { Spinner } from "@/shared/ui/spinner";
 
 type ConfirmMinistryStatusDialogProps = {
@@ -41,8 +47,10 @@ export const ConfirmMinistryStatusDialog = ({
         if (!open) onCancel();
       }}
     >
-      <DialogTitle>{t("title")}</DialogTitle>
-      <DialogDescription>{t("body", { month: monthLabel })}</DialogDescription>
+      <DialogHeader>
+        <DialogTitle>{t("title")}</DialogTitle>
+        <DialogDescription>{t("body", { month: monthLabel })}</DialogDescription>
+      </DialogHeader>
       <DialogFooter>
         {/* Keeping things as they are is the quiet option and the one a
             stray tap should land on, so it sits away from the thumb —
