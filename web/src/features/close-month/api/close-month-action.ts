@@ -59,13 +59,21 @@ const callMonthFunction = async (
     // state, so without this it would go on serving the previous answer
     // from the client cache and the button would not change.
     //
-    // Only this address. The days of the month are a separate family
-    // (/day/[day]) and revalidating it would evict the client cache of
-    // every day screen visited this session — the flicker ADR 0057
-    // already paid for once. A day page opened before the month closed
-    // learns about the lock on its next read, and until then the
-    // database refuses the write anyway, which is where the lock really
-    // lives.
+    // Only this address — but the reason is narrower than what stood
+    // here, which was that revalidating /day/[day] would evict the
+    // client cache of every day screen visited this session. That is
+    // not what the runtime does: ANY revalidation inside an action
+    // bumps one global version, after which every client-side entry
+    // misses with it (invalidateBfCache in
+    // client/components/segment-cache/bfcache.js, called from
+    // server-action-reducer.js on every outcome but
+    // ActionDidNotRevalidate, and again from refresh-reducer.js for the
+    // router.refresh() the button does on success). Checked against
+    // Next 16.3.5; ADR 0066, decision 9, update 2026-11-02.
+    //
+    // So the scope buys nothing on the client. What it buys is on the
+    // server, where a path is a path and this one is the only path whose
+    // data changed.
     revalidatePath(monthPath(key));
 
     return { status: "success" };
