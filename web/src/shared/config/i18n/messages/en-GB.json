@@ -153,8 +153,11 @@
         "reopen": "Reopen the month",
         "closed": "Closed. The days of this month can no longer be edited.",
         "closedOn": "Closed on {date}. The days of this month can no longer be edited.",
-        "confirmTitle": "Close {month}?",
-        "confirmBody": "Once it is closed, the hours of its days can't be changed. You can open it again at any time.",
+        "confirmTitle": "Close the month?",
+        "confirmBody": "Once {month} is closed, the hours of its days can't be changed. You can open it again at any time.",
+        "reopenConfirmTitle": "Reopen the month?",
+        "reopenConfirmBody": "{month} becomes editable again, and its hours can be changed. You can close it once more at any time.",
+        "reopenConfirm": "Reopen",
         "hoursLabel": "Hours",
         "noHours": "—",
         "cancel": "Cancel",
@@ -289,7 +292,7 @@
         },
         "reopenMonth": {
           "title": "And open it again",
-          "text": "One tap, no questions asked. Closing is there to stop a stray tap, not to lock you out of your own figures."
+          "text": "It asks first, the same as closing does. Closing is there to stop a stray tap, not to lock you out of your own figures."
         }
       },
       "v2_4": {

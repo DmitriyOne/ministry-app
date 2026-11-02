@@ -116,9 +116,12 @@ export const MonthScreen = async ({ params }: MonthScreenProps) => {
                   reopen: t("closing.reopen"),
                   // The month by name, not "this month": the dialog is
                   // the last thing between a tap and a month that stops
-                  // being editable, and it should say which one.
-                  confirmTitle: t("closing.confirmTitle", { month: monthHeading(month) }),
-                  confirmBody: t("closing.confirmBody"),
+                  // being editable, and it should say which one. It is
+                  // named in the line under the title rather than in the
+                  // title, which is the owner's design and also the only
+                  // way "Close October 2026?" stays on one line.
+                  confirmTitle: t("closing.confirmTitle"),
+                  confirmBody: t("closing.confirmBody", { month: monthHeading(month) }),
                   confirmHoursLabel: t("closing.hoursLabel"),
                   // The figure the dialog is about. Dashes when the
                   // summary did not load — the month still closes, and
@@ -127,6 +130,15 @@ export const MonthScreen = async ({ params }: MonthScreenProps) => {
                   hours: page.summary === null
                     ? t("closing.noHours")
                     : formatHours(page.summary.totalMinutes),
+                  // Reopening asks too, on the owner's call (ADR 0066,
+                  // decision 6): the button sits under the thumb on a
+                  // screen people scroll, and a month that reopens on a
+                  // stray tap is not shut in any useful sense.
+                  reopenConfirmTitle: t("closing.reopenConfirmTitle"),
+                  reopenConfirmBody: t("closing.reopenConfirmBody", {
+                    month: monthHeading(month),
+                  }),
+                  reopenConfirm: t("closing.reopenConfirm"),
                   cancel: t("closing.cancel"),
                   refused: t("closing.refused"),
                   failed: t("closing.failed"),

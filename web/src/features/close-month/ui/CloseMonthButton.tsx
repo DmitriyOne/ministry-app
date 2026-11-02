@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/shared/ui/button";
 import { Spinner } from "@/shared/ui/spinner";
-import { Dialog, DialogDescription, DialogFooter, DialogTitle } from "@/shared/ui/dialog";
+import {
+  Dialog,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
 import { showToast } from "@/shared/ui/sonner";
 
 import type { CloseMonthStatus } from "../model/close-month-status";
@@ -23,20 +29,27 @@ type CloseMonthButtonProps = {
     confirmBody: string;
     confirmHoursLabel: string;
     hours: string;
+    reopenConfirmTitle: string;
+    reopenConfirmBody: string;
+    reopenConfirm: string;
     cancel: string;
     failed: string;
     refused: string;
   };
 };
 
-// Closing asks first; reopening does not.
+// Both answers are asked for.
 //
-// The asymmetry is the point rather than an oversight: closing takes
-// something away — the month stops being editable — while reopening only
-// gives it back, and a dialog in front of an undo is a toll on the way
-// out. Enter does not confirm the dialog either, which is a decision of
-// its own (ADR 0013): react-aria keeps the focus on the quiet button,
-// and the owner would rather the way out were the easy one.
+// Closing was asked from the start; reopening was not, and the asymmetry
+// was argued for — closing takes something away, reopening only gives it
+// back, and a dialog in front of an undo is a toll on the way out. The
+// owner overruled it (2026-11-02): a month that reopens on one stray tap
+// is a month nobody can trust to stay shut, and the tap is right under
+// the thumb on a screen people scroll. ADR 0066, decision 6 says so.
+//
+// Enter does not confirm either dialog, which is a decision of its own
+// (ADR 0013): react-aria keeps the focus on the quiet button, and the
+// owner would rather the way out were the easy one.
 //
 // The action is called from a handler rather than through a <form
 // action={...}>, because there is nothing to submit: the month is in the
@@ -45,6 +58,8 @@ export const CloseMonthButton = ({ month, state, labels }: CloseMonthButtonProps
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+
+  const isClosed = state === "closed";
 
   // The action revalidates this address, but the answer still has to be
   // brought back into the open page: refresh is what re-runs the read
@@ -66,54 +81,49 @@ export const CloseMonthButton = ({ month, state, labels }: CloseMonthButtonProps
     });
   };
 
-  const run = (action: typeof closeMonth) => {
+  const run = () => {
     startTransition(async () => {
       setIsOpen(false);
-      settle((await action({ month })).status);
+      settle((await (isClosed ? reopenMonth : closeMonth)({ month })).status);
     });
   };
-
-  if (state === "closed") {
-    return (
-      <Button
-        variant="plain"
-        size="role-lg"
-        className="w-full"
-        isDisabled={isPending}
-        onPress={() => run(reopenMonth)}
-      >
-        {isPending ? <Spinner className="size-5" /> : null}
-        {labels.reopen}
-      </Button>
-    );
-  }
 
   return (
     <>
       <Button
-        variant="action"
+        variant={isClosed ? "plain" : "action"}
         size="role-lg"
         className="w-full"
         isDisabled={isPending}
         onPress={() => setIsOpen(true)}
       >
-        {labels.close}
+        {isPending ? <Spinner className="size-5" /> : null}
+        {isClosed ? labels.reopen : labels.close}
       </Button>
 
       <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
-        <DialogTitle>{labels.confirmTitle}</DialogTitle>
-        <DialogDescription>{labels.confirmBody}</DialogDescription>
+        <DialogHeader>
+          <DialogTitle>{isClosed ? labels.reopenConfirmTitle : labels.confirmTitle}</DialogTitle>
+          <DialogDescription>
+            {isClosed ? labels.reopenConfirmBody : labels.confirmBody}
+          </DialogDescription>
+        </DialogHeader>
 
         {/* What is being fixed, in the one figure it is about. The
             owner's design has it in the dialog, and it belongs there:
-            the question is "is this right", and the answer is a
-            number. */}
-        <div className="flex items-baseline justify-between gap-3 rounded-xl bg-card px-4 py-3">
-          <span className="text-caption font-540 text-ink-muted">
-            {labels.confirmHoursLabel}
-          </span>
-          <span className="text-list-row font-620 text-ink tabular-nums">{labels.hours}</span>
-        </div>
+            the question is "is this right", and the answer is a number.
+            Reopening shows nothing — it fixes no figure, and a number
+            under that question would only invite the wrong reading. */}
+        {isClosed
+          ? null
+          : (
+              <div className="flex items-baseline justify-between gap-3 rounded-2xl bg-card px-4 py-3.5 shadow-card">
+                <span className="text-list-row text-ink-muted">{labels.confirmHoursLabel}</span>
+                <span className="text-list-row font-620 text-ink tabular-nums">
+                  {labels.hours}
+                </span>
+              </div>
+            )}
 
         <DialogFooter>
           {/* Cancelling is the quiet option and the one a stray tap
@@ -124,14 +134,9 @@ export const CloseMonthButton = ({ month, state, labels }: CloseMonthButtonProps
           {/* An ordinary Button with a spinner rather than
               SubmitButton: there is nothing to submit — the month is in
               the address (ADR 0013). */}
-          <Button
-            variant="action"
-            size="role"
-            isDisabled={isPending}
-            onPress={() => run(closeMonth)}
-          >
+          <Button variant="action" size="role" isDisabled={isPending} onPress={run}>
             {isPending ? <Spinner className="size-5" /> : null}
-            {labels.close}
+            {isClosed ? labels.reopenConfirm : labels.close}
           </Button>
         </DialogFooter>
       </Dialog>
