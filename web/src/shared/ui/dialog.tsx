@@ -72,14 +72,32 @@ export const Dialog = ({
         // dialog was showing its figure on an invisible one. The warm
         // ground is also what the rest of the app stands on, so a card
         // laid on it reads as a card.
+        //
+        // Capped at the same height a panel is, and for the same reason
+        // (ADR 0012, update 2026-11-02): this is a bottom sheet now, it
+        // is `h-auto`, and nothing stopped it growing past the top of
+        // the screen — where the overlay is `items-end` and does not
+        // scroll, so what grew out became unreachable rather than
+        // clipped. Never measured on a device; the cap costs nothing
+        // while the content fits, which is every dialog the app has
+        // today, and the tallest of them (closing a month, with its
+        // figure) is new in this release.
         className={cn(
-          "w-full max-w-100 rounded-4xl bg-background px-5 pb-5 text-ink shadow-mark-elevated outline-none duration-150 data-entering:animate-in data-entering:slide-in-from-bottom-4 data-exiting:animate-out data-exiting:slide-out-to-bottom-4",
+          "flex max-h-sheet w-full max-w-100 flex-col rounded-4xl bg-background px-5 pb-5 text-ink shadow-mark-elevated outline-none duration-150 data-entering:animate-in data-entering:slide-in-from-bottom-4 data-exiting:animate-out data-exiting:slide-out-to-bottom-4",
           className,
         )}
       >
-        <DialogPrimitive data-slot="dialog" className="flex flex-col gap-5 outline-none">
+        <DialogPrimitive data-slot="dialog" className="flex min-h-0 flex-1 flex-col gap-5 outline-none">
           <SheetDragHandle className="-mt-1 -mb-2" {...dragHandlers} />
-          {children}
+          {/* The handle stays put and the rest scrolls, as in a panel —
+              with one honest difference: a dialog's footer is part of
+              what the caller passes, so it travels with the content
+              instead of sitting below the scroll. Two buttons that have
+              to be scrolled to are still better than two buttons under
+              a title nobody can see. */}
+          <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overscroll-contain">
+            {children}
+          </div>
         </DialogPrimitive>
       </ModalPrimitive>
     </ModalOverlayPrimitive>
