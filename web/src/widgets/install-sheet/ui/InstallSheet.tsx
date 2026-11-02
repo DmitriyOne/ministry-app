@@ -32,7 +32,13 @@ export const InstallSheet = () => {
       >
         <SheetDragHandle {...dragHandlers} />
 
-        <InstallCarousel />
+        {/* Scrollable for the same reason as the status panel's body, and
+            because the panel is now capped: content taller than the cap
+            would otherwise be clipped rather than reachable. The footer
+            below keeps its mt-auto and stays put. */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <InstallCarousel />
+        </div>
 
         <SheetFooter className="pt-0 pb-2">
           <SheetClose variant="deep" size="role" className="w-full">
