@@ -211,7 +211,8 @@ deleted_at = null`, иначе помеченная удалённой стро�
 чем кто-нибудь начнёт экономить на ревалидации снова. Клиентский кэш
 выселяется **целиком при любой ревалидации** в экшене, как бы узко ни
 был указан путь: `invalidateBfCache()`
-(`client/components/segment-cache/bfcache.js`) увеличивает один общий
+(`node_modules/next/dist/client/components/segment-cache/bfcache.js`)
+увеличивает один общий
 номер версии, после чего промахиваются сразу все записи. Зовётся он из
 `server-action-reducer.js` на каждом исходе, кроме
 `ActionDidNotRevalidate`, и ещё раз из `refresh-reducer.js` — то есть и
