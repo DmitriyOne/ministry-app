@@ -11,7 +11,7 @@ import { routes } from "@/shared/config";
 import { readMonthPage } from "../api/read-month-page";
 import { formatClosedOn } from "../model/closed-on";
 import { monthClosingState } from "../model/month-closing";
-import { canStepForward } from "../model/month-span";
+import { isFutureMonth } from "../model/month-span";
 import { MonthDaysTable } from "./MonthDaysTable";
 import { MonthScreenFrame } from "./MonthScreenFrame";
 import { MonthHeader } from "./MonthHeader";
@@ -52,7 +52,7 @@ export const MonthScreen = async ({ params }: MonthScreenProps) => {
   // answer depends on the person's calendar, which the read brings back;
   // when it is unknown, nothing is refused — `canStepForward` already
   // keeps the arrow from offering the step.
-  if (page.currentMonth !== null && canStepForward(page.currentMonth, month)) notFound();
+  if (isFutureMonth(month, page.currentMonth)) notFound();
 
   const t = await getTranslations("screens.month");
   const closing = monthClosingState({

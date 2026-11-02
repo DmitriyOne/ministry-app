@@ -53,3 +53,17 @@ export const canStepForward = (
   month: MonthKey,
   currentMonth: MonthKey | null,
 ): boolean => currentMonth !== null && monthsBetween(month, currentMonth) > 0;
+
+// Whether this month has not started yet, which is the one thing the
+// screen turns into a 404.
+//
+// Its own name rather than canStepForward called with the arguments the
+// other way round. That is what stood here, and it was right — the two
+// questions are mirror images — but a call that reads as its neighbour's
+// typo is one a reader straightens out, and straightening this one would
+// open every future month without a single test going red (a screen's
+// notFound is not reachable from a unit test).
+export const isFutureMonth = (
+  month: MonthKey,
+  currentMonth: MonthKey | null,
+): boolean => currentMonth !== null && monthsBetween(currentMonth, month) > 0;

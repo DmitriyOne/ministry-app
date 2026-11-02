@@ -7,7 +7,7 @@ vi.mock("@/shared/config", () => ({ routes: { day: "/day", month: "/month" } }))
 
 import { toMonthKey } from "@/entities/ministry-status";
 
-import { canStepForward, monthSpan } from "./month-span";
+import { canStepForward, isFutureMonth, monthSpan } from "./month-span";
 
 describe("monthSpan", () => {
   it("runs from the first day to the last, both ends included", () => {
@@ -42,5 +42,34 @@ describe("canStepForward", () => {
   // guess would hand somebody a 404 exactly when the database recovered.
   it("refuses to guess when the current month is unknown", () => {
     expect(canStepForward(toMonthKey(2026, 5), null)).toBe(false);
+  });
+});
+
+// The mirror of the above, and the reason it has a name of its own: the
+// screen answers 404 by it, and nothing else can catch it being turned
+// around.
+describe("isFutureMonth", () => {
+  it("calls a month after the current one future", () => {
+    expect(isFutureMonth(toMonthKey(2026, 7), toMonthKey(2026, 6))).toBe(true);
+  });
+
+  it("does not call the month the person is in future", () => {
+    expect(isFutureMonth(toMonthKey(2026, 6), toMonthKey(2026, 6))).toBe(false);
+  });
+
+  it("does not call a month behind the current one future", () => {
+    expect(isFutureMonth(toMonthKey(2026, 5), toMonthKey(2026, 6))).toBe(false);
+  });
+
+  it("crosses the year as the month count does, not the calendar year", () => {
+    expect(isFutureMonth(toMonthKey(2027, 1), toMonthKey(2026, 12))).toBe(true);
+    expect(isFutureMonth(toMonthKey(2026, 12), toMonthKey(2027, 1))).toBe(false);
+  });
+
+  // The zone did not read. Nothing is refused: the arrow already does
+  // not offer the step, and answering 404 on a guess would hide a month
+  // somebody is entitled to.
+  it("refuses nothing when the current month is unknown", () => {
+    expect(isFutureMonth(toMonthKey(2099, 1), null)).toBe(false);
   });
 });
