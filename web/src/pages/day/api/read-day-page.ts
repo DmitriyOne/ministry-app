@@ -152,6 +152,11 @@ export const readDayPage = async (day: DayKey): Promise<DayPageData> => {
         .from("ministry_month_closures")
         .select("month")
         .eq("month", month)
+        // The same repeat of the policy the strip's read above makes,
+        // and /month makes on this very table: it costs nothing and
+        // keeps the query right on its own terms rather than on the
+        // policy's.
+        .is("deleted_at", null)
         .abortSignal(queryDeadline(started))
         .maybeSingle(),
     ]);
@@ -168,6 +173,14 @@ export const readDayPage = async (day: DayKey): Promise<DayPageData> => {
 
     return SCREEN_UNAVAILABLE;
   }
+
+  // Reported like every other read here, and unlike most of them it
+  // stops nothing: the answer below still falls back to "open". Falling
+  // back is deliberate, saying nothing was not — a closure read that
+  // breaks leaves the card offering what the database then refuses with
+  // sqlstate 55000, and "that month is closed" on a month the person
+  // believes is open is unexplainable from the outside without this.
+  if (closure.error) reportReadFailure({ scope: SCOPE, step: "closure", error: closure.error });
 
   return {
     status: "ready",
