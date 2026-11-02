@@ -19,4 +19,9 @@ export {
   shortDayLabel,
 } from "./model/day-label";
 export { dayPath } from "./model/day-path";
+export {
+  type DurationPhraseKey,
+  durationPhrase,
+  type TranslateDuration,
+} from "./model/duration-phrase";
 export { formatHours, MINUTES_IN_HOUR, splitDuration } from "./model/format-hours";

@@ -1,4 +1,4 @@
-import { splitDuration } from "@/entities/ministry-day";
+import { durationPhrase } from "@/entities/ministry-day";
 
 import { goalStanding } from "./goal-standing";
 
@@ -31,23 +31,6 @@ export type ProgressStanding = {
   tone: ProgressTone;
 };
 
-// "1 h 30 min", "15 min", "134 h" — spelled out rather than as a clock.
-// A difference is not a time of day, and "−1:30" beside "0:30" would be
-// two numbers of the same shape meaning different things.
-//
-// Whole hours drop the minutes and a bare remainder drops the hours,
-// because "28 h 0 min" and "0 h 15 min" are both longer and harder to
-// read than what they say.
-export const progressAmount = (translate: TranslateProgress, total: number): string => {
-  const { hours, minutes } = splitDuration(total);
-
-  if (hours === 0) return translate("minutes", { minutes });
-
-  if (minutes === 0) return translate("hours", { hours });
-
-  return translate("hoursMinutes", { hours, minutes });
-};
-
 // The bracket: how this total stands against the WHOLE goal — what is
 // still owed, or by how much it is beaten (ADR 0064, decision 10).
 //
@@ -70,7 +53,7 @@ export const progressStanding = (
 
   if (against.kind === "level") return { text: translate("level"), tone: "met" };
 
-  const amount = progressAmount(translate, against.minutes);
+  const amount = durationPhrase(translate, against.minutes);
 
   return against.kind === "ahead"
     ? { text: translate("ahead", { amount }), tone: "met" }
