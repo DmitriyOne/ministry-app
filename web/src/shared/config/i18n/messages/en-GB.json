@@ -139,6 +139,19 @@
         "serviceYear": "Service year",
         "serviceYearGoal": "of {hours} h"
       },
+      "pace": {
+        "label": "Pace",
+        "byDay": "By day {day} · {amount}",
+        "ahead": "(+{amount})",
+        "behind": "(−{amount})",
+        "level": "(+0)",
+        "hours": "{hours} h",
+        "minutes": "{minutes} min",
+        "hoursMinutes": "{hours} h {minutes} min",
+        "rest": "{days, plural, one {{amount} to go, and today is the last day} other {{amount} a day for the # days left}}",
+        "bar": "Hours served against what the goal asks for by today",
+        "barValue": "{served} of {needed}"
+      },
       "days": {
         "title": "Days",
         "columns": {
@@ -277,10 +290,14 @@
       },
       "v2_5": {
         "name": "Version 2.5",
-        "date": "29 October 2026",
+        "date": "2 November 2026",
         "monthScreen": {
           "title": "The month has a screen",
           "text": "Hours, goal and service year at the top, then every day you recorded, each a tap away from the day itself."
+        },
+        "pace": {
+          "title": "Whether you are keeping up",
+          "text": "Under the month's figures: what the goal asks for by today, how far that leaves you ahead or behind, and how much a day it takes from here."
         },
         "runningTotal": {
           "title": "A running total beside every day",

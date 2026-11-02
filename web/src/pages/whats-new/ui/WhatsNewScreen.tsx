@@ -105,6 +105,11 @@ export const WhatsNewScreen = async () => {
             text={t("v2_5.monthScreen.text")}
           />
           <ListRow
+            icon={<ChartArrowIcon size={18} />}
+            title={t("v2_5.pace.title")}
+            text={t("v2_5.pace.text")}
+          />
+          <ListRow
             icon={<ChartBarIcon size={18} />}
             title={t("v2_5.runningTotal.title")}
             text={t("v2_5.runningTotal.text")}

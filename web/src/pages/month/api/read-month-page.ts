@@ -1,3 +1,4 @@
+import { currentDayKey, type DayKey } from "@/entities/ministry-day";
 import {
   currentMonthKey,
   type MonthKey,
@@ -50,6 +51,11 @@ export type MonthPageData = {
   // Null when the zone did not read: "we do not know which month it is
   // now", which hides the closing button and the arrow forward.
   currentMonth: MonthKey | null;
+  // The day the person is in, for the pace line in the summary: it needs
+  // the date, not just the month, and asking the same zone twice is
+  // cheaper than carrying the zone into a pure function. Null for the
+  // same reason currentMonth is.
+  today: DayKey | null;
   summary: MonthSummary | null;
   days: MonthDayRow[] | null;
   // When this month was closed, as the database holds it, or null for a
@@ -155,6 +161,7 @@ export const readMonthPage = async (month: MonthKey): Promise<MonthPageData> => 
 
   return {
     currentMonth: zone.status === "ready" ? currentMonthKey(zone.timeZone) : null,
+    today: zone.status === "ready" ? currentDayKey(zone.timeZone) : null,
     summary: summaryFailed
       ? null
       : {

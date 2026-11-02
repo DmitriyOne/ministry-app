@@ -15,6 +15,7 @@ import { canStepForward } from "../model/month-span";
 import { MonthDaysTable } from "./MonthDaysTable";
 import { MonthScreenFrame } from "./MonthScreenFrame";
 import { MonthHeader } from "./MonthHeader";
+import { MonthPace } from "./MonthPace";
 import { MonthSummary } from "./MonthSummary";
 
 type MonthScreenProps = {
@@ -79,6 +80,23 @@ export const MonthScreen = async ({ params }: MonthScreenProps) => {
             />
           )
         : <MonthSummary summary={page.summary} />}
+
+      {/* Whether the month is keeping up with its own calendar — the
+          owner asked for it on 2026-11-02, in the shape of the day
+          screen's progress block. Absent on any month but the one being
+          lived, and on any month without a goal; the figures it needs
+          come from the summary, so a summary that did not load takes it
+          with it. */}
+      {page.summary === null
+        ? null
+        : (
+            <MonthPace
+              month={month}
+              today={page.today}
+              servedMinutes={page.summary.totalMinutes}
+              goalHours={page.summary.monthGoalHours}
+            />
+          )}
 
       {page.days === null
         ? (
