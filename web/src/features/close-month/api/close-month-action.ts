@@ -74,6 +74,16 @@ const callMonthFunction = async (
     // So the scope buys nothing on the client. What it buys is on the
     // server, where a path is a path and this one is the only path whose
     // data changed.
+    //
+    // Measured in a browser on 2026-11-05, which the note above was
+    // not: a back navigation has two forms, and this covers one. A
+    // client-side back goes through the router cache evicted above and
+    // comes back correct. A back between two separate documents never
+    // asks the server at all, and what stops it serving a stale screen
+    // is the response header, not anything here: `next start` sends
+    // no-store on a dynamic page, `next dev` only no-cache — which is
+    // why the stale lock reproduces on the dev server and not in
+    // production. ADR 0066, decision 9, update 2026-11-05.
     revalidatePath(monthPath(key));
 
     return { status: "success" };
