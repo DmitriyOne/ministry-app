@@ -77,11 +77,27 @@ describe("ROUTE_POLICY", () => {
     }
   });
 
+  // The month's family, for the same reason: it lives in the address too
+  // (ADR 0066), and the navigation links straight to it.
+  it("shields a month under its own slug like the bare /month", () => {
+    for (const pathname of ["/month/2026-06", "/month/2025-12"]) {
+      expect(resolveRoutePolicy(pathname), pathname).toEqual(ROUTE_POLICY[routes.month]);
+    }
+  });
+
   // A prefix without the separator is a coincidence of spelling, not a
   // family: an address nobody has classified must stay unclassified, or
   // a typo gets the app's own policy.
   it("does not adopt an address that merely starts with the same letters", () => {
-    for (const pathname of ["/dayz", "/day-summary", "/days/2026-06-02"]) {
+    for (
+      const pathname of [
+        "/dayz",
+        "/day-summary",
+        "/days/2026-06-02",
+        "/months",
+        "/month-end",
+      ]
+    ) {
       expect(resolveRoutePolicy(pathname), pathname).toBeNull();
     }
   });

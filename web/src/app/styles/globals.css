@@ -380,6 +380,24 @@
 }
 
 /*
+ * The tallest a bottom sheet may grow before its body starts scrolling.
+ *
+ * A panel is `h-auto`, so it grows with its content — and the ministry
+ * status panel grows past the top of the screen as soon as a row opens
+ * its sub-question, with nothing to scroll and the Save button out of
+ * reach (owner, 2026-11-02). The cap leaves the notch and a gutter
+ * above the panel, so the page behind it stays visible and the panel
+ * still reads as a sheet rather than a full screen.
+ *
+ * The scrolling itself is the caller's: only the panel's BODY scrolls,
+ * never the drag handle or the footer, so the way out stays put while
+ * the content moves under it.
+ */
+@utility max-h-sheet {
+  max-height: calc(100dvh - env(safe-area-inset-top) - --spacing(6));
+}
+
+/*
  * The back-header's top inset, and the one number that depends on it.
  *
  * Four screens used to repeat

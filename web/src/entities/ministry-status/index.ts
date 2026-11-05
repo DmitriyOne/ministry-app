@@ -27,7 +27,8 @@ export {
   parseMonthKey,
   toMonthKey,
 } from "./model/month-key";
-export { formatMonthName } from "./model/month-label";
+export { formatMonthName, monthHeading } from "./model/month-label";
+export { monthPath, parseMonthSlug } from "./model/month-path";
 export {
   DEFAULT_MINISTRY_STATUS,
   type EffectiveMinistryStatus,

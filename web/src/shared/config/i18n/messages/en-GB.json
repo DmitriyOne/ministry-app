@@ -73,10 +73,13 @@
         "decrease": "Take away {minutes} minutes",
         "increase": "Add {minutes} minutes",
         "quickAdd": "+{minutes} min",
+        "closedNotice": "{month} is closed, so these hours can’t be changed.",
+        "closedNoticeLink": "Reopen the month",
         "saving": "Saving…",
         "saved": "Saved",
         "saveFailed": "Those hours weren’t saved — we couldn’t reach the server. Try again.",
         "saveOffline": "You’re offline, so those hours weren’t saved.",
+        "saveMonthClosed": "That month is closed, so those hours weren’t saved. Reopen it to make changes.",
         "saveRefused": "Those hours couldn’t be saved. Check the date on your phone.",
         "saveSignedOut": "You’re signed out, so those hours weren’t saved. Sign in again.",
         "saveUnconfirmed": "We couldn’t confirm those hours. Open the day again to check."
@@ -120,7 +123,72 @@
         "title": "Month",
         "description": "Totals and entries for the month."
       },
-      "title": "Month"
+      "title": "Month",
+      "eyebrow": "Month",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "summary": {
+        "label": "Hours this month",
+        "ofGoal": "of {hours} h",
+        "toGoHours": "{hours} h to go",
+        "toGoMinutes": "{minutes} min to go",
+        "toGoHoursMinutes": "{hours} h {minutes} min to go",
+        "met": "Goal met",
+        "barLabel": "Hours served this month",
+        "barValue": "{served} of {goal} h",
+        "serviceYear": "Service year",
+        "serviceYearGoal": "of {hours} h"
+      },
+      "pace": {
+        "label": "Pace",
+        "byDay": "By day {day} · {amount}",
+        "ahead": "(+{amount})",
+        "behind": "(−{amount})",
+        "level": "(+0)",
+        "hours": "{hours} h",
+        "minutes": "{minutes} min",
+        "hoursMinutes": "{hours} h {minutes} min",
+        "rest": "{days, plural, one {{amount} to go, and today is the last day} other {{amount} a day for the # days left}}",
+        "bar": "Hours served against what the goal asks for by today",
+        "barValue": "{served} of {needed}"
+      },
+      "days": {
+        "title": "Days",
+        "columns": {
+          "day": "Day",
+          "hours": "Hours",
+          "total": "Total"
+        },
+        "empty": "No days recorded in this month yet."
+      },
+      "closing": {
+        "close": "Close month",
+        "reopen": "Reopen the month",
+        "closed": "Closed. The days of this month can no longer be edited.",
+        "closedOn": "Closed on {date}. The days of this month can no longer be edited.",
+        "confirmTitle": "Close the month?",
+        "confirmBody": "Once {month} is closed, the hours of its days can't be changed. You can open it again at any time.",
+        "reopenConfirmTitle": "Reopen the month?",
+        "reopenConfirmBody": "{month} becomes editable again, and its hours can be changed. You can close it once more at any time.",
+        "reopenConfirm": "Reopen",
+        "hoursLabel": "Hours",
+        "noHours": "—",
+        "cancel": "Cancel",
+        "refused": "This month can't be closed yet.",
+        "failed": "Couldn't reach the server. Nothing was changed."
+      },
+      "loadFailure": {
+        "title": "This month didn't load",
+        "text": "We couldn't work out which month you're in."
+      },
+      "summaryFailure": {
+        "title": "The totals didn't load",
+        "text": "We couldn't reach the server for this month's figures."
+      },
+      "daysFailure": {
+        "title": "The days didn't load",
+        "text": "We couldn't reach the server for the days of this month."
+      }
     },
     "year": {
       "metadata": {
@@ -219,6 +287,30 @@
       "hero": {
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
+      },
+      "v2_5": {
+        "name": "Version 2.5",
+        "date": "5 November 2026",
+        "monthScreen": {
+          "title": "The month has a screen",
+          "text": "Hours, goal and service year at the top, then every day you recorded, each a tap away from the day itself."
+        },
+        "pace": {
+          "title": "Whether you are keeping up",
+          "text": "Under the month's figures: what the goal asks for by today, how far that leaves you ahead or behind, and how much a day it takes from here."
+        },
+        "runningTotal": {
+          "title": "A running total beside every day",
+          "text": "The third column is what the month came to by the end of that day, so you can see where you stood without adding anything up."
+        },
+        "closeMonth": {
+          "title": "Close a month when it is reported",
+          "text": "Once the month is over you can close it, and its hours stop changing — on the month, on the day, and for anything asking the server."
+        },
+        "reopenMonth": {
+          "title": "And open it again",
+          "text": "It asks first, the same as closing does. Closing is there to stop a stray tap, not to lock you out of your own figures."
+        }
       },
       "v2_4": {
         "name": "Version 2.4",

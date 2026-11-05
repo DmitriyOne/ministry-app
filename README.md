@@ -38,14 +38,25 @@ regular pioneer), the monthly and service-year goals, the push toggle and
 sign-out. Choosing "regular pioneer" asks one more thing — since when,
 the start of the service year or this month — because the year's goal is
 the months actually served added up, not a fixed 600; and that goal is
-shown to a regular pioneer only, for as long as they are one. `/calendar`, `/month` and `/year` are still placeholders
-carrying a title each, and `/admin/users/new` creates an account.
+shown to a regular pioneer only, for as long as they are one. `/calendar`
+and `/year` are still placeholders carrying a title each, and
+`/admin/users/new` creates an account.
 `/whats-new` tells a person what each version added, with a dot on the
 profile row while they have not read the current one. There is no
 sign-up: the owner hands out accounts.
 
-The month and year screens are the next piece of work — the hours are in
-the database now, and nothing yet shows them a month at a time.
+`/month/2026-06` is the month: the hours, the goal and the service year
+at the top, then — on the month being lived — whether it is keeping up
+with its own calendar, which is what the goal asks for by today and how
+far ahead or behind that leaves you, down to the minute, with how much a
+day it takes from here. Below that, every day that was recorded, each
+with the month's running total beside it and each a tap away from the day
+itself. A month that is over can be **closed** — after which its hours
+stop changing, refused by the database rather than merely hidden by the
+screen — and opened again whenever the person wants, because closing is
+there to stop a stray tap, not to lock anybody out of their own figures.
+Both answers are asked for first. A day inside a closed month says so and
+links back to it. The year screen is the next piece of work.
 
 `LAUNCH_MODE` is gone — `/soon` is simply a public landing page now, and
 what `/day` shows is decided by whether there is a session.

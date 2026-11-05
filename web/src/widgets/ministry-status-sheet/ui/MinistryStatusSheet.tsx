@@ -80,12 +80,25 @@ export const MinistryStatusSheet = ({
             closes by swipe, by backdrop and by Save. */}
         <SheetDragHandle {...sheet.dragHandlers} className="-mx-5" />
 
-        <MinistryStatusForm
-          form={form}
-          monthLabel={monthLabel}
-          pioneerStart={pioneerStart}
-          onSave={confirm.ask}
-        />
+        {/* The body scrolls, the handle above it does not. The panel is
+            capped at max-h-sheet, and five rows with a sub-question open
+            under one of them are taller than a phone — until this wrapper
+            the panel simply grew off the top of the screen and the Save
+            button could not be reached (owner, 2026-11-02).
+
+            overscroll-contain stops the scroll from carrying on into the
+            page behind once the list ends; -mx-5/px-5 keeps the rows
+            full-bleed to the panel's own gutter while the scrollbar sits
+            at its edge. The drag gesture is attached to the handle alone,
+            so scrolling here cannot be mistaken for a swipe to close. */}
+        <div className="-mx-5 min-h-0 flex-1 overflow-y-auto overscroll-contain px-5">
+          <MinistryStatusForm
+            form={form}
+            monthLabel={monthLabel}
+            pioneerStart={pioneerStart}
+            onSave={confirm.ask}
+          />
+        </div>
       </Sheet>
 
       <ConfirmMinistryStatusDialog

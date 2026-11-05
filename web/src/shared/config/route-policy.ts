@@ -121,5 +121,11 @@ export const resolveRoutePolicy = (pathname: string): RoutePolicy | null => {
   // family, it is a coincidence of spelling.
   if (pathname.startsWith(`${routes.day}/`)) return APP_SCREEN;
 
+  // And the month's family, for exactly the same reason: the month lives
+  // in the address too (/month/2026-06, ADR 0066), so without this line
+  // the screen a person opens from the navigation would be
+  // unclassified — no device shield, no session, no home-screen icon.
+  if (pathname.startsWith(`${routes.month}/`)) return APP_SCREEN;
+
   return null;
 };

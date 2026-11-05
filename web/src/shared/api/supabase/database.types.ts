@@ -61,6 +61,33 @@ export type Database = {
         }
         Relationships: []
       }
+      ministry_month_closures: {
+        Row: {
+          closed_at: string
+          created_at: string
+          deleted_at: string | null
+          month: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string
+          created_at?: string
+          deleted_at?: string | null
+          month: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          closed_at?: string
+          created_at?: string
+          deleted_at?: string | null
+          month?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ministry_status_months: {
         Row: {
           created_at: string
@@ -245,6 +272,23 @@ export type Database = {
         Args: { p_month: string; p_user: string }
         Returns: undefined
       }
+      close_ministry_month: {
+        Args: { p_month: string }
+        Returns: {
+          closed_at: string
+          created_at: string
+          deleted_at: string | null
+          month: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ministry_month_closures"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       forget_user_push_subscription: {
         Args: { p_endpoint: string; p_user_id: string }
@@ -253,6 +297,10 @@ export type Database = {
       freeze_ministry_month_after: {
         Args: { p_month: string; p_user: string }
         Returns: undefined
+      }
+      is_ministry_month_closed: {
+        Args: { p_month: string; p_user: string }
+        Returns: boolean
       }
       join_waitlist: {
         Args: { p_email: string }
@@ -311,6 +359,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      reopen_ministry_month: { Args: { p_month: string }; Returns: undefined }
       set_ministry_day_minutes: {
         Args: { p_day: string; p_minutes: number }
         Returns: {

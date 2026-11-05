@@ -1,17 +1,22 @@
 import { describe, expect, it } from "vitest";
 
-import { formatMonthName } from "./month-label";
 import { toMonthKey } from "./month-key";
+import { formatMonthName, monthHeading } from "./month-label";
 
 describe("formatMonthName", () => {
-  it("names the month in full", () => {
+  it("names the month", () => {
     expect(formatMonthName(toMonthKey(2026, 6))).toBe("June");
-    expect(formatMonthName(toMonthKey(2026, 9))).toBe("September");
+  });
+});
+
+describe("monthHeading", () => {
+  it("names the month with its year", () => {
+    expect(monthHeading(toMonthKey(2026, 6))).toBe("June 2026");
   });
 
-  // The guard against formatting in the server's zone: a January key
-  // read as local midnight prints as December anywhere west of UTC.
-  it("names January as January, whatever zone this runs in", () => {
-    expect(formatMonthName(toMonthKey(2027, 1))).toBe("January");
+  // January is the one that catches a formatter left in the server's
+  // zone: anywhere west of UTC it would print the December before it.
+  it("stays in UTC, so January does not slip into December", () => {
+    expect(monthHeading(toMonthKey(2026, 1))).toBe("January 2026");
   });
 });

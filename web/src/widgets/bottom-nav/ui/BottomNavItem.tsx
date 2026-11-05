@@ -4,7 +4,8 @@ import { type ReactNode, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 
 import { currentDayKey, dayPath } from "@/entities/ministry-day";
-import type { AppRoute } from "@/shared/config";
+import { currentMonthKey, monthPath } from "@/entities/ministry-status";
+import { type AppRoute, routes } from "@/shared/config";
 import { cn } from "@/shared/lib/cn";
 import { readStoredTimeZone, subscribeToStoredTimeZone } from "@/shared/lib/time-zone";
 import { LinkButton } from "@/shared/ui/button";
@@ -15,6 +16,15 @@ import { isNavItemCurrent } from "../model/is-nav-item-current";
 // external store. Null on the server and while hydrating, which is the
 // honest answer: the markup Next sent knows nothing about this browser.
 const getServerSnapshot = (): string | null => null;
+
+// Which address an item with a family really points at. By the item's
+// own route rather than by a flag, because the two answers come from
+// two entities and the route is what tells them apart.
+const knownTarget = (href: AppRoute, zone: string): string => {
+  if (href === routes.month) return monthPath(currentMonthKey(zone));
+
+  return dayPath(currentDayKey(zone));
+};
 
 type BottomNavItemProps = {
   href: AppRoute;
@@ -50,17 +60,18 @@ export const BottomNavItem = ({
     getServerSnapshot,
   );
 
-  // The day item points at the DATE once this device knows the person's
-  // calendar. /day is a redirect — it reads the profile, works out
-  // today and sends the browser on — so going through it draws the
-  // loading boundary twice, which is the flicker the owner saw when
-  // opening the day from here and never saw stepping between days.
+  // The day and month items point at the DATE and the MONTH once this
+  // device knows the person's calendar. Both bare addresses are
+  // redirects — they read the profile, work out where to go and send
+  // the browser on — so going through one draws the loading boundary
+  // twice, which is the flicker the owner saw opening the day from here
+  // and never saw stepping between days.
   //
   // Until the zone is known (first launch, hydration, storage refused)
-  // this stays /day and behaves exactly as it did. Which item is lit is
-  // decided above, from the item's own path, so nothing about that
-  // depends on this.
-  const target = hasFamily && storedZone ? dayPath(currentDayKey(storedZone)) : href;
+  // these stay /day and /month and behave exactly as they did. Which
+  // item is lit is decided above, from the item's own path, so nothing
+  // about that depends on this.
+  const target = hasFamily && storedZone ? knownTarget(href, storedZone) : href;
 
   return (
     <LinkButton
