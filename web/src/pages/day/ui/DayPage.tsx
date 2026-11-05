@@ -8,12 +8,14 @@ import { ScreenLoadFailure } from "@/features/screen-retry";
 import { WelcomeToast } from "@/features/welcome-toast";
 import { routes } from "@/shared/config";
 import { readDayPage } from "../api/read-day-page";
+import { monthOfDay } from "../model/progress-span";
 import { DayHeader } from "./DayHeader";
 import { DayLastDays } from "./DayLastDays";
 import { DayProgress } from "./DayProgress";
 import { DayScreenFrame } from "./DayScreenFrame";
 import { RefreshOnDayChange } from "./RefreshOnDayChange";
 import { RememberTimeZone } from "./RememberTimeZone";
+import { DayClosedNotice } from "./DayClosedNotice";
 
 // Next hands the segment as a promise (15+), so it is awaited rather
 // than read.
@@ -122,7 +124,22 @@ export const DayPage = async ({ params }: DayPageProps) => {
             // the strip's chip for the open day shows the same number,
             // and these are server components passed through as
             // children — being inside it makes none of them client.
-            <DayHoursProvider key={day} day={day} savedMinutes={page.savedMinutes}>
+            <DayHoursProvider
+              key={day}
+              day={day}
+              savedMinutes={page.savedMinutes}
+              isReadOnly={page.isMonthClosed}
+            >
+              {/* Above the card, because it explains why the card does
+                  not answer. It says which month and links to it —
+                  reopening lives there, and a second way to do it here
+                  would be a second place to keep in step. */}
+              {page.isMonthClosed
+                ? (
+                    <DayClosedNotice month={monthOfDay(day)} />
+                  )
+                : null}
+
               <HoursCard />
 
               {/* Drawn only when all four of its reads answered (ADR

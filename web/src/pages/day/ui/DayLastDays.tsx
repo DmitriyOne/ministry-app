@@ -1,10 +1,15 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
-import { type DayKey, dayPath, formatHours, shortDayLabel } from "@/entities/ministry-day";
+import {
+  type DayKey,
+  dayPath,
+  durationPhrase,
+  formatHours,
+  shortDayLabel,
+} from "@/entities/ministry-day";
 import { DayHoursValue } from "@/features/hours-entry";
 import type { PreviousDay } from "../model/last-days";
-import { progressAmount } from "../model/progress-text";
 import { LAST_DAYS_CHIP, LastDaysShell } from "./LastDaysShell";
 
 type DayLastDaysProps = {
@@ -109,7 +114,7 @@ export const DayLastDays = async ({ openDay, days }: DayLastDaysProps) => {
               : t("chipHours", {
                   weekday,
                   date: dayOfMonth,
-                  amount: progressAmount(tProgress, minutes),
+                  amount: durationPhrase(tProgress, minutes),
                 })}
             className={minutes === null ? CHIP_EMPTY : CHIP_RECORDED}
           >

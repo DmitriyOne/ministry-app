@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(34);
+select plan(42);
 
 -- What this file pins: the rules that exist nowhere else. The day table
 -- is written by one security definer function, so the things worth
@@ -263,6 +263,77 @@ select is(
   30::smallint,
   'the first person''s day is still theirs after the second one wrote'
 );
+
+-- ---------------------------------------------------------------------
+-- A closed month (ADR 0066)
+-- ---------------------------------------------------------------------
+-- The amendment to "a day already lived is freely writable": once the
+-- month is reported, its days stop moving. Back as the second person,
+-- who has one day of their own and nothing else.
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+
+-- A day in the middle of last month, so that the month boundary is the
+-- thing being tested rather than the edge of it.
+select is(
+  (select minutes from public.set_ministry_day_minutes(
+    (date_trunc('month', now() - interval '1 month'))::date + 14, 60::smallint)),
+  60::smallint,
+  'a day in last month is recorded while the month is open'
+);
+
+select lives_ok(
+  $$select public.close_ministry_month(
+    (date_trunc('month', now() - interval '1 month'))::date)$$,
+  'last month closes'
+);
+
+-- Closing says nothing about the hours themselves, and must not touch
+-- them: it is a lock, not an edit.
+select is(
+  (select minutes from public.ministry_days
+    where day = (date_trunc('month', now() - interval '1 month'))::date + 14),
+  60::smallint,
+  'closing the month leaves the hours exactly as they were'
+);
+
+select throws_ok(
+  format($$select public.set_ministry_day_minutes(%L::date, 90::smallint)$$,
+    (date_trunc('month', now() - interval '1 month'))::date + 14),
+  '55000',
+  null,
+  'a day inside a closed month is refused, and not as a check violation'
+);
+
+-- And the refusal changed nothing, which is the whole point of it.
+select is(
+  (select minutes from public.ministry_days
+    where day = (date_trunc('month', now() - interval '1 month'))::date + 14),
+  60::smallint,
+  'the refused write left the day untouched'
+);
+
+-- The lock is one month wide. Today belongs to a month nobody closed.
+select is(
+  (select minutes from public.set_ministry_day_minutes(now()::date, 25::smallint)),
+  25::smallint,
+  'a day in an open month is still written while another month is closed'
+);
+
+select lives_ok(
+  $$select public.reopen_ministry_month(
+    (date_trunc('month', now() - interval '1 month'))::date)$$,
+  'the month reopens'
+);
+
+select is(
+  (select minutes from public.set_ministry_day_minutes(
+    (date_trunc('month', now() - interval '1 month'))::date + 14, 90::smallint)),
+  90::smallint,
+  'and the day it was holding can be written again'
+);
+
+reset role;
 
 select * from finish();
 

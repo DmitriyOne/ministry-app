@@ -34,11 +34,21 @@ type DayHoursProviderProps = {
   // What the database held when the screen was rendered. Read once, at
   // mount; from then on the taps are the truth about the number.
   savedMinutes: number;
+  // The month is closed, so the card is read-only (ADR 0066). Passed
+  // down with the rest of the state rather than read here: the screen
+  // has already asked the database, and a second reader would be a
+  // second answer.
+  isReadOnly: boolean;
   children: ReactNode;
 };
 
-export const DayHoursProvider = ({ day, savedMinutes, children }: DayHoursProviderProps) => {
-  const controls = useDayHours({ day, savedMinutes });
+export const DayHoursProvider = ({
+  day,
+  savedMinutes,
+  isReadOnly,
+  children,
+}: DayHoursProviderProps) => {
+  const controls = useDayHours({ day, savedMinutes, isReadOnly });
 
   return <DayHoursContext value={controls}>{children}</DayHoursContext>;
 };
