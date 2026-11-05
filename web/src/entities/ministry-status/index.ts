@@ -34,6 +34,7 @@ export {
   type EffectiveMinistryStatus,
 } from "./model/resolve-status";
 export {
+  MONTHS_IN_SERVICE_YEAR,
   SERVICE_YEAR_FIRST_MONTH,
   type ServiceYear,
   serviceYearGoalFrom,
