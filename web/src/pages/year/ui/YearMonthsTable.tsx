@@ -1,16 +1,20 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
-import { formatHours, MINUTES_IN_HOUR } from "@/entities/ministry-day";
-import { formatMonthName, monthPath } from "@/entities/ministry-status";
+import { formatHours } from "@/entities/ministry-day";
+import { formatMonthName, type MonthKey, monthPath } from "@/entities/ministry-status";
 import { cn } from "@/shared/lib/cn";
 import { LockClosedIcon } from "@/shared/ui/icons";
 
-import { hasAnyHours, type YearMonthRow } from "../model/year-months";
+import { hasAnyHours, isMonthShort, type YearMonthRow } from "../model/year-months";
 import { YEAR_MONTH_ROW, YearMonthsShell } from "./YearMonthsShell";
 
 type YearMonthsTableProps = {
   months: YearMonthRow[];
+  // The month the person is in, so a month still being lived is never
+  // painted as a miss. Null is "we do not know" — the zone did not read
+  // — and then nothing is called a miss at all.
+  currentMonth: MonthKey | null;
 };
 
 // The twelve months of the service year, a line each, with the year's
@@ -27,7 +31,7 @@ type YearMonthsTableProps = {
 // LinkButton: the line is a three-column row, and buttonVariants is one
 // line of fixed height — the reading the day strip's chips and the month
 // screen's rows both made.
-export const YearMonthsTable = async ({ months }: YearMonthsTableProps) => {
+export const YearMonthsTable = async ({ months, currentMonth }: YearMonthsTableProps) => {
   const t = await getTranslations("screens.year.months");
   const columns = {
     month: t("columns.month"),
@@ -53,13 +57,12 @@ export const YearMonthsTable = async ({ months }: YearMonthsTableProps) => {
       <ul className="flex flex-col">
         {months.map((row, index) => {
           // Short of its own goal is --negative, met or over the
-          // project's green, and a month with no goal is neither: there
-          // is nothing it fell short of. The colour is never the only
-          // carrier — the goal stands beside the name and the figure is
-          // right there (ADR 0067, decision 4).
-          const isShort = row.goalHours !== null
-            && row.minutes !== null
-            && row.minutes < row.goalHours * MINUTES_IN_HOUR;
+          // project's green. What counts as short is a decision with a
+          // test behind it, not a comparison written here: a month that
+          // has not finished is never a miss. The colour is never the
+          // only carrier either — the goal stands beside the name and
+          // the figure is right there (ADR 0067, decision 4).
+          const isShort = isMonthShort(row, currentMonth);
 
           return (
             <li key={row.month}>
@@ -85,14 +88,23 @@ export const YearMonthsTable = async ({ months }: YearMonthsTableProps) => {
                   {/* A closed month, marked where the person can see it
                       without opening anything. Reopening lives on the
                       month itself: one place, not two to keep in step
-                      (ADR 0067, decision 7). */}
+                      (ADR 0067, decision 7).
+
+                      The lock stays decorative with the word beside it
+                      in an sr-only span, which is this project's way of
+                      labelling a sign (launch-loading.tsx, sheet.tsx)
+                      and not a stylistic choice here: every icon sets
+                      aria-hidden itself, so an aria-label passed in is
+                      swallowed — found by reading the row's accessible
+                      name on the real screen, where "Closed" was
+                      announced nowhere. The icon is the only thing
+                      saying this month is shut, so it has to say it. */}
                   {row.isClosed
                     ? (
-                        <LockClosedIcon
-                          size={13}
-                          className="shrink-0 text-ink-a55"
-                          aria-label={t("closed")}
-                        />
+                        <>
+                          <LockClosedIcon size={13} className="shrink-0 text-ink-a55" />
+                          <span className="sr-only">{t("closed")}</span>
+                        </>
                       )
                     : null}
                 </span>
