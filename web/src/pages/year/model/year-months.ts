@@ -1,3 +1,4 @@
+import { MINUTES_IN_HOUR } from "@/entities/ministry-day";
 import { type MonthKey, parseMonthKey } from "@/entities/ministry-status";
 
 // One line of the table: the month, what it holds, the goal it was held
@@ -105,3 +106,36 @@ export const buildYearMonths = ({
 // (ADR 0067, decision 8).
 export const hasAnyHours = (rows: YearMonthRow[]): boolean =>
   rows.some((row) => row.minutes !== null);
+
+// Whether this month came up short of its own goal — the question the
+// colour on the figure answers.
+//
+// A month that has not FINISHED is never short, and that is the whole
+// reason this is a function rather than a comparison in the markup. On
+// the 5th of November, 7:25 of 50 h is of course below the goal, and
+// painting it like a miss tells somebody they failed a month they are
+// standing in with twenty-five days to go. Found on the real screen,
+// where November came up terracotta.
+//
+// The same reading the rest of the app already makes: the month screen's
+// pace block measures against TODAY rather than the whole month, the
+// closing button stays hidden until the month is over (ADR 0066), and a
+// past month's difference against its goal IS its result.
+//
+// A month with no goal is never short either: there is nothing it fell
+// short of. Nor is a month with nothing recorded — that is an absence,
+// and the dash says so.
+export const isMonthShort = (
+  row: YearMonthRow,
+  currentMonth: MonthKey | null,
+): boolean => {
+  if (row.goalHours === null || row.minutes === null) return false;
+
+  // The month being lived, and anything after it, has not finished. An
+  // unknown current month — the zone did not read — means no month is
+  // called a miss: a guess here would be wrong by a month for anybody
+  // near a boundary, and silence costs only a colour.
+  if (currentMonth === null || row.month >= currentMonth) return false;
+
+  return row.minutes < row.goalHours * MINUTES_IN_HOUR;
+};

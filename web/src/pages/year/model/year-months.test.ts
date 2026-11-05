@@ -7,7 +7,22 @@ vi.mock("@/shared/config", () => ({
   routes: { day: "/day", month: "/month", year: "/year" },
 }));
 
-import { buildYearMonths, hasAnyHours } from "./year-months";
+import { parseMonthKey } from "@/entities/ministry-status";
+
+import {
+  buildYearMonths,
+  hasAnyHours,
+  isMonthShort,
+  type YearMonthRow,
+} from "./year-months";
+
+const key = (value: string) => {
+  const month = parseMonthKey(value);
+
+  if (month === null) throw new Error(`not a month key: ${value}`);
+
+  return month;
+};
 import { serviceYearMonths } from "./year-span";
 
 const months = serviceYearMonths(2026);
@@ -189,5 +204,64 @@ describe("hasAnyHours", () => {
     expect(hasAnyHours(build({
       minutes: [{ month: "2026-09-01", minutes: 60 }],
     }))).toBe(true);
+  });
+});
+
+describe("isMonthShort", () => {
+  const row = (
+    month: string,
+    minutes: number | null,
+    goalHours: number | null,
+  ): YearMonthRow => ({
+    month: key(month),
+    minutes,
+    goalHours,
+    isClosed: false,
+    runningMinutes: 0,
+  });
+
+  const november = key("2026-11-01");
+
+  it("is true for a finished month below its goal", () => {
+    expect(isMonthShort(row("2026-10-01", 940, 50), november)).toBe(true);
+  });
+
+  it("is false for a finished month that met its goal", () => {
+    expect(isMonthShort(row("2026-09-01", 3000, 50), november)).toBe(false);
+  });
+
+  it("is false for a finished month that passed its goal", () => {
+    expect(isMonthShort(row("2026-09-01", 3130, 50), november)).toBe(false);
+  });
+
+  // The defect this function exists for: on the 5th of November, 7:25 of
+  // 50 h is below the goal and is NOT a miss — there are twenty-five
+  // days left in it.
+  it("is false for the month being lived, however far below the goal", () => {
+    expect(isMonthShort(row("2026-11-01", 445, 50), november)).toBe(false);
+  });
+
+  it("is false for a month that has not started", () => {
+    expect(isMonthShort(row("2027-03-01", null, 50), november)).toBe(false);
+  });
+
+  it("is false for a month with no goal to fall short of", () => {
+    expect(isMonthShort(row("2026-10-01", 60, null), november)).toBe(false);
+  });
+
+  it("is false for a month with nothing recorded, which is an absence", () => {
+    expect(isMonthShort(row("2026-10-01", null, 50), november)).toBe(false);
+  });
+
+  // A recorded zero in a finished month IS a miss: somebody looked and
+  // there was nothing, and the month is over.
+  it("is true for a finished month holding a recorded zero", () => {
+    expect(isMonthShort(row("2026-10-01", 0, 50), november)).toBe(true);
+  });
+
+  // The zone did not read. A guess would be wrong by a month for anybody
+  // near a boundary, and silence costs only a colour.
+  it("calls nothing a miss when the current month is unknown", () => {
+    expect(isMonthShort(row("2026-10-01", 940, 50), null)).toBe(false);
   });
 });

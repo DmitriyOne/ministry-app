@@ -2,6 +2,7 @@ import { currentDayKey, type DayKey } from "@/entities/ministry-day";
 import {
   currentMonthKey,
   isMinistryStatus,
+  type MonthKey,
   serviceYearFirstMonth,
   serviceYearOf,
   type ServiceYear,
@@ -39,6 +40,10 @@ export type YearPageData = {
   // Null when the zone did not read: "we do not know which year it is
   // now", which kills the arrow forward and silences the pace line.
   currentYear: ServiceYear | null;
+  // The month the person is in, for the one question the table asks
+  // that the year cannot answer: whether a month has finished, and so
+  // whether falling below its goal is a miss or just the middle of it.
+  currentMonth: MonthKey | null;
   // The day the person is in, which the pace line needs: it works in
   // months but needs the date to take the share of the current one.
   today: DayKey | null;
@@ -122,10 +127,12 @@ export const readYearPage = async (year: ServiceYear): Promise<YearPageData> => 
     || Boolean(goal.error)
     || Boolean(statuses.error);
 
+  // One reading of the clock, two answers taken from it.
+  const currentMonth = zone.status === "ready" ? currentMonthKey(zone.timeZone) : null;
+
   return {
-    currentYear: zone.status === "ready"
-      ? serviceYearOf(currentMonthKey(zone.timeZone))
-      : null,
+    currentYear: currentMonth === null ? null : serviceYearOf(currentMonth),
+    currentMonth,
     today: zone.status === "ready" ? currentDayKey(zone.timeZone) : null,
     summary: summaryFailed
       ? null

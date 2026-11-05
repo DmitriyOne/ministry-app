@@ -90,7 +90,7 @@ export const YearScreen = async ({ params }: YearScreenProps) => {
               text={t("monthsFailure.text")}
             />
           )
-        : <YearMonthsTable months={page.months} />}
+        : <YearMonthsTable months={page.months} currentMonth={page.currentMonth} />}
     </YearScreenFrame>
   );
 };
