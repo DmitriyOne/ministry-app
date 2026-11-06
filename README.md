@@ -39,8 +39,8 @@ sign-out. Choosing "regular pioneer" asks one more thing — since when,
 the start of the service year or this month — because the year's goal is
 the months actually served added up, not a fixed 600; and that goal is
 shown to a regular pioneer only, for as long as they are one. `/calendar`
-and `/year` are still placeholders carrying a title each, and
-`/admin/users/new` creates an account.
+is still a placeholder carrying a title, and `/admin/users/new` creates
+an account.
 `/whats-new` tells a person what each version added, with a dot on the
 profile row while they have not read the current one. There is no
 sign-up: the owner hands out accounts.
@@ -56,7 +56,21 @@ stop changing, refused by the database rather than merely hidden by the
 screen — and opened again whenever the person wants, because closing is
 there to stop a stray tap, not to lock anybody out of their own figures.
 Both answers are asked for first. A day inside a closed month says so and
-links back to it. The year screen is the next piece of work.
+links back to it.
+
+`/year/2026` is the service year, September through August and named
+after the September it starts in. At the top, what the year came to
+against its goal — which is the monthly goals added up, not a flat 600,
+so somebody appointed in October is measured against 550 and is not in
+arrears on their first day. Below it, on the year being lived, how the
+year stands against its own calendar: what the goals asked for by today,
+how far ahead or behind that leaves you, and how much a month it takes
+from here, the month you are in included. Then all twelve months, one
+line each, with the year's running total beside every one — all twelve
+rather than only the recorded ones, because the question the screen
+answers is which months came up short. A month with nothing recorded
+shows a dash, a closed one carries a lock, and a month still being lived
+is never painted as a miss.
 
 `LAUNCH_MODE` is gone — `/soon` is simply a public landing page now, and
 what `/day` shows is decided by whether there is a session.
