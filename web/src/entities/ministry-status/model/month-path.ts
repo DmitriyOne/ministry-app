@@ -20,6 +20,13 @@ const MONTH_SLUG_PATTERN = /^\d{4}-\d{2}$/;
 export const monthPath = (month: MonthKey): string =>
   `${routes.month}/${month.slice(0, 7)}`;
 
+// The calendar's address for the same month: /calendar/2026-11. The
+// same slug, a different screen — one asks what the month came to, the
+// other which days it happened on — so the two builders sit together
+// and cannot drift apart in how they spell a month (ADR 0069).
+export const calendarPath = (month: MonthKey): string =>
+  `${routes.calendar}/${month.slice(0, 7)}`;
+
 // The boundary in the other direction: anything that is not YYYY-MM with
 // a real month is null, and the route turns that into a 404.
 //

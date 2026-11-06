@@ -38,9 +38,8 @@ regular pioneer), the monthly and service-year goals, the push toggle and
 sign-out. Choosing "regular pioneer" asks one more thing — since when,
 the start of the service year or this month — because the year's goal is
 the months actually served added up, not a fixed 600; and that goal is
-shown to a regular pioneer only, for as long as they are one. `/calendar`
-is still a placeholder carrying a title, and `/admin/users/new` creates
-an account.
+shown to a regular pioneer only, for as long as they are one.
+`/admin/users/new` creates an account.
 `/whats-new` tells a person what each version added, with a dot on the
 profile row while they have not read the current one. There is no
 sign-up: the owner hands out accounts.
@@ -71,6 +70,15 @@ rather than only the recorded ones, because the question the screen
 answers is which months came up short. A month with nothing recorded
 shows a dash, a closed one carries a lock, and a month still being lived
 is never painted as a miss.
+
+`/calendar/2026-11` is the same month drawn as a calendar, and it
+answers the question the month's table cannot: which days. A dot marks a
+day something was recorded on — a recorded zero included — and a day
+without one has simply not been filled in. Today carries a ring. Picking
+a date fills it in and the card below says what was in it: the hours of
+that day, what the month came to by the end of it, and the way into the
+day itself. A date with nothing says so in words rather than showing a
+zero, and still opens.
 
 Every block of figures carries a small "i". Pressing it opens a short
 note beside the sign explaining how that block is worked out — that the

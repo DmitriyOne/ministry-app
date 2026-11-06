@@ -127,7 +127,46 @@
         "title": "Calendar",
         "description": "Your ministry month, day by day."
       },
-      "title": "Calendar"
+      "eyebrow": "Calendar",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "weekdays": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
+      },
+      "squareEmpty": "nothing recorded",
+      "pickADay": "Pick a day to see what was in it.",
+      "dayCard": {
+        "hours": "Hours",
+        "monthByThen": "Month by then",
+        "openDay": "Open the day",
+        "addHours": "Add hours",
+        "emptyTitle": "No ministry recorded",
+        "emptyText": "A day with nothing in it is not a zero — it is a day you have not filled in yet."
+      },
+      "hints": {
+        "grid": {
+          "label": "About this calendar",
+          "text": "A dot marks a day you recorded something on, even if that was nothing at all. A day without one has not been filled in. The ring marks today."
+        },
+        "dayCard": {
+          "label": "About these figures",
+          "text": "Hours is what you served on that day. Month by then is what the month came to by the end of it — the same running total the month screen's last column shows."
+        }
+      },
+      "gridFailure": {
+        "title": "This month didn't load",
+        "text": "The days are there — we couldn't read them just now."
+      },
+      "loadFailure": {
+        "title": "The calendar didn't load",
+        "text": "We couldn't work out which month you're in."
+      }
     },
     "month": {
       "metadata": {
@@ -377,6 +416,22 @@
       "hero": {
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
+      },
+      "v2_8": {
+        "name": "Version 2.8",
+        "date": "6 November 2026",
+        "calendar": {
+          "title": "The calendar is a calendar",
+          "text": "A month drawn as a month, with a dot on every day something was recorded on — so the gaps are as plain as the days you were out."
+        },
+        "dayCard": {
+          "title": "Pick a day, see what was in it",
+          "text": "The hours of that day, what the month came to by the end of it, and a way straight into the day. A day with nothing says so instead of showing a zero."
+        },
+        "months": {
+          "title": "Step back through the months",
+          "text": "The month is in the address, as it is for the day and the year, so the arrows and your phone's own back gesture walk through them."
+        }
       },
       "v2_7": {
         "name": "Version 2.7",

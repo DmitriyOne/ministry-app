@@ -135,5 +135,9 @@ export const resolveRoutePolicy = (pathname: string): RoutePolicy | null => {
   // address should have to say so here on purpose.
   if (pathname.startsWith(`${routes.year}/`)) return APP_SCREEN;
 
+  // And the calendar's, the fourth — said on purpose, as the line above
+  // asks for (/calendar/2026-11, ADR 0069).
+  if (pathname.startsWith(`${routes.calendar}/`)) return APP_SCREEN;
+
   return null;
 };
