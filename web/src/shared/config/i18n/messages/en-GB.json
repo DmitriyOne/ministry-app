@@ -127,7 +127,46 @@
         "title": "Calendar",
         "description": "Your ministry month, day by day."
       },
-      "title": "Calendar"
+      "eyebrow": "Calendar",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "weekdays": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
+      },
+      "squareEmpty": "nothing recorded",
+      "pickADay": "Pick a day to see what was in it.",
+      "dayCard": {
+        "hours": "Hours",
+        "monthByThen": "Month by then",
+        "openDay": "Open the day",
+        "addHours": "Add hours",
+        "emptyTitle": "No ministry recorded",
+        "emptyText": "A day with nothing in it is not a zero — it is a day you have not filled in yet."
+      },
+      "hints": {
+        "grid": {
+          "label": "About this calendar",
+          "text": "A dot marks a day you recorded something on, even if that was nothing at all. A day without one has not been filled in. The ring marks today."
+        },
+        "dayCard": {
+          "label": "About these figures",
+          "text": "Hours is what you served on that day. Month by then is what the month came to by the end of it — the same running total the month screen's last column shows."
+        }
+      },
+      "gridFailure": {
+        "title": "This month didn't load",
+        "text": "The days are there — we couldn't read them just now."
+      },
+      "loadFailure": {
+        "title": "The calendar didn't load",
+        "text": "We couldn't work out which month you're in."
+      }
     },
     "month": {
       "metadata": {
