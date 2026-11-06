@@ -94,10 +94,41 @@ export const WhatsNewScreen = async () => {
             target for the year's goal (the same one 2.1 and 2.2 use for
             aiming at something), the tick for a fix that landed, and the
             warning circle for the message that carries it. */}
+        {/* 2.6 finishes the row of screens the menu has pointed at
+            since 2.0: day, month, now the year. The glyphs are each
+            screen's own — the rising chart is the year's item in the
+            menu, the arrow chart is the pace block the month already
+            wears, the month glyph stands for the twelve lines, and the
+            target is the goal they add up to. */}
+        <VersionHeading name={t("v2_6.name")} date={t("v2_6.date")} pill={t("currentPill")} />
+        <ListCard>
+          <ListRow
+            icon={<ChartBarIcon size={18} />}
+            title={t("v2_6.yearScreen.title")}
+            text={t("v2_6.yearScreen.text")}
+          />
+          <ListRow
+            icon={<CalendarMonthIcon size={18} />}
+            title={t("v2_6.allMonths.title")}
+            text={t("v2_6.allMonths.text")}
+          />
+          <ListRow
+            icon={<ChartArrowIcon size={18} />}
+            title={t("v2_6.pace.title")}
+            text={t("v2_6.pace.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<TargetIcon size={18} />}
+            title={t("v2_6.goalSum.title")}
+            text={t("v2_6.goalSum.text")}
+          />
+        </ListCard>
+
         {/* The glyphs: the month for the screen it is about, the bars
             for a figure that accumulates, and the two locks for the two
             halves of closing — shut and open again. */}
-        <VersionHeading name={t("v2_5.name")} date={t("v2_5.date")} pill={t("currentPill")} />
+        <VersionHeading name={t("v2_5.name")} date={t("v2_5.date")} pill={t("releasedPill")} />
         <ListCard>
           <ListRow
             icon={<CalendarMonthIcon size={18} />}
