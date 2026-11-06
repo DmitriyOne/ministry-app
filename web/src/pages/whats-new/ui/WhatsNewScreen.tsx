@@ -94,13 +94,38 @@ export const WhatsNewScreen = async () => {
             target for the year's goal (the same one 2.1 and 2.2 use for
             aiming at something), the tick for a fix that landed, and the
             warning circle for the message that carries it. */}
+        {/* 2.6 and 2.7 are one story told twice: the year screen
+            completed the figures, and then the "i" beside each block
+            explained them. The glyphs: the info circle for the sign
+            itself (the one it actually wears), the target for the goal
+            it explains, and the arrow chart for the pace. */}
+        <VersionHeading name={t("v2_7.name")} date={t("v2_7.date")} pill={t("currentPill")} />
+        <ListCard>
+          <ListRow
+            icon={<InfoCircleIcon size={18} />}
+            title={t("v2_7.hints.title")}
+            text={t("v2_7.hints.text")}
+          />
+          <ListRow
+            icon={<TargetIcon size={18} />}
+            title={t("v2_7.goals.title")}
+            text={t("v2_7.goals.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<ChartArrowIcon size={18} />}
+            title={t("v2_7.pace.title")}
+            text={t("v2_7.pace.text")}
+          />
+        </ListCard>
+
         {/* 2.6 finishes the row of screens the menu has pointed at
             since 2.0: day, month, now the year. The glyphs are each
             screen's own — the rising chart is the year's item in the
             menu, the arrow chart is the pace block the month already
             wears, the month glyph stands for the twelve lines, and the
             target is the goal they add up to. */}
-        <VersionHeading name={t("v2_6.name")} date={t("v2_6.date")} pill={t("currentPill")} />
+        <VersionHeading name={t("v2_6.name")} date={t("v2_6.date")} pill={t("releasedPill")} />
         <ListCard>
           <ListRow
             icon={<ChartBarIcon size={18} />}

@@ -378,6 +378,22 @@
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
       },
+      "v2_7": {
+        "name": "Version 2.7",
+        "date": "6 November 2026",
+        "hints": {
+          "title": "An “i” beside every figure",
+          "text": "Press it and a note explains, in one or two sentences, how that block is worked out — on the day, the month and the service year."
+        },
+        "goals": {
+          "title": "Where the goal comes from",
+          "text": "Your goal is for the whole month, and the year's goal is those monthly goals added together — which is why a year begun in October asks for 550 h, not 600."
+        },
+        "pace": {
+          "title": "And what the pace measures",
+          "text": "The goal as it stands today rather than at the end, so the minus beside it is what is left to catch up — not a mark against the month you are in."
+        }
+      },
       "v2_6": {
         "name": "Version 2.6",
         "date": "6 November 2026",
