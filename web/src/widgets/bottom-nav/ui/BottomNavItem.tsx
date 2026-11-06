@@ -4,12 +4,7 @@ import { type ReactNode, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 
 import { currentDayKey, dayPath } from "@/entities/ministry-day";
-import {
-  currentMonthKey,
-  monthPath,
-  serviceYearOf,
-  yearPath,
-} from "@/entities/ministry-status";
+import { currentMonthKey, monthPath } from "@/entities/ministry-status";
 import { type AppRoute, routes } from "@/shared/config";
 import { cn } from "@/shared/lib/cn";
 import { readStoredTimeZone, subscribeToStoredTimeZone } from "@/shared/lib/time-zone";
@@ -27,11 +22,6 @@ const getServerSnapshot = (): string | null => null;
 // two entities and the route is what tells them apart.
 const knownTarget = (href: AppRoute, zone: string): string => {
   if (href === routes.month) return monthPath(currentMonthKey(zone));
-
-  // The service year the person is in, which is the month they are in
-  // put through the September rule — so this needs no second reading of
-  // the clock.
-  if (href === routes.year) return yearPath(serviceYearOf(currentMonthKey(zone)));
 
   return dayPath(currentDayKey(zone));
 };

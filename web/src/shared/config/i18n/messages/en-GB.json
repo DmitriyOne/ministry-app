@@ -192,61 +192,10 @@
     },
     "year": {
       "metadata": {
-        "title": "Service year",
-        "description": "Your service year, a month at a time."
+        "title": "Year",
+        "description": "Your service year at a glance."
       },
-      "title": "Service year",
-      "eyebrow": "Service year",
-      "previousYear": "Previous service year",
-      "nextYear": "Next service year",
-      "summary": {
-        "label": "Hours this service year",
-        "ofGoal": "of {hours} h",
-        "toGo": "{amount} to go",
-        "met": "Goal met",
-        "hours": "{hours} h",
-        "minutes": "{minutes} min",
-        "hoursMinutes": "{hours} h {minutes} min",
-        "barLabel": "Hours served this service year",
-        "barValue": "{served} of {goal} h"
-      },
-      "pace": {
-        "label": "Pace",
-        "byToday": "By today · {amount}",
-        "ahead": "(+{amount})",
-        "behind": "(−{amount})",
-        "level": "(+0)",
-        "hours": "{hours} h",
-        "minutes": "{minutes} min",
-        "hoursMinutes": "{hours} h {minutes} min",
-        "rest": "{months, plural, one {{amount} to go, and this is the last month} other {{amount} a month for the # months left}}",
-        "bar": "Hours served against what the goal asks for by today",
-        "barValue": "{served} of {needed}"
-      },
-      "months": {
-        "title": "Months",
-        "columns": {
-          "month": "Month",
-          "hours": "Hours",
-          "total": "Total"
-        },
-        "goal": "· {hours} h",
-        "none": "—",
-        "closed": "Closed",
-        "empty": "No hours recorded in this service year yet."
-      },
-      "summaryFailure": {
-        "title": "The year's total did not load",
-        "text": "The months below may still be there. Try again in a moment."
-      },
-      "monthsFailure": {
-        "title": "The months did not load",
-        "text": "Nothing has been lost. Try again in a moment."
-      },
-      "loadFailure": {
-        "title": "We could not tell which year you are in",
-        "text": "Your calendar did not load, so we cannot open the right service year. Try again in a moment."
-      }
+      "title": "Year"
     },
     "profile": {
       "metadata": {

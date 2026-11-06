@@ -85,15 +85,6 @@ describe("ROUTE_POLICY", () => {
     }
   });
 
-  // And the service year's (ADR 0067). Third screen with a segment in
-  // its address, third line of this kind, and the one that would be
-  // missed by someone reading only the map above.
-  it("shields a service year under its own slug like the bare /year", () => {
-    for (const pathname of ["/year/2026", "/year/1999"]) {
-      expect(resolveRoutePolicy(pathname), pathname).toEqual(ROUTE_POLICY[routes.year]);
-    }
-  });
-
   // A prefix without the separator is a coincidence of spelling, not a
   // family: an address nobody has classified must stay unclassified, or
   // a typo gets the app's own policy.
@@ -105,8 +96,6 @@ describe("ROUTE_POLICY", () => {
         "/days/2026-06-02",
         "/months",
         "/month-end",
-        "/years",
-        "/year-end",
       ]
     ) {
       expect(resolveRoutePolicy(pathname), pathname).toBeNull();
