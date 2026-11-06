@@ -310,13 +310,6 @@ export type Database = {
           push_enrollment_token: string
         }[]
       }
-      ministry_days_monthly_minutes: {
-        Args: { p_from: string; p_to: string }
-        Returns: {
-          minutes: number
-          month: string
-        }[]
-      }
       ministry_days_total_minutes: {
         Args: { p_from: string; p_to: string }
         Returns: number
@@ -347,14 +340,6 @@ export type Database = {
       ministry_status_year_goal: {
         Args: { p_year_start: string }
         Returns: number
-      }
-      ministry_status_year_months: {
-        Args: { p_year_start: string }
-        Returns: {
-          month: string
-          monthly_goal_hours: number
-          status: string
-        }[]
       }
       register_user_push_subscription: {
         Args: {

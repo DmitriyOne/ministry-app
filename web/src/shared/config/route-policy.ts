@@ -127,13 +127,5 @@ export const resolveRoutePolicy = (pathname: string): RoutePolicy | null => {
   // unclassified — no device shield, no session, no home-screen icon.
   if (pathname.startsWith(`${routes.month}/`)) return APP_SCREEN;
 
-  // And the service year's, third of the three for the third time
-  // (/year/2026, ADR 0067). Writing it out again rather than folding the
-  // three into a loop over prefixes: the list would then be the thing to
-  // read, and what matters about each of these lines is the screen it
-  // keeps behind a session — a fourth screen with a segment in its
-  // address should have to say so here on purpose.
-  if (pathname.startsWith(`${routes.year}/`)) return APP_SCREEN;
-
   return null;
 };
