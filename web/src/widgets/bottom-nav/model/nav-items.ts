@@ -28,11 +28,12 @@ export type NavItem = {
   // The raised round button in the middle — one item, and the list says
   // which rather than the markup counting to three.
   isPrimary?: boolean;
-  // Does this item own the addresses under its own path? Three do: /day
-  // carries the date (/day/2026-06-02, ADR 0063), /month the month
-  // (/month/2026-06, ADR 0066) and /year the service year (/year/2026,
-  // ADR 0067), and without this the menu would light nothing on the
-  // screens people actually open. Opt-in per item, so nobody else starts
+  // Does this item own the addresses under its own path? All four do:
+  // /day carries the date (/day/2026-06-02, ADR 0063), /month the month
+  // (/month/2026-06, ADR 0066), /year the service year (/year/2026, ADR
+  // 0067) and /calendar the month again (/calendar/2026-11, ADR 0069),
+  // and without this the menu would light nothing on the screens people
+  // actually open. Opt-in per item, so nobody else starts
   // matching by prefix.
   hasFamily?: true;
 };
@@ -45,7 +46,7 @@ export type NavItem = {
 // active item. The project's older drawings stay where they are used, on
 // the about screen.
 export const navItems: NavItem[] = [
-  { href: routes.calendar, labelKey: "calendar", Icon: CalendarWeekIcon },
+  { href: routes.calendar, labelKey: "calendar", Icon: CalendarWeekIcon, hasFamily: true },
   { href: routes.month, labelKey: "month", Icon: CalendarMonthIcon, hasFamily: true },
   { href: routes.day, labelKey: "day", Icon: PlusIcon, isPrimary: true, hasFamily: true },
   { href: routes.year, labelKey: "year", Icon: ChartBarIcon, hasFamily: true },

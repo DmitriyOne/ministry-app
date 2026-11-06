@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { currentDayKey, dayPath } from "@/entities/ministry-day";
 import {
+  calendarPath,
   currentMonthKey,
   monthPath,
   serviceYearOf,
@@ -27,6 +28,11 @@ const getServerSnapshot = (): string | null => null;
 // two entities and the route is what tells them apart.
 const knownTarget = (href: AppRoute, zone: string): string => {
   if (href === routes.month) return monthPath(currentMonthKey(zone));
+
+  // The calendar's month is the same month the month screen shows — a
+  // different screen asking the same question, so it takes the same
+  // reading of the clock (ADR 0069).
+  if (href === routes.calendar) return calendarPath(currentMonthKey(zone));
 
   // The service year the person is in, which is the month they are in
   // put through the September rule — so this needs no second reading of
