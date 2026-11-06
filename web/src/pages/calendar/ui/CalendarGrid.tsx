@@ -22,7 +22,17 @@ type CalendarGridProps = {
 // rotate.
 const WEEKDAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 
-const SQUARE = "flex aspect-square flex-col items-center justify-center gap-1 rounded-sm p-0 text-list-row font-560 tabular-nums [--press-scale:0.92]";
+// `h-auto w-full` before anything else: Button's default size is h-8,
+// and a fixed 32px height beat the aspect ratio — the fill ended up
+// clamped around the number with no air on any side, which is what the
+// owner saw. The grid column gives the width, the ratio gives the
+// height.
+//
+// Slightly taller than wide (the mock's 1 / 1.1): the square holds a
+// number with a dot under it, and a true square makes that pair sit
+// tight. 15px for the number rather than the 17 of a list row — thirty
+// of them in a row of seven is a different job from one line of text.
+const SQUARE = "flex aspect-[1/1.1] h-auto w-full flex-col items-center justify-center gap-1 rounded-sm px-0 py-0 text-body font-560 tabular-nums [--press-scale:0.92]";
 
 // The month as a grid of squares, one per day, blanks where the month
 // has not begun or has already ended.
@@ -81,7 +91,14 @@ export const CalendarGrid = ({ weeks, today, selected, onSelect }: CalendarGridP
                 SQUARE,
                 "bg-transparent shadow-none",
                 square.minutes !== null && !isSelected && "bg-ink-a05",
-                isToday && !isSelected && "inset-ring-1.5 inset-ring-primary",
+                // The ring on today is the button's OWN border painted,
+                // not a ring utility: `inset-ring-1.5` is not a class
+                // Tailwind has, and it was dropped silently — the mark
+                // simply never appeared (measured in the browser, the
+                // computed box-shadow was empty). Every button here
+                // already carries `border border-transparent`, so
+                // colouring it costs no layout.
+                isToday && !isSelected && "border-primary",
                 isSelected && "bg-ink text-hero-foreground",
               )}
             >

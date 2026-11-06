@@ -34,17 +34,19 @@ export const CalendarHeader = async ({ month, currentMonth }: CalendarHeaderProp
   return (
     <header className="flex items-center justify-between gap-3">
       <div className="flex min-w-0 flex-col gap-0.5">
-        <Eyebrow>{t("eyebrow")}</Eyebrow>
+        {/* The sign sits beside the eyebrow, not beside the arrows: in
+            the arrow group it took width from the heading, and
+            "November 2026" wrapped onto two lines (seen on the phone
+            width). The eyebrow is short, so there is room there and
+            nothing moves. */}
+        <div className="flex items-center gap-0.5">
+          <Eyebrow>{t("eyebrow")}</Eyebrow>
+          <InfoHint text={hint("text")} label={hint("label")} className="-my-3" />
+        </div>
         <Title>{monthHeading(month)}</Title>
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        {/* The grid has no heading of its own — the month above it is
-            the heading — so its sign rides with the arrows rather than
-            inventing a label to sit beside (ADR 0068's rule is "beside
-            the block's heading", and this is it). */}
-        <InfoHint text={hint("text")} label={hint("label")} />
-
         {/* No floor going back: the database takes any past month, and
             somebody entering a year they served before this app existed
             is a person this screen is for. */}
