@@ -72,6 +72,12 @@ answers is which months came up short. A month with nothing recorded
 shows a dash, a closed one carries a lock, and a month still being lived
 is never painted as a miss.
 
+Every block of figures carries a small "i". Pressing it opens a short
+note beside the sign explaining how that block is worked out — that the
+goal is for the whole month, that the bracket is what is left rather
+than what today added, that the pace measures the goal as it stands
+today, and that the year's goal is the monthly ones added together.
+
 `LAUNCH_MODE` is gone — `/soon` is simply a public landing page now, and
 what `/day` shows is decided by whether there is a session.
 
