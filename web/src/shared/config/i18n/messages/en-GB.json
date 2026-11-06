@@ -417,6 +417,22 @@
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
       },
+      "v2_8": {
+        "name": "Version 2.8",
+        "date": "6 November 2026",
+        "calendar": {
+          "title": "The calendar is a calendar",
+          "text": "A month drawn as a month, with a dot on every day something was recorded on — so the gaps are as plain as the days you were out."
+        },
+        "dayCard": {
+          "title": "Pick a day, see what was in it",
+          "text": "The hours of that day, what the month came to by the end of it, and a way straight into the day. A day with nothing says so instead of showing a zero."
+        },
+        "months": {
+          "title": "Step back through the months",
+          "text": "The month is in the address, as it is for the day and the year, so the arrows and your phone's own back gesture walk through them."
+        }
+      },
       "v2_7": {
         "name": "Version 2.7",
         "date": "6 November 2026",
