@@ -339,6 +339,26 @@
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
       },
+      "v2_6": {
+        "name": "Version 2.6",
+        "date": "6 November 2026",
+        "yearScreen": {
+          "title": "The service year has a screen",
+          "text": "September through August, with what the year came to against its goal and how much of it is still to go."
+        },
+        "allMonths": {
+          "title": "All twelve months, not only the full ones",
+          "text": "Each with the year's running total beside it. A month you recorded nothing in shows a dash rather than a zero, and a closed one carries a lock."
+        },
+        "pace": {
+          "title": "Whether the year is keeping up",
+          "text": "What the goals ask for by today, how far that leaves you ahead or behind, and how much a month it takes from here."
+        },
+        "goalSum": {
+          "title": "The year's goal is the months added up",
+          "text": "Not a flat 600: a year begun in October asks for 550, so starting late does not leave you behind on your first day."
+        }
+      },
       "v2_5": {
         "name": "Version 2.5",
         "date": "5 November 2026",
