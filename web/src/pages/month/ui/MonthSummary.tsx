@@ -47,12 +47,11 @@ export const MonthSummary = async ({ summary }: MonthSummaryProps) => {
       <div className="flex flex-col gap-4 rounded-2xl bg-hero px-5 py-6 text-hero-foreground">
         <div className="flex items-center justify-between gap-2">
           <Eyebrow className="text-hero-foreground/65">{t("label")}</Eyebrow>
-          {/* On the filled card the sign takes the card's own tone: ink
-              at 55% would be all but invisible on --hero. */}
           <InfoHint
             text={hint("text")}
             label={hint("label")}
-            className="-mr-2 text-hero-foreground/65"
+            surface="dark"
+            className="-mr-2"
           />
         </div>
 

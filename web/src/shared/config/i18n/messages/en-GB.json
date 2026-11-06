@@ -114,11 +114,11 @@
       "hints": {
         "hours": {
           "label": "About these hours",
-          "text": "Plus and minus move the figure in five-minute steps, and the quick adds jump by 15, 30 or 45. It saves on its own — there is no button to press. Any day can be filled in later, unless its month has been closed."
+          "text": "What you served on this day, in five-minute steps. It saves itself — there is no button to press. An earlier day is filled in the same way."
         },
         "progress": {
           "label": "About this progress",
-          "text": "Each bar is what you have served against the goal: the month this day belongs to, and the service year it falls in. The figure in brackets is how much of the goal is still to go — not what today added."
+          "text": "Your goal is for the whole month, not for one day. These bars show how close the month — and the service year — are to it. While the goal is not reached the figure is a minus, which is what is still left to serve; once you pass it, a plus."
         }
       }
     },
@@ -203,15 +203,15 @@
       "hints": {
         "summary": {
           "label": "About these figures",
-          "text": "Everything recorded in this month, against the goal your ministry status sets. The line underneath is the service year this month falls in, counted from September."
+          "text": "Everything you have served this month, against the goal for the whole month. Underneath it, the same for the service year, which runs from September to August."
         },
         "pace": {
           "label": "About the pace",
-          "text": "The goal shared out across the month, up to today — today counted as a whole day. Beside it, how far ahead or behind that leaves you, and how much a day it would take to finish the month on time."
+          "text": "The month's goal measured at today rather than at the end: how far behind or ahead of it you are right now. The line below is how much a day it takes over the days left to still reach the goal."
         },
         "days": {
           "label": "About this table",
-          "text": "Only the days you recorded something on. The last column is the month's running total up to and including that day, so you can see where you stood without adding anything up."
+          "text": "Only the days you recorded something on. The last column is the month added up to that day."
         }
       }
     },
@@ -275,15 +275,15 @@
       "hints": {
         "summary": {
           "label": "About these figures",
-          "text": "Everything recorded between September and August. The goal is your monthly goals added together, so a year you began part-way through asks for less than a whole one — 550 from October, not 600."
+          "text": "Everything served from September to August, against the goal for the whole year. The year's goal is your monthly goals added together: twelve months at 50 h make 600 h, and a year begun in October asks for 550 h."
         },
         "pace": {
           "label": "About the pace",
-          "text": "Months that are over count in full. The month you are in counts only the part that has passed: on the 6th of a 30-day month, a fifth of its goal. The last line shares what is left over the months still to come, this one included."
+          "text": "The year's goal measured at today rather than at next August: months that have ended count in full, and the one you are in counts only as far as today. The line below is how much a month it takes over the months left to still reach the goal."
         },
         "months": {
           "label": "About this table",
-          "text": "All twelve months, with the year's running total beside each. A dash means nothing was recorded in that month. A figure turns red only once the month is over and came up short — the month you are in is never marked that way."
+          "text": "Every month of the year, with the year's total beside it. A dash means nothing was recorded that month. Red marks a month that ended below its goal — the month you are in is never marked that way."
         }
       }
     },

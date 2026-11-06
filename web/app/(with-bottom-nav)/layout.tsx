@@ -14,14 +14,15 @@ type WithBottomNavLayoutProps = {
 //
 // The bar is fixed, so it is out of flow and cannot push anything: the
 // padding below is what keeps the last line of a screen from hiding
-// underneath it. 23 spacing steps = the bar's 4px offset + its 68px + the
-// 8px the Day button is lifted by + ~12 of air, plus the safe-area inset
-// underneath all four. This number follows the bar's height: it was 26 for
-// a 64px bar at 24px, 20 when the bar shrank to 56 and came down, and 23
-// now that the bar is 68. Leaving it too large is exactly the empty space
-// at the bottom the owner asked to remove.
+// underneath it. The measurement is --bottom-nav-space in globals.css,
+// where its parts are written out; it moved there when the info hints
+// needed the same number to keep a bubble from opening underneath the
+// bar. It follows the bar's height: it was 26 for a 64px bar at 24px, 20
+// when the bar shrank to 56 and came down, and 23 now that the bar is
+// 68. Leaving it too large is exactly the empty space at the bottom the
+// owner asked to remove.
 export const WithBottomNavLayout = ({ children }: WithBottomNavLayoutProps) => (
-  <div className="flex min-h-app flex-col pb-[calc(--spacing(23)+env(safe-area-inset-bottom))]">
+  <div className="flex min-h-app flex-col pb-[var(--bottom-nav-space)]">
     {children}
     <BottomNav />
     {/* Renders nothing. These five screens all require a session, so a

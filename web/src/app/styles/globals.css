@@ -380,6 +380,23 @@
 }
 
 /*
+ * How much of the bottom of the screen the navigation bar covers: its
+ * 4px offset, its 68px, the 8px the Day button is lifted by and ~12 of
+ * air, plus the safe-area inset under all four.
+ *
+ * Two places need the same number and for different reasons, which is
+ * why it is a variable rather than a class written twice: the layout of
+ * the (with-bottom-nav) group pads the page by it so the last line is
+ * not hidden under the bar, and an info hint uses it as the bottom edge
+ * of the area its bubble may occupy — the bar is fixed, so nothing that
+ * positions against the viewport knows it is there, and a bubble opened
+ * low on the screen slid underneath it (measured in the browser).
+ */
+:root {
+  --bottom-nav-space: calc(--spacing(23) + env(safe-area-inset-bottom));
+}
+
+/*
  * The tallest a bottom sheet may grow before its body starts scrolling.
  *
  * A panel is `h-auto`, so it grows with its content — and the ministry

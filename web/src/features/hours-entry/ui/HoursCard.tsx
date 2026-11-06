@@ -75,9 +75,8 @@ export const HoursCard = () => {
         <InfoHint
           text={hint("text")}
           label={hint("label")}
-          /* On the filled card the sign takes the card's own tone: ink
-             at 55% would be all but invisible on --hero. */
-          className="-mr-2 text-white/50"
+          surface="dark"
+          className="-mr-2"
         />
       )}
     >
