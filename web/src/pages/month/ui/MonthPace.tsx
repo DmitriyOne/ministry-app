@@ -5,6 +5,7 @@ import type { MonthKey } from "@/entities/ministry-status";
 import { cn } from "@/shared/lib/cn";
 import { Caption } from "@/shared/ui/caption";
 import { Eyebrow } from "@/shared/ui/eyebrow";
+import { InfoHint } from "@/shared/ui/info-hint";
 import { Progress } from "@/shared/ui/progress";
 
 import { monthPace } from "../model/month-pace";
@@ -47,11 +48,15 @@ export const MonthPace = async ({ month, today, servedMinutes, goalHours }: Mont
   if (pace === null) return null;
 
   const t = await getTranslations("screens.month.pace");
+  const hint = await getTranslations("screens.month.hints.pace");
   const needed = durationPhrase(t, pace.neededMinutes);
 
   return (
     <section aria-labelledby={HEADING_ID} className="flex flex-col gap-2.5 px-1">
-      <Eyebrow as="h2" id={HEADING_ID}>{t("label")}</Eyebrow>
+      <div className="flex items-center justify-between gap-2">
+        <Eyebrow as="h2" id={HEADING_ID}>{t("label")}</Eyebrow>
+        <InfoHint text={hint("text")} label={hint("label")} className="-mr-2" />
+      </div>
 
       <div className="flex flex-col gap-2 pt-1">
         <div className="flex items-baseline justify-between gap-2">

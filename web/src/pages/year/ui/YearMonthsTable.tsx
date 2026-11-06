@@ -5,6 +5,7 @@ import { formatHours } from "@/entities/ministry-day";
 import { formatMonthName, type MonthKey, monthPath } from "@/entities/ministry-status";
 import { cn } from "@/shared/lib/cn";
 import { LockClosedIcon } from "@/shared/ui/icons";
+import { InfoHint } from "@/shared/ui/info-hint";
 
 import { hasAnyHours, isMonthShort, type YearMonthRow } from "../model/year-months";
 import { YEAR_MONTH_ROW, YearMonthsShell } from "./YearMonthsShell";
@@ -33,6 +34,8 @@ type YearMonthsTableProps = {
 // screen's rows both made.
 export const YearMonthsTable = async ({ months, currentMonth }: YearMonthsTableProps) => {
   const t = await getTranslations("screens.year.months");
+  const hint = await getTranslations("screens.year.hints.months");
+  const sign = <InfoHint text={hint("text")} label={hint("label")} className="-mr-2" />;
   const columns = {
     month: t("columns.month"),
     hours: t("columns.hours"),
@@ -44,7 +47,7 @@ export const YearMonthsTable = async ({ months, currentMonth }: YearMonthsTableP
   // empty year.
   if (!hasAnyHours(months)) {
     return (
-      <YearMonthsShell title={t("title")} columns={columns}>
+      <YearMonthsShell title={t("title")} columns={columns} hint={sign}>
         <p className="py-5 text-caption font-500 text-pretty text-ink-muted">
           {t("empty")}
         </p>
@@ -53,7 +56,7 @@ export const YearMonthsTable = async ({ months, currentMonth }: YearMonthsTableP
   }
 
   return (
-    <YearMonthsShell title={t("title")} columns={columns}>
+    <YearMonthsShell title={t("title")} columns={columns} hint={sign}>
       <ul className="flex flex-col">
         {months.map((row, index) => {
           // Short of its own goal is --negative, met or over the

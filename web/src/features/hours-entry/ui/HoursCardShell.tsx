@@ -21,10 +21,20 @@ type HoursCardShellProps = {
   // the label. The skeleton has nothing to name — there are no controls
   // in it yet.
   headingId?: string;
+  // The "i" and its bubble, handed in by the card. The skeleton passes
+  // nothing: there is nothing to explain about a block that has not
+  // arrived.
+  hint?: ReactNode;
   children: ReactNode;
 };
 
-export const HoursCardShell = ({ label, step, headingId, children }: HoursCardShellProps) => (
+export const HoursCardShell = ({
+  label,
+  step,
+  headingId,
+  hint,
+  children,
+}: HoursCardShellProps) => (
   <section
     aria-labelledby={headingId}
     className="flex flex-col gap-4.5 rounded-2xl bg-hero px-5.5 pt-5.5 pb-4.5 text-hero-foreground"
@@ -33,7 +43,10 @@ export const HoursCardShell = ({ label, step, headingId, children }: HoursCardSh
       <Eyebrow as="h2" id={headingId} className="text-white/50">
         {label}
       </Eyebrow>
-      <Caption className="text-white/50">{step}</Caption>
+      <div className="flex items-center gap-1">
+        <Caption className="text-white/50">{step}</Caption>
+        {hint}
+      </div>
     </div>
 
     {children}

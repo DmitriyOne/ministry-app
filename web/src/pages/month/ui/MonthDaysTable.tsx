@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { dayPath, formatHours, shortDayLabel } from "@/entities/ministry-day";
 import { cn } from "@/shared/lib/cn";
+import { InfoHint } from "@/shared/ui/info-hint";
 
 import type { MonthDayRow } from "../model/month-days";
 import { MONTH_DAY_ROW, MonthDaysShell } from "./MonthDaysShell";
@@ -26,6 +27,8 @@ type MonthDaysTableProps = {
 // ADR 0065).
 export const MonthDaysTable = async ({ days }: MonthDaysTableProps) => {
   const t = await getTranslations("screens.month.days");
+  const hint = await getTranslations("screens.month.hints.days");
+  const sign = <InfoHint text={hint("text")} label={hint("label")} className="-mr-2" />;
   const columns = {
     day: t("columns.day"),
     hours: t("columns.hours"),
@@ -34,7 +37,7 @@ export const MonthDaysTable = async ({ days }: MonthDaysTableProps) => {
 
   if (days.length === 0) {
     return (
-      <MonthDaysShell title={t("title")} columns={columns}>
+      <MonthDaysShell title={t("title")} columns={columns} hint={sign}>
         <p className="py-5 text-caption font-500 text-pretty text-ink-muted">
           {t("empty")}
         </p>
@@ -43,7 +46,7 @@ export const MonthDaysTable = async ({ days }: MonthDaysTableProps) => {
   }
 
   return (
-    <MonthDaysShell title={t("title")} columns={columns}>
+    <MonthDaysShell title={t("title")} columns={columns} hint={sign}>
       <ul className="flex flex-col">
         {days.map((row, index) => {
           const label = shortDayLabel(row.day);

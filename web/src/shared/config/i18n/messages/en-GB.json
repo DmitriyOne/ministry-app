@@ -54,7 +54,8 @@
     },
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "honeypotLabel": "Leave this field blank"
+    "honeypotLabel": "Leave this field blank",
+    "whatThisMeans": "What this means"
   },
   "screens": {
     "day": {
@@ -109,6 +110,16 @@
         "title": "Day",
         "description": "Record today's ministry hours and Bible studies in a few taps, and see how you're tracking against your monthly and yearly goal.",
         "dayTitle": "{label}, {date}"
+      },
+      "hints": {
+        "hours": {
+          "label": "About these hours",
+          "text": "Plus and minus move the figure in five-minute steps, and the quick adds jump by 15, 30 or 45. It saves on its own — there is no button to press. Any day can be filled in later, unless its month has been closed."
+        },
+        "progress": {
+          "label": "About this progress",
+          "text": "Each bar is what you have served against the goal: the month this day belongs to, and the service year it falls in. The figure in brackets is how much of the goal is still to go — not what today added."
+        }
       }
     },
     "calendar": {
@@ -188,6 +199,20 @@
       "daysFailure": {
         "title": "The days didn't load",
         "text": "We couldn't reach the server for the days of this month."
+      },
+      "hints": {
+        "summary": {
+          "label": "About these figures",
+          "text": "Everything recorded in this month, against the goal your ministry status sets. The line underneath is the service year this month falls in, counted from September."
+        },
+        "pace": {
+          "label": "About the pace",
+          "text": "The goal shared out across the month, up to today — today counted as a whole day. Beside it, how far ahead or behind that leaves you, and how much a day it would take to finish the month on time."
+        },
+        "days": {
+          "label": "About this table",
+          "text": "Only the days you recorded something on. The last column is the month's running total up to and including that day, so you can see where you stood without adding anything up."
+        }
       }
     },
     "year": {
@@ -246,6 +271,20 @@
       "loadFailure": {
         "title": "We could not tell which year you are in",
         "text": "Your calendar did not load, so we cannot open the right service year. Try again in a moment."
+      },
+      "hints": {
+        "summary": {
+          "label": "About these figures",
+          "text": "Everything recorded between September and August. The goal is your monthly goals added together, so a year you began part-way through asks for less than a whole one — 550 from October, not 600."
+        },
+        "pace": {
+          "label": "About the pace",
+          "text": "Months that are over count in full. The month you are in counts only the part that has passed: on the 6th of a 30-day month, a fifth of its goal. The last line shares what is left over the months still to come, this one included."
+        },
+        "months": {
+          "label": "About this table",
+          "text": "All twelve months, with the year's running total beside each. A dash means nothing was recorded in that month. A figure turns red only once the month is over and came up short — the month you are in is never marked that way."
+        }
       }
     },
     "profile": {

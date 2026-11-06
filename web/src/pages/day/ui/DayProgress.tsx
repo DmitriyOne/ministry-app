@@ -4,6 +4,7 @@ import { formatHours, MINUTES_IN_HOUR } from "@/entities/ministry-day";
 import { formatMonthName } from "@/entities/ministry-status";
 import { Caption } from "@/shared/ui/caption";
 import { Eyebrow } from "@/shared/ui/eyebrow";
+import { InfoHint } from "@/shared/ui/info-hint";
 import { cn } from "@/shared/lib/cn";
 import { Progress } from "@/shared/ui/progress";
 
@@ -148,6 +149,7 @@ export const DayProgress = async ({ progress }: DayProgressProps) => {
   if (progress.monthGoalHours === null && progress.yearGoalHours === null) return null;
 
   const t = await getTranslations("screens.day.progress");
+  const hint = await getTranslations("screens.day.hints.progress");
   // Hoisted, because both rows say the goal and the bar's value the same
   // way: the row decides WHETHER to say them, the dictionary how.
   const goalLabel = (hours: number) => t("goal", { hours });
@@ -166,7 +168,10 @@ export const DayProgress = async ({ progress }: DayProgressProps) => {
     // without one is an unlabelled region, which a screen reader
     // announces as nothing in particular.
     <section aria-labelledby={HEADING_ID} className="flex flex-col gap-2.5 px-1">
-      <Eyebrow as="h2" id={HEADING_ID}>{t("label")}</Eyebrow>
+      <div className="flex items-center justify-between gap-2">
+        <Eyebrow as="h2" id={HEADING_ID}>{t("label")}</Eyebrow>
+        <InfoHint text={hint("text")} label={hint("label")} className="-mr-2" />
+      </div>
 
       <ProgressRow
         label={formatMonthName(progress.month)}

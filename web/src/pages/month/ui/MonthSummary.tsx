@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { formatHours, MINUTES_IN_HOUR, splitDuration } from "@/entities/ministry-day";
 import { Caption } from "@/shared/ui/caption";
 import { Eyebrow } from "@/shared/ui/eyebrow";
+import { InfoHint } from "@/shared/ui/info-hint";
 import { Progress } from "@/shared/ui/progress";
 
 import type { MonthSummary as MonthSummaryData } from "../api/read-month-page";
@@ -35,6 +36,7 @@ const toGo = (t: Translate, remaining: number): string => {
 // else, for as long as they are one (ADR 0061).
 export const MonthSummary = async ({ summary }: MonthSummaryProps) => {
   const t = await getTranslations("screens.month.summary");
+  const hint = await getTranslations("screens.month.hints.summary");
   const { totalMinutes, monthGoalHours, yearMinutes, yearGoalHours } = summary;
   const standing = monthGoalHours === null
     ? null
@@ -43,7 +45,16 @@ export const MonthSummary = async ({ summary }: MonthSummaryProps) => {
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-col gap-4 rounded-2xl bg-hero px-5 py-6 text-hero-foreground">
-        <Eyebrow className="text-hero-foreground/65">{t("label")}</Eyebrow>
+        <div className="flex items-center justify-between gap-2">
+          <Eyebrow className="text-hero-foreground/65">{t("label")}</Eyebrow>
+          {/* On the filled card the sign takes the card's own tone: ink
+              at 55% would be all but invisible on --hero. */}
+          <InfoHint
+            text={hint("text")}
+            label={hint("label")}
+            className="-mr-2 text-hero-foreground/65"
+          />
+        </div>
 
         <div className="flex items-baseline gap-2.5">
           <span className="text-totals font-620 tracking-screen-title">

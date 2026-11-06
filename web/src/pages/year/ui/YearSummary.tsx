@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { durationPhrase, formatHours, MINUTES_IN_HOUR } from "@/entities/ministry-day";
 import { Caption } from "@/shared/ui/caption";
 import { Eyebrow } from "@/shared/ui/eyebrow";
+import { InfoHint } from "@/shared/ui/info-hint";
 import { Progress } from "@/shared/ui/progress";
 
 import type { YearSummary as YearSummaryData } from "../api/read-year-page";
@@ -23,12 +24,22 @@ type YearSummaryProps = {
 // applied here through visibleYearGoalHours in the reader).
 export const YearSummary = async ({ summary }: YearSummaryProps) => {
   const t = await getTranslations("screens.year.summary");
+  const hint = await getTranslations("screens.year.hints.summary");
   const { totalMinutes, goalHours } = summary;
   const standing = goalHours === null ? null : yearStanding(totalMinutes, goalHours);
 
   return (
     <section className="flex flex-col gap-4 rounded-2xl bg-hero px-5 py-6 text-hero-foreground">
-      <Eyebrow className="text-hero-foreground/65">{t("label")}</Eyebrow>
+      <div className="flex items-center justify-between gap-2">
+        <Eyebrow className="text-hero-foreground/65">{t("label")}</Eyebrow>
+        {/* On the filled card the sign takes the card's own tone: ink at
+            55% would be all but invisible on --hero. */}
+        <InfoHint
+          text={hint("text")}
+          label={hint("label")}
+          className="-mr-2 text-hero-foreground/65"
+        />
+      </div>
 
       <div className="flex items-baseline gap-2.5">
         <span className="text-totals font-620 tracking-screen-title">
