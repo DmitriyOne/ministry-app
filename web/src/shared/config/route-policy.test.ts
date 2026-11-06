@@ -94,6 +94,14 @@ describe("ROUTE_POLICY", () => {
     }
   });
 
+  // And the calendar's (ADR 0069), the fourth of the family lines.
+  it("shields a calendar month under its own slug like the bare /calendar", () => {
+    for (const pathname of ["/calendar/2026-11", "/calendar/1999-01"]) {
+      expect(resolveRoutePolicy(pathname), pathname)
+        .toEqual(ROUTE_POLICY[routes.calendar]);
+    }
+  });
+
   // A prefix without the separator is a coincidence of spelling, not a
   // family: an address nobody has classified must stay unclassified, or
   // a typo gets the app's own policy.
@@ -107,6 +115,8 @@ describe("ROUTE_POLICY", () => {
         "/month-end",
         "/years",
         "/year-end",
+        "/calendars",
+        "/calendar-export",
       ]
     ) {
       expect(resolveRoutePolicy(pathname), pathname).toBeNull();

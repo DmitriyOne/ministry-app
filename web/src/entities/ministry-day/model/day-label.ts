@@ -63,6 +63,22 @@ export const dayHeading = (day: DayKey, today: DayKey): DayHeading => {
 export const formatDayDate = (day: DayKey, today: DayKey): string =>
   (yearOf(day) === yearOf(today) ? DATE : DATE_WITH_YEAR).format(asUtcDate(day));
 
+// The day named plainly: "4 November" and "Wednesday", with no regard
+// for what today is.
+//
+// A fourth way to name a DayKey, and here beside the other three for
+// the same reason they are: a formatter living next to the one screen
+// that wants it is how three copies of the same date logic begin (ADR
+// 0064, decision 13).
+//
+// Why it does not reuse dayHeading: the calendar's day card never says
+// "Today" — the square itself is marked, and the card is read as a
+// label for the square — and it has no year to print, because the year
+// stands in the heading over the grid (ADR 0069).
+export const formatDayAndMonth = (day: DayKey): string => DATE.format(asUtcDate(day));
+
+export const formatDayWeekday = (day: DayKey): string => WEEKDAY.format(asUtcDate(day));
+
 // The same day as two short parts: the weekday and the date, for a
 // chip in a row of them (the last-days strip on /day, ADR 0065).
 //

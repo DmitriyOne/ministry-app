@@ -14,7 +14,9 @@ export {
 export {
   type DayHeading,
   dayHeading,
+  formatDayAndMonth,
   formatDayDate,
+  formatDayWeekday,
   type ShortDayLabel,
   shortDayLabel,
 } from "./model/day-label";
