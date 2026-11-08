@@ -441,6 +441,22 @@
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
       },
+      "v2_9": {
+        "name": "Version 2.9",
+        "date": "8 November 2026",
+        "export": {
+          "title": "Your hours, as a file you keep",
+          "text": "Every day you have recorded, saved out of the app in one tap \u2014 a plain table that opens anywhere, or an Excel book with the month totals on a sheet of their own."
+        },
+        "timeZone": {
+          "title": "Which calendar your days are counted in",
+          "text": "Your profile now says it out loud. It cannot be changed yet, and the padlock beside it says so, instead of leaving you to look for a way in that is not there."
+        },
+        "navigation": {
+          "title": "A screen you just left comes straight back",
+          "text": "Stepping to the profile and back no longer rebuilds the day from nothing. Only something you have actually changed makes a screen read itself again."
+        }
+      },
       "v2_8": {
         "name": "Version 2.8",
         "date": "6 November 2026",
