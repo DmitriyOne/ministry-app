@@ -405,7 +405,12 @@
         "cancel": "Stay signed in"
       },
       "whatsNew": "What's new",
-      "whatsNewUnread": "Unread"
+      "whatsNewUnread": "Unread",
+      "accountLabel": "Your account",
+      "timeZone": {
+        "title": "Time zone",
+        "text": "Your days and months are counted in it. It can’t be changed yet."
+      }
     },
     "whatsNew": {
       "metadata": {

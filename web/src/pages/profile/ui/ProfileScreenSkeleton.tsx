@@ -3,10 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { MinistryGoalsSkeleton } from "@/widgets/ministry-goals";
 import { ProfileHeroSkeleton } from "@/widgets/profile-hero";
 import { ProfileLinksSkeleton } from "@/widgets/profile-links";
+import { ProfileTimeZoneSkeleton } from "@/widgets/profile-time-zone";
 import { Button } from "@/shared/ui/button";
 import { CenteredState } from "@/shared/ui/centered-state";
 import { ListCard } from "@/shared/ui/list-card";
 import { ListRow } from "@/shared/ui/list-row";
+import { SectionLabel } from "@/shared/ui/section-label";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 // What `/profile` shows while the server answers (app/(with-bottom-nav)/
@@ -57,6 +59,13 @@ export const ProfileScreenSkeleton = async () => {
             text={pushDescription}
             trailing={<Skeleton className="h-8 w-13 shrink-0 rounded-full bg-ink-a09" />}
           />
+        </ListCard>
+
+        {/* The account card. Its one row carries no divider: a line
+            under the last row of a card is a line for its own sake. */}
+        <SectionLabel>{t("accountLabel")}</SectionLabel>
+        <ListCard>
+          <ProfileTimeZoneSkeleton divided={false} />
         </ListCard>
 
         <ProfileLinksSkeleton />

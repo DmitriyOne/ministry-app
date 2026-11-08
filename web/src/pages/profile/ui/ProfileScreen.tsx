@@ -9,11 +9,13 @@ import { MinistryGoals } from "@/widgets/ministry-goals";
 import { MinistryStatusSheet } from "@/widgets/ministry-status-sheet";
 import { ProfileHero } from "@/widgets/profile-hero";
 import { ProfileLinks } from "@/widgets/profile-links";
+import { ProfileTimeZone } from "@/widgets/profile-time-zone";
 import { routes } from "@/shared/config";
 import { hasRole } from "@/shared/lib/auth";
 import { LinkButton } from "@/shared/ui/button";
 import { CenteredState } from "@/shared/ui/centered-state";
 import { ListCard } from "@/shared/ui/list-card";
+import { SectionLabel } from "@/shared/ui/section-label";
 
 import { readProfilePage } from "../api/read-profile-page";
 
@@ -96,6 +98,25 @@ export const ProfileScreen = async () => {
               <ListCard>
                 <PushNotificationsToggle />
               </ListCard>
+            )
+          : null}
+
+        {/* Which calendar the app counts in — read-only, and that is
+            the point of showing it at all (ADR 0061, update 2026-11-07).
+            Under a section label, in a card of its own for now: the
+            label is what makes the row a statement about the account
+            rather than a setting that lost its switch.
+
+            Dropped when the read failed, like everything else here that
+            states a fact about this person. */}
+        {loaded
+          ? (
+              <>
+                <SectionLabel>{t("accountLabel")}</SectionLabel>
+                <ListCard>
+                  <ProfileTimeZone timeZone={page.timeZone} divided={false} />
+                </ListCard>
+              </>
             )
           : null}
 
