@@ -61,8 +61,15 @@ export const ProfileScreenSkeleton = async () => {
           />
         </ListCard>
 
-        {/* The account card. Its one row carries no divider: a line
-            under the last row of a card is a line for its own sake. */}
+        {/* The account card, with only the zone in it. The export row
+            below it is deliberately absent rather than drawn: nothing in
+            it waits on the database — both lines are dictionary text —
+            but a row that opens a panel of live downloads while the
+            screen is still arriving would offer a file from a page that
+            has not finished loading. It appears with the data, pushing
+            the links down a little, the same cost the admin button pays
+            below. Which is also why the zone row carries NO divider
+            here: nothing follows it yet. */}
         <SectionLabel>{t("accountLabel")}</SectionLabel>
         <ListCard>
           <ProfileTimeZoneSkeleton divided={false} />

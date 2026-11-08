@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { getSessionClaims } from "@/entities/session";
+import { ExportDataRow } from "@/features/export-data";
 import { PushNotificationsToggle } from "@/features/push-notifications";
 import { ScreenLoadFailure } from "@/features/screen-retry";
 import { SignOutButton } from "@/features/sign-out";
@@ -101,20 +102,33 @@ export const ProfileScreen = async () => {
             )
           : null}
 
-        {/* Which calendar the app counts in — read-only, and that is
-            the point of showing it at all (ADR 0061, update 2026-11-07).
-            Under a section label, in a card of its own for now: the
-            label is what makes the row a statement about the account
-            rather than a setting that lost its switch.
+        {/* Two facts about the account in ONE card, under a section
+            label (variant D, the owner's pick 2026-11-07): which
+            calendar the app counts in — read-only, and that is the point
+            of showing it at all (ADR 0061) — and the way the data gets
+            out (ADR 0071): one row, formats behind it, the same
+            arrangement as the status row above. One card shorter than
+            two, on the longest screen in the app.
 
-            Dropped when the read failed, like everything else here that
-            states a fact about this person. */}
+            The divider between them carries the whole difference between
+            a row that only states something and a row that opens a
+            panel, which is the price of merging them; the pill and the
+            chevron are what make it payable.
+
+            Both are dropped when the read failed. The zone is a fact
+            about this person, and there is none to state. The export
+            needs nothing from the read to RENDER, but its file comes
+            from the same server that just did not answer, so the row
+            would look live and hand back a failed download with nothing
+            saying why — the reason the notifications toggle is dropped
+            above. */}
         {loaded
           ? (
               <>
                 <SectionLabel>{t("accountLabel")}</SectionLabel>
                 <ListCard>
-                  <ProfileTimeZone timeZone={page.timeZone} divided={false} />
+                  <ProfileTimeZone timeZone={page.timeZone} />
+                  <ExportDataRow />
                 </ListCard>
               </>
             )

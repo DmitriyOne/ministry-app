@@ -410,6 +410,25 @@
       "timeZone": {
         "title": "Time zone",
         "text": "Your days and months are counted in it. It can’t be changed yet."
+      },
+      "export": {
+        "title": "Your data",
+        "text": "Every day you have recorded, as a file you keep.",
+        "action": "Export",
+        "sheetTitle": "Choose a format",
+        "csv": "CSV",
+        "csvText": "One table of days. Opens anywhere.",
+        "excel": "Excel",
+        "excelText": "Days, plus a sheet of month totals.",
+        "daysSheet": "Days",
+        "monthsSheet": "Months",
+        "date": "Date",
+        "weekday": "Weekday",
+        "hours": "Hours",
+        "minutes": "Minutes",
+        "month": "Month",
+        "serviceYear": "Service year",
+        "daysRecorded": "Days recorded"
       }
     },
     "whatsNew": {
