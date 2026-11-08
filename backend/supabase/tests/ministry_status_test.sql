@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(83);
+select plan(85);
 
 -- What this file is really about: the rules that live nowhere else.
 -- The carry-forward rule, the catalogue's numbers, the month bounds and
@@ -123,6 +123,24 @@ select ok(
   has_function_privilege('authenticated',
     'public.set_ministry_status(date, text, smallint)', 'execute'),
   'a signed-in person can set a status'
+);
+
+-- And the correction is callable by NOBODY (ADR 0072). It was granted to
+-- `authenticated` on the expectation of a screen that never arrived, and
+-- a grant with no caller is still an endpoint: it is the only route to a
+-- month outside the window set_ministry_status fences itself to,
+-- including a month already closed. The calls below therefore run as the
+-- owner, which is also the honest shape of the test — the rules it pins
+-- are the function's, not the app's.
+select ok(
+  not has_function_privilege('authenticated',
+    'public.amend_ministry_status_month(date, text, smallint)', 'execute'),
+  'a signed-in person cannot correct a month: no screen offers it'
+);
+select ok(
+  not has_function_privilege('anon',
+    'public.amend_ministry_status_month(date, text, smallint)', 'execute'),
+  'and anon cannot either'
 );
 
 -- ---------------------------------------------------------------------
@@ -276,6 +294,10 @@ select is(
 -- Correcting a month already lived. There is a row after it (this
 -- month's), so that row already governs what follows and there is
 -- nothing to pin — the proof is that this month keeps its own 15.
+-- As the owner: execute was revoked from every PostgREST role
+-- (ADR 0072). The claims stay set, so auth.uid() still names the
+-- person whose month this is.
+reset role;
 select is(
   (select monthly_goal_hours from public.amend_ministry_status_month(
     (date_trunc('month', now()) - interval '1 month')::date,
@@ -283,6 +305,7 @@ select is(
   30::smallint,
   'a regular auxiliary pioneer is 30 hours every month'
 );
+set local role authenticated;
 select is(
   (select monthly_goal_hours from public.ministry_status_for_month(
     date_trunc('month', now())::date)),
@@ -300,12 +323,15 @@ select is(
 -- after it. Next month currently shows 30, inherited from the month
 -- before; without the pin it would start showing 50 the moment this
 -- month becomes a pioneer's.
+-- As the owner again, for the same reason.
+reset role;
 select is(
   (select monthly_goal_hours from public.amend_ministry_status_month(
     date_trunc('month', now())::date, 'regular_pioneer')),
   50::smallint,
   'this month takes the correction'
 );
+set local role authenticated;
 select is(
   (select monthly_goal_hours from public.ministry_status_for_month(
     (date_trunc('month', now()) + interval '1 month')::date)),
@@ -343,6 +369,8 @@ select is(
 -- The soft-delete trap: the row for next month is marked deleted, not
 -- removed, and the primary key has no predicate — so without the
 -- resurrecting upsert this call fails with a duplicate key.
+-- As the owner again, for the same reason.
+reset role;
 select is(
   (select monthly_goal_hours from public.amend_ministry_status_month(
     (date_trunc('month', now()) + interval '1 month')::date,
@@ -350,6 +378,7 @@ select is(
   30::smallint,
   'a month swept away earlier can be written again'
 );
+set local role authenticated;
 select is(
   (select count(*) from public.ministry_status_months
     where month = (date_trunc('month', now()) + interval '1 month')::date),
@@ -683,6 +712,8 @@ select is(
 -- that is not an appointment. It carries no yearly norm, so it says
 -- nothing about when the pioneering began — and the owner keeps the
 -- monthly goal they recorded for it.
+-- As the owner again, for the same reason.
+reset role;
 select is(
   (select monthly_goal_hours from public.amend_ministry_status_month(
     (date_trunc('month', now()) - interval '2 months')::date,
@@ -690,6 +721,7 @@ select is(
   15::smallint,
   'that month is marked a one-month auxiliary pioneer instead'
 );
+set local role authenticated;
 select is(
   (select status from public.set_ministry_status_from(
     date_trunc('month', now())::date,
