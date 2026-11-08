@@ -87,6 +87,29 @@ const nextConfig: NextConfig = {
   // Inlined at build time, server and client alike. Nothing secret: it is
   // the number on the About and What's New screens.
   env: { APP_VERSION: appVersion },
+  experimental: {
+    // How long a screen already visited may be reused instead of being
+    // fetched again (ADR 0070). Every screen in this app is dynamic — they
+    // all read the session cookie — and the default for those is 0, which
+    // does not mean "expires quickly" but "is never reusable at all":
+    // `staleAt` comes out as `now + 0`, and the freshness test is
+    // `staleAt <= now` (client/components/segment-cache/cache-map.js in
+    // Next 16.3.5). So /day → /profile → /day drew the loading skeleton
+    // every single time, however recently the screen had been read.
+    //
+    // Only `dynamic` is set. Passing `static` as well would overwrite its
+    // 300-second default with whatever number got copied from the docs'
+    // example, which is a regression dressed as configuration.
+    //
+    // Staleness is bounded by more than this number: an entry is also
+    // dead when its version is behind the cache's, and every
+    // revalidation inside a Server Action bumps that version
+    // (invalidateBfCache). Saving hours, closing or reopening a month,
+    // changing a status, signing in and signing out all revalidate — so
+    // the 30 seconds can only ever hide a change made on ANOTHER device,
+    // never one made here.
+    staleTimes: { dynamic: 30 },
+  },
   // A developer's own LAN IP(s) (envs/*.local.env, DEV_ALLOWED_ORIGIN,
   // comma-separated for more than one network) so the dev server can be
   // opened from a phone on the same network. Left unset in git — see

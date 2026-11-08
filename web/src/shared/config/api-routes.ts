@@ -13,6 +13,10 @@ const WEB_API_VERSION = "/v1";
 // This app's own Route Handlers (web/app/api/**).
 export const WEB_API_ROUTES = {
   health: `${WEB_API_PREFIX}${WEB_API_VERSION}/health`,
+  // Hands the signed-in person their own data as a file, `?format=csv`
+  // or `?format=xlsx` (ADR 0071). A Route Handler rather than a page, so
+  // it has no entry in ROUTE_POLICY and checks the session itself.
+  export: `${WEB_API_PREFIX}${WEB_API_VERSION}/export`,
 } as const;
 
 // SB_API_ROUTES used to live here, holding the path of the Supabase Edge

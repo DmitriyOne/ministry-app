@@ -15,6 +15,7 @@ import {
 } from "@/shared/api";
 import { APP_VERSION, hasUnreadVersion } from "@/shared/config";
 import { reportReadFailure } from "@/shared/lib/action-failure";
+import { resolveTimeZone } from "@/shared/lib/time-zone";
 
 // Everything /profile asks the database, in one place and in the order
 // the questions depend on each other. The screen above composes widgets
@@ -54,6 +55,19 @@ export type ProfilePageData = ScreenRead<{
   // the sheet, change nothing, press Save and silently retract
   // September (ADR 0061, update 2026-10-29).
   pioneeringSinceYearStart: boolean;
+  // The calendar the SERVER works this person's months and days out in.
+  // Put on the screen because nothing can change it yet (ADR 0061,
+  // update 2026-11-07): the column has no write grant, so every profile
+  // carries the Europe/London default, and a person whose phone is
+  // somewhere else has no way to find that out from inside the app. The
+  // row says the value and says it is fixed.
+  //
+  // Passed through resolveTimeZone rather than raw, so the screen shows
+  // what the server actually computes with: a well-formed name this
+  // runtime does not know costs the default everywhere else, and a row
+  // printing the stored string would then be the one place claiming
+  // otherwise.
+  timeZone: string;
 }>;
 
 const SCOPE = "read-profile-page";
@@ -158,5 +172,6 @@ export const readProfilePage = async (): Promise<ProfilePageData> => {
     // claimed in the sheet itself.
     pioneeringSinceYearStart: !yearStartStatus.error
       && toEffectiveMinistryStatus(yearStartStatus)?.status === "regular_pioneer",
+    timeZone: resolveTimeZone(profile?.time_zone),
   };
 };

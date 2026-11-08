@@ -34,11 +34,15 @@ and a strip of the last seven days, where a day with no record shows a
 dash rather than a zero, because a zero would claim somebody had looked.
 
 `/profile` carries the name, role, ministry status (publisher through
-regular pioneer), the monthly and service-year goals, the push toggle and
-sign-out. Choosing "regular pioneer" asks one more thing — since when,
-the start of the service year or this month — because the year's goal is
-the months actually served added up, not a fixed 600; and that goal is
-shown to a regular pioneer only, for as long as they are one.
+regular pioneer), the monthly and service-year goals, the push toggle,
+the time zone every day and month is counted in — read-only, with a
+padlock saying so, because nothing can change it yet — the way to take
+every recorded day out as a file (CSV, or an Excel book with the month
+totals on their own sheet), and sign-out. Choosing "regular pioneer" asks
+one more thing — since when, the start of the service year or this month
+— because the year's goal is the months actually served
+added up, not a fixed 600; and that goal is shown to a regular pioneer
+only, for as long as they are one.
 `/admin/users/new` creates an account.
 `/whats-new` tells a person what each version added, with a dot on the
 profile row while they have not read the current one. There is no

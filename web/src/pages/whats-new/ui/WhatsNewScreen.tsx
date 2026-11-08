@@ -99,7 +99,41 @@ export const WhatsNewScreen = async () => {
             calendar the menu itself wears for this item, the plus from
             the hours card for the day it opens, and the month for
             stepping between them. */}
-        <VersionHeading name={t("v2_8.name")} date={t("v2_8.date")} pill={t("currentPill")} />
+        {/* 2.9 is three things the app owed people rather than a new
+            screen: the data can leave, the calendar it counts in is
+            named, and a screen already read comes back instead of being
+            rebuilt (ADR 0070/0071, ADR 0061 update).
+
+            The glyphs are borrowed, and the set is why: there is no
+            download arrow and no globe. The bar chart stands for the
+            figures that go into the file — the same glyph the menu
+            gives the statistics it would otherwise plot; the closed lock
+            is the one the profile row itself now wears on its pill, so
+            this is not a stand-in at all; and the left chevron is the
+            day screen's own step back, which is the motion the row is
+            about. Adding icons is the owner's call, not something to
+            slip in with a release note. */}
+        <VersionHeading name={t("v2_9.name")} date={t("v2_9.date")} pill={t("currentPill")} />
+        <ListCard>
+          <ListRow
+            icon={<ChartBarIcon size={18} />}
+            title={t("v2_9.export.title")}
+            text={t("v2_9.export.text")}
+          />
+          <ListRow
+            icon={<LockClosedIcon size={18} />}
+            title={t("v2_9.timeZone.title")}
+            text={t("v2_9.timeZone.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<ChevronLeftIcon size={18} />}
+            title={t("v2_9.navigation.title")}
+            text={t("v2_9.navigation.text")}
+          />
+        </ListCard>
+
+        <VersionHeading name={t("v2_8.name")} date={t("v2_8.date")} pill={t("releasedPill")} />
         <ListCard>
           <ListRow
             icon={<CalendarWeekIcon size={18} />}
