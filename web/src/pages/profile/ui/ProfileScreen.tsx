@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { getSessionClaims } from "@/entities/session";
+import { ExportDataRow } from "@/features/export-data";
 import { PushNotificationsToggle } from "@/features/push-notifications";
 import { ScreenLoadFailure } from "@/features/screen-retry";
 import { SignOutButton } from "@/features/sign-out";
@@ -9,11 +10,13 @@ import { MinistryGoals } from "@/widgets/ministry-goals";
 import { MinistryStatusSheet } from "@/widgets/ministry-status-sheet";
 import { ProfileHero } from "@/widgets/profile-hero";
 import { ProfileLinks } from "@/widgets/profile-links";
+import { ProfileTimeZone } from "@/widgets/profile-time-zone";
 import { routes } from "@/shared/config";
 import { hasRole } from "@/shared/lib/auth";
 import { LinkButton } from "@/shared/ui/button";
 import { CenteredState } from "@/shared/ui/centered-state";
 import { ListCard } from "@/shared/ui/list-card";
+import { SectionLabel } from "@/shared/ui/section-label";
 
 import { readProfilePage } from "../api/read-profile-page";
 
@@ -96,6 +99,38 @@ export const ProfileScreen = async () => {
               <ListCard>
                 <PushNotificationsToggle />
               </ListCard>
+            )
+          : null}
+
+        {/* Two facts about the account in ONE card, under a section
+            label (variant D, the owner's pick 2026-11-07): which
+            calendar the app counts in — read-only, and that is the point
+            of showing it at all (ADR 0061) — and the way the data gets
+            out (ADR 0071): one row, formats behind it, the same
+            arrangement as the status row above. One card shorter than
+            two, on the longest screen in the app.
+
+            The divider between them carries the whole difference between
+            a row that only states something and a row that opens a
+            panel, which is the price of merging them; the pill and the
+            chevron are what make it payable.
+
+            Both are dropped when the read failed. The zone is a fact
+            about this person, and there is none to state. The export
+            needs nothing from the read to RENDER, but its file comes
+            from the same server that just did not answer, so the row
+            would look live and hand back a failed download with nothing
+            saying why — the reason the notifications toggle is dropped
+            above. */}
+        {loaded
+          ? (
+              <>
+                <SectionLabel>{t("accountLabel")}</SectionLabel>
+                <ListCard>
+                  <ProfileTimeZone timeZone={page.timeZone} />
+                  <ExportDataRow />
+                </ListCard>
+              </>
             )
           : null}
 

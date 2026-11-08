@@ -34,18 +34,61 @@ and a strip of the last seven days, where a day with no record shows a
 dash rather than a zero, because a zero would claim somebody had looked.
 
 `/profile` carries the name, role, ministry status (publisher through
-regular pioneer), the monthly and service-year goals, the push toggle and
-sign-out. Choosing "regular pioneer" asks one more thing — since when,
-the start of the service year or this month — because the year's goal is
-the months actually served added up, not a fixed 600; and that goal is
-shown to a regular pioneer only, for as long as they are one. `/calendar`, `/month` and `/year` are still placeholders
-carrying a title each, and `/admin/users/new` creates an account.
+regular pioneer), the monthly and service-year goals, the push toggle,
+the time zone every day and month is counted in — read-only, with a
+padlock saying so, because nothing can change it yet — the way to take
+every recorded day out as a file (CSV, or an Excel book with the month
+totals on their own sheet), and sign-out. Choosing "regular pioneer" asks
+one more thing — since when, the start of the service year or this month
+— because the year's goal is the months actually served
+added up, not a fixed 600; and that goal is shown to a regular pioneer
+only, for as long as they are one.
+`/admin/users/new` creates an account.
 `/whats-new` tells a person what each version added, with a dot on the
 profile row while they have not read the current one. There is no
 sign-up: the owner hands out accounts.
 
-The month and year screens are the next piece of work — the hours are in
-the database now, and nothing yet shows them a month at a time.
+`/month/2026-06` is the month: the hours, the goal and the service year
+at the top, then — on the month being lived — whether it is keeping up
+with its own calendar, which is what the goal asks for by today and how
+far ahead or behind that leaves you, down to the minute, with how much a
+day it takes from here. Below that, every day that was recorded, each
+with the month's running total beside it and each a tap away from the day
+itself. A month that is over can be **closed** — after which its hours
+stop changing, refused by the database rather than merely hidden by the
+screen — and opened again whenever the person wants, because closing is
+there to stop a stray tap, not to lock anybody out of their own figures.
+Both answers are asked for first. A day inside a closed month says so and
+links back to it.
+
+`/year/2026` is the service year, September through August and named
+after the September it starts in. At the top, what the year came to
+against its goal — which is the monthly goals added up, not a flat 600,
+so somebody appointed in October is measured against 550 and is not in
+arrears on their first day. Below it, on the year being lived, how the
+year stands against its own calendar: what the goals asked for by today,
+how far ahead or behind that leaves you, and how much a month it takes
+from here, the month you are in included. Then all twelve months, one
+line each, with the year's running total beside every one — all twelve
+rather than only the recorded ones, because the question the screen
+answers is which months came up short. A month with nothing recorded
+shows a dash, a closed one carries a lock, and a month still being lived
+is never painted as a miss.
+
+`/calendar/2026-11` is the same month drawn as a calendar, and it
+answers the question the month's table cannot: which days. A dot marks a
+day something was recorded on — a recorded zero included — and a day
+without one has simply not been filled in. Today carries a ring. Picking
+a date fills it in and the card below says what was in it: the hours of
+that day, what the month came to by the end of it, and the way into the
+day itself. A date with nothing says so in words rather than showing a
+zero, and still opens.
+
+Every block of figures carries a small "i". Pressing it opens a short
+note beside the sign explaining how that block is worked out — that the
+goal is for the whole month, that the bracket is what is left rather
+than what today added, that the pace measures the goal as it stands
+today, and that the year's goal is the monthly ones added together.
 
 `LAUNCH_MODE` is gone — `/soon` is simply a public landing page now, and
 what `/day` shows is decided by whether there is a session.

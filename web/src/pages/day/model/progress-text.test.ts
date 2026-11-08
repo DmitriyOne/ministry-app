@@ -9,7 +9,9 @@ import { describe, expect, it, vi } from "vitest";
 // assertion.
 vi.mock("@/shared/config", () => ({ routes: { day: "/day" } }));
 
-import { progressAmount, progressStanding, type TranslateProgress } from "./progress-text";
+import { durationPhrase } from "@/entities/ministry-day";
+
+import { progressStanding, type TranslateProgress } from "./progress-text";
 
 // The dictionary, written out as the one thing these functions are
 // allowed to see of it: the real strings from en-GB.json, so a test
@@ -29,22 +31,6 @@ const translate: TranslateProgress = (key, values) =>
     (text, [name, value]) => text.replace(`{${name}}`, String(value)),
     PHRASES[key],
   );
-
-describe("progressAmount", () => {
-  it("drops the minutes from a whole number of hours", () => {
-    expect(progressAmount(translate, 134 * 60)).toBe("134 h");
-  });
-
-  it("drops the hours from a bare remainder", () => {
-    expect(progressAmount(translate, 15)).toBe("15 min");
-    expect(progressAmount(translate, 0)).toBe("0 min");
-  });
-
-  it("says both where there are both", () => {
-    expect(progressAmount(translate, 1690)).toBe("28 h 10 min");
-    expect(progressAmount(translate, 90)).toBe("1 h 30 min");
-  });
-});
 
 describe("progressStanding", () => {
   // The case the owner was looking at on 28 October: 1:50 served against
@@ -112,9 +98,9 @@ describe("the dictionary this model asks for", () => {
 
   // Every branch of both functions: a bare remainder, whole hours, both,
   // and the three standings.
-  progressAmount(record, 15);
-  progressAmount(record, 134 * 60);
-  progressAmount(record, 1690);
+  durationPhrase(record, 15);
+  durationPhrase(record, 134 * 60);
+  durationPhrase(record, 1690);
   progressStanding(record, 110, 30);
   progressStanding(record, 30 * 60, 30);
   progressStanding(record, 31 * 60 + 30, 30);

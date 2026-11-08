@@ -61,6 +61,33 @@ export type Database = {
         }
         Relationships: []
       }
+      ministry_month_closures: {
+        Row: {
+          closed_at: string
+          created_at: string
+          deleted_at: string | null
+          month: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string
+          created_at?: string
+          deleted_at?: string | null
+          month: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          closed_at?: string
+          created_at?: string
+          deleted_at?: string | null
+          month?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ministry_status_months: {
         Row: {
           created_at: string
@@ -245,6 +272,23 @@ export type Database = {
         Args: { p_month: string; p_user: string }
         Returns: undefined
       }
+      close_ministry_month: {
+        Args: { p_month: string }
+        Returns: {
+          closed_at: string
+          created_at: string
+          deleted_at: string | null
+          month: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ministry_month_closures"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       forget_user_push_subscription: {
         Args: { p_endpoint: string; p_user_id: string }
@@ -254,12 +298,23 @@ export type Database = {
         Args: { p_month: string; p_user: string }
         Returns: undefined
       }
+      is_ministry_month_closed: {
+        Args: { p_month: string; p_user: string }
+        Returns: boolean
+      }
       join_waitlist: {
         Args: { p_email: string }
         Returns: {
           already_joined: boolean
           list_position: number
           push_enrollment_token: string
+        }[]
+      }
+      ministry_days_monthly_minutes: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          minutes: number
+          month: string
         }[]
       }
       ministry_days_total_minutes: {
@@ -293,6 +348,14 @@ export type Database = {
         Args: { p_year_start: string }
         Returns: number
       }
+      ministry_status_year_months: {
+        Args: { p_year_start: string }
+        Returns: {
+          month: string
+          monthly_goal_hours: number
+          status: string
+        }[]
+      }
       register_user_push_subscription: {
         Args: {
           p_auth: string
@@ -311,6 +374,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      reopen_ministry_month: { Args: { p_month: string }; Returns: undefined }
       set_ministry_day_minutes: {
         Args: { p_day: string; p_minutes: number }
         Returns: {

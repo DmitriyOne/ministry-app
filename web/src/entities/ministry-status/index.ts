@@ -27,12 +27,14 @@ export {
   parseMonthKey,
   toMonthKey,
 } from "./model/month-key";
-export { formatMonthName } from "./model/month-label";
+export { formatMonthName, monthHeading } from "./model/month-label";
+export { calendarPath, monthPath, parseMonthSlug } from "./model/month-path";
 export {
   DEFAULT_MINISTRY_STATUS,
   type EffectiveMinistryStatus,
 } from "./model/resolve-status";
 export {
+  MONTHS_IN_SERVICE_YEAR,
   SERVICE_YEAR_FIRST_MONTH,
   type ServiceYear,
   serviceYearGoalFrom,
@@ -40,6 +42,13 @@ export {
   serviceYearStartMonth,
 } from "./model/service-year";
 export { visibleYearGoalHours } from "./model/year-goal";
+export { yearHeading } from "./model/year-label";
+export {
+  parseYearSlug,
+  serviceYearFirstMonth,
+  yearPath,
+  yearPathOfMonth,
+} from "./model/year-path";
 // The zone itself is not this entity's — it lives in shared/lib/time-zone,
 // because ministry-day asks the same clock the same question.
 export { currentMonthKey, deviceMonthKey } from "./model/time-zone";

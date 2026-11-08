@@ -3,10 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { MinistryGoalsSkeleton } from "@/widgets/ministry-goals";
 import { ProfileHeroSkeleton } from "@/widgets/profile-hero";
 import { ProfileLinksSkeleton } from "@/widgets/profile-links";
+import { ProfileTimeZoneSkeleton } from "@/widgets/profile-time-zone";
 import { Button } from "@/shared/ui/button";
 import { CenteredState } from "@/shared/ui/centered-state";
 import { ListCard } from "@/shared/ui/list-card";
 import { ListRow } from "@/shared/ui/list-row";
+import { SectionLabel } from "@/shared/ui/section-label";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 // What `/profile` shows while the server answers (app/(with-bottom-nav)/
@@ -57,6 +59,20 @@ export const ProfileScreenSkeleton = async () => {
             text={pushDescription}
             trailing={<Skeleton className="h-8 w-13 shrink-0 rounded-full bg-ink-a09" />}
           />
+        </ListCard>
+
+        {/* The account card, with only the zone in it. The export row
+            below it is deliberately absent rather than drawn: nothing in
+            it waits on the database — both lines are dictionary text —
+            but a row that opens a panel of live downloads while the
+            screen is still arriving would offer a file from a page that
+            has not finished loading. It appears with the data, pushing
+            the links down a little, the same cost the admin button pays
+            below. Which is also why the zone row carries NO divider
+            here: nothing follows it yet. */}
+        <SectionLabel>{t("accountLabel")}</SectionLabel>
+        <ListCard>
+          <ProfileTimeZoneSkeleton divided={false} />
         </ListCard>
 
         <ProfileLinksSkeleton />

@@ -77,11 +77,48 @@ describe("ROUTE_POLICY", () => {
     }
   });
 
+  // The month's family, for the same reason: it lives in the address too
+  // (ADR 0066), and the navigation links straight to it.
+  it("shields a month under its own slug like the bare /month", () => {
+    for (const pathname of ["/month/2026-06", "/month/2025-12"]) {
+      expect(resolveRoutePolicy(pathname), pathname).toEqual(ROUTE_POLICY[routes.month]);
+    }
+  });
+
+  // And the service year's (ADR 0067). Third screen with a segment in
+  // its address, third line of this kind, and the one that would be
+  // missed by someone reading only the map above.
+  it("shields a service year under its own slug like the bare /year", () => {
+    for (const pathname of ["/year/2026", "/year/1999"]) {
+      expect(resolveRoutePolicy(pathname), pathname).toEqual(ROUTE_POLICY[routes.year]);
+    }
+  });
+
+  // And the calendar's (ADR 0069), the fourth of the family lines.
+  it("shields a calendar month under its own slug like the bare /calendar", () => {
+    for (const pathname of ["/calendar/2026-11", "/calendar/1999-01"]) {
+      expect(resolveRoutePolicy(pathname), pathname)
+        .toEqual(ROUTE_POLICY[routes.calendar]);
+    }
+  });
+
   // A prefix without the separator is a coincidence of spelling, not a
   // family: an address nobody has classified must stay unclassified, or
   // a typo gets the app's own policy.
   it("does not adopt an address that merely starts with the same letters", () => {
-    for (const pathname of ["/dayz", "/day-summary", "/days/2026-06-02"]) {
+    for (
+      const pathname of [
+        "/dayz",
+        "/day-summary",
+        "/days/2026-06-02",
+        "/months",
+        "/month-end",
+        "/years",
+        "/year-end",
+        "/calendars",
+        "/calendar-export",
+      ]
+    ) {
       expect(resolveRoutePolicy(pathname), pathname).toBeNull();
     }
   });

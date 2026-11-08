@@ -33,6 +33,22 @@ type ListRowProps = {
   // names the row.
   trailing?: ReactNode;
   href?: string;
+  // A row that hands over a FILE instead of going to a screen (the data
+  // export on /profile, ADR 0071). It is also what tells this row to
+  // stay out of next/link: an internal path normally means client-side
+  // routing (ADR 0024), and routing to an attachment would fetch it as
+  // an RSC payload and save nothing. react-aria's Link passes the
+  // attribute through to the <a> (LinkDOMProps.download).
+  download?: boolean | string;
+  // Fires in ADDITION to following the link, never instead of it: with no
+  // RouterProvider configured, react-aria's Link leaves the navigation
+  // (or the download) to the browser and calls this as well. Used by the
+  // export panel to close itself once a format has been picked.
+  //
+  // `onPress`, not `onClick` — the row's link IS a react-aria primitive,
+  // and the two must not be mixed on one (ADR 0013). Ignored on a row
+  // without `href`, which has no interactive element to attach it to.
+  onPress?: () => void;
   divided?: boolean;
 };
 
@@ -50,6 +66,8 @@ export const ListRow = ({
   text,
   trailing,
   href,
+  download,
+  onPress,
   divided = true,
 }: ListRowProps) => {
   const body = (
@@ -83,9 +101,11 @@ export const ListRow = ({
   return (
     <LinkPrimitive
       href={href}
+      download={download}
+      onPress={onPress}
       className={cn(className, "outline-none focus-visible:ring-2 focus-visible:ring-ring")}
       render={
-        isInternalHref(href)
+        isInternalHref(href) && !download
           ? (linkProps) =>
               "href" in linkProps ? <NextLink {...linkProps} href={href} /> : <span {...linkProps} />
           : undefined

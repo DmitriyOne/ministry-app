@@ -27,6 +27,7 @@ import {
   CalendarMonthIcon,
   CalendarWeekIcon,
   ChartArrowIcon,
+  ChartBarIcon,
   CheckCircleIcon,
   ChevronLeftIcon,
   CompassIcon,
@@ -93,7 +94,155 @@ export const WhatsNewScreen = async () => {
             target for the year's goal (the same one 2.1 and 2.2 use for
             aiming at something), the tick for a fix that landed, and the
             warning circle for the message that carries it. */}
-        <VersionHeading name={t("v2_4.name")} date={t("v2_4.date")} pill={t("currentPill")} />
+        {/* 2.8 finishes the menu: every item now points at a screen
+            that exists. The glyphs are each row's own — the week
+            calendar the menu itself wears for this item, the plus from
+            the hours card for the day it opens, and the month for
+            stepping between them. */}
+        {/* 2.9 is three things the app owed people rather than a new
+            screen: the data can leave, the calendar it counts in is
+            named, and a screen already read comes back instead of being
+            rebuilt (ADR 0070/0071, ADR 0061 update).
+
+            The glyphs are borrowed, and the set is why: there is no
+            download arrow and no globe. The bar chart stands for the
+            figures that go into the file — the same glyph the menu
+            gives the statistics it would otherwise plot; the closed lock
+            is the one the profile row itself now wears on its pill, so
+            this is not a stand-in at all; and the left chevron is the
+            day screen's own step back, which is the motion the row is
+            about. Adding icons is the owner's call, not something to
+            slip in with a release note. */}
+        <VersionHeading name={t("v2_9.name")} date={t("v2_9.date")} pill={t("currentPill")} />
+        <ListCard>
+          <ListRow
+            icon={<ChartBarIcon size={18} />}
+            title={t("v2_9.export.title")}
+            text={t("v2_9.export.text")}
+          />
+          <ListRow
+            icon={<LockClosedIcon size={18} />}
+            title={t("v2_9.timeZone.title")}
+            text={t("v2_9.timeZone.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<ChevronLeftIcon size={18} />}
+            title={t("v2_9.navigation.title")}
+            text={t("v2_9.navigation.text")}
+          />
+        </ListCard>
+
+        <VersionHeading name={t("v2_8.name")} date={t("v2_8.date")} pill={t("releasedPill")} />
+        <ListCard>
+          <ListRow
+            icon={<CalendarWeekIcon size={18} />}
+            title={t("v2_8.calendar.title")}
+            text={t("v2_8.calendar.text")}
+          />
+          <ListRow
+            icon={<PlusIcon size={18} />}
+            title={t("v2_8.dayCard.title")}
+            text={t("v2_8.dayCard.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<CalendarMonthIcon size={18} />}
+            title={t("v2_8.months.title")}
+            text={t("v2_8.months.text")}
+          />
+        </ListCard>
+
+        {/* 2.6 and 2.7 are one story told twice: the year screen
+            completed the figures, and then the "i" beside each block
+            explained them. The glyphs: the info circle for the sign
+            itself (the one it actually wears), the target for the goal
+            it explains, and the arrow chart for the pace. */}
+        <VersionHeading name={t("v2_7.name")} date={t("v2_7.date")} pill={t("releasedPill")} />
+        <ListCard>
+          <ListRow
+            icon={<InfoCircleIcon size={18} />}
+            title={t("v2_7.hints.title")}
+            text={t("v2_7.hints.text")}
+          />
+          <ListRow
+            icon={<TargetIcon size={18} />}
+            title={t("v2_7.goals.title")}
+            text={t("v2_7.goals.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<ChartArrowIcon size={18} />}
+            title={t("v2_7.pace.title")}
+            text={t("v2_7.pace.text")}
+          />
+        </ListCard>
+
+        {/* 2.6 finishes the row of screens the menu has pointed at
+            since 2.0: day, month, now the year. The glyphs are each
+            screen's own — the rising chart is the year's item in the
+            menu, the arrow chart is the pace block the month already
+            wears, the month glyph stands for the twelve lines, and the
+            target is the goal they add up to. */}
+        <VersionHeading name={t("v2_6.name")} date={t("v2_6.date")} pill={t("releasedPill")} />
+        <ListCard>
+          <ListRow
+            icon={<ChartBarIcon size={18} />}
+            title={t("v2_6.yearScreen.title")}
+            text={t("v2_6.yearScreen.text")}
+          />
+          <ListRow
+            icon={<CalendarMonthIcon size={18} />}
+            title={t("v2_6.allMonths.title")}
+            text={t("v2_6.allMonths.text")}
+          />
+          <ListRow
+            icon={<ChartArrowIcon size={18} />}
+            title={t("v2_6.pace.title")}
+            text={t("v2_6.pace.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<TargetIcon size={18} />}
+            title={t("v2_6.goalSum.title")}
+            text={t("v2_6.goalSum.text")}
+          />
+        </ListCard>
+
+        {/* The glyphs: the month for the screen it is about, the bars
+            for a figure that accumulates, and the two locks for the two
+            halves of closing — shut and open again. */}
+        <VersionHeading name={t("v2_5.name")} date={t("v2_5.date")} pill={t("releasedPill")} />
+        <ListCard>
+          <ListRow
+            icon={<CalendarMonthIcon size={18} />}
+            title={t("v2_5.monthScreen.title")}
+            text={t("v2_5.monthScreen.text")}
+          />
+          <ListRow
+            icon={<ChartArrowIcon size={18} />}
+            title={t("v2_5.pace.title")}
+            text={t("v2_5.pace.text")}
+          />
+          <ListRow
+            icon={<ChartBarIcon size={18} />}
+            title={t("v2_5.runningTotal.title")}
+            text={t("v2_5.runningTotal.text")}
+          />
+          <ListRow
+            icon={<LockClosedIcon size={18} />}
+            title={t("v2_5.closeMonth.title")}
+            text={t("v2_5.closeMonth.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<LockOpenIcon size={18} />}
+            title={t("v2_5.reopenMonth.title")}
+            text={t("v2_5.reopenMonth.text")}
+          />
+        </ListCard>
+
+        <VersionHeading name={t("v2_4.name")} date={t("v2_4.date")} pill={t("releasedPill")} />
         <ListCard>
           <ListRow
             icon={<CalendarMonthIcon size={18} />}

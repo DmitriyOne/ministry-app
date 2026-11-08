@@ -4,7 +4,13 @@ import { useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { Button } from "@/shared/ui/button";
-import { Dialog, DialogDescription, DialogFooter, DialogTitle } from "@/shared/ui/dialog";
+import {
+  Dialog,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
 import { SubmitButton } from "@/shared/ui/submit-button";
 
 import { signOut } from "../api/sign-out-action";
@@ -67,8 +73,10 @@ export const SignOutButton = ({ label, confirm }: SignOutButtonProps) => {
       </Button>
 
       <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
-        <DialogTitle>{confirm.title}</DialogTitle>
-        <DialogDescription>{confirm.body}</DialogDescription>
+        <DialogHeader>
+          <DialogTitle>{confirm.title}</DialogTitle>
+          <DialogDescription>{confirm.body}</DialogDescription>
+        </DialogHeader>
         <DialogFooter>
           {/* Staying is the quiet option and the one a stray tap should
               land on, so it sits on the left, away from the thumb. */}

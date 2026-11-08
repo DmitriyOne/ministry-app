@@ -54,7 +54,8 @@
     },
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "honeypotLabel": "Leave this field blank"
+    "honeypotLabel": "Leave this field blank",
+    "whatThisMeans": "What this means"
   },
   "screens": {
     "day": {
@@ -73,10 +74,13 @@
         "decrease": "Take away {minutes} minutes",
         "increase": "Add {minutes} minutes",
         "quickAdd": "+{minutes} min",
+        "closedNotice": "{month} is closed, so these hours can’t be changed.",
+        "closedNoticeLink": "Reopen the month",
         "saving": "Saving…",
         "saved": "Saved",
         "saveFailed": "Those hours weren’t saved — we couldn’t reach the server. Try again.",
         "saveOffline": "You’re offline, so those hours weren’t saved.",
+        "saveMonthClosed": "That month is closed, so those hours weren’t saved. Reopen it to make changes.",
         "saveRefused": "Those hours couldn’t be saved. Check the date on your phone.",
         "saveSignedOut": "You’re signed out, so those hours weren’t saved. Sign in again.",
         "saveUnconfirmed": "We couldn’t confirm those hours. Open the day again to check."
@@ -106,6 +110,16 @@
         "title": "Day",
         "description": "Record today's ministry hours and Bible studies in a few taps, and see how you're tracking against your monthly and yearly goal.",
         "dayTitle": "{label}, {date}"
+      },
+      "hints": {
+        "hours": {
+          "label": "About these hours",
+          "text": "What you served on this day, in five-minute steps. It saves itself — there is no button to press. An earlier day is filled in the same way."
+        },
+        "progress": {
+          "label": "About this progress",
+          "text": "Your goal is for the whole month, not for one day. These bars show how close the month — and the service year — are to it. While the goal is not reached the figure is a minus, which is what is still left to serve; once you pass it, a plus."
+        }
       }
     },
     "calendar": {
@@ -113,21 +127,204 @@
         "title": "Calendar",
         "description": "Your ministry month, day by day."
       },
-      "title": "Calendar"
+      "eyebrow": "Calendar",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "weekdays": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
+      },
+      "squareEmpty": "nothing recorded",
+      "pickADay": "Pick a day to see what was in it.",
+      "dayCard": {
+        "hours": "Hours",
+        "monthByThen": "Month by then",
+        "openDay": "Open the day",
+        "addHours": "Add hours",
+        "emptyTitle": "No ministry recorded",
+        "emptyText": "A day with nothing in it is not a zero — it is a day you have not filled in yet."
+      },
+      "hints": {
+        "grid": {
+          "label": "About this calendar",
+          "text": "A dot marks a day you recorded something on, even if that was nothing at all. A day without one has not been filled in. The ring marks today."
+        },
+        "dayCard": {
+          "label": "About these figures",
+          "text": "Hours is what you served on that day. Month by then is what the month came to by the end of it — the same running total the month screen's last column shows."
+        }
+      },
+      "gridFailure": {
+        "title": "This month didn't load",
+        "text": "The days are there — we couldn't read them just now."
+      },
+      "loadFailure": {
+        "title": "The calendar didn't load",
+        "text": "We couldn't work out which month you're in."
+      }
     },
     "month": {
       "metadata": {
         "title": "Month",
         "description": "Totals and entries for the month."
       },
-      "title": "Month"
+      "title": "Month",
+      "eyebrow": "Month",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "summary": {
+        "label": "Hours this month",
+        "ofGoal": "of {hours} h",
+        "toGoHours": "{hours} h to go",
+        "toGoMinutes": "{minutes} min to go",
+        "toGoHoursMinutes": "{hours} h {minutes} min to go",
+        "met": "Goal met",
+        "barLabel": "Hours served this month",
+        "barValue": "{served} of {goal} h",
+        "serviceYear": "Service year",
+        "serviceYearGoal": "of {hours} h"
+      },
+      "pace": {
+        "label": "Pace",
+        "byDay": "By day {day} · {amount}",
+        "ahead": "(+{amount})",
+        "behind": "(−{amount})",
+        "level": "(+0)",
+        "hours": "{hours} h",
+        "minutes": "{minutes} min",
+        "hoursMinutes": "{hours} h {minutes} min",
+        "rest": "{days, plural, one {{amount} to go, and today is the last day} other {{amount} a day for the # days left}}",
+        "bar": "Hours served against what the goal asks for by today",
+        "barValue": "{served} of {needed}"
+      },
+      "days": {
+        "title": "Days",
+        "columns": {
+          "day": "Day",
+          "hours": "Hours",
+          "total": "Total"
+        },
+        "empty": "No days recorded in this month yet."
+      },
+      "closing": {
+        "close": "Close month",
+        "reopen": "Reopen the month",
+        "closed": "Closed. The days of this month can no longer be edited.",
+        "closedOn": "Closed on {date}. The days of this month can no longer be edited.",
+        "confirmTitle": "Close the month?",
+        "confirmBody": "Once {month} is closed, the hours of its days can't be changed. You can open it again at any time.",
+        "reopenConfirmTitle": "Reopen the month?",
+        "reopenConfirmBody": "{month} becomes editable again, and its hours can be changed. You can close it once more at any time.",
+        "reopenConfirm": "Reopen",
+        "hoursLabel": "Hours",
+        "noHours": "—",
+        "cancel": "Cancel",
+        "refused": "This month can't be closed yet.",
+        "failed": "Couldn't reach the server. Nothing was changed."
+      },
+      "loadFailure": {
+        "title": "This month didn't load",
+        "text": "We couldn't work out which month you're in."
+      },
+      "summaryFailure": {
+        "title": "The totals didn't load",
+        "text": "We couldn't reach the server for this month's figures."
+      },
+      "daysFailure": {
+        "title": "The days didn't load",
+        "text": "We couldn't reach the server for the days of this month."
+      },
+      "hints": {
+        "summary": {
+          "label": "About these figures",
+          "text": "Everything you have served this month, against the goal for the whole month. Underneath it, the same for the service year, which runs from September to August."
+        },
+        "pace": {
+          "label": "About the pace",
+          "text": "The month's goal measured at today rather than at the end: how far behind or ahead of it you are right now. The line below is how much a day it takes over the days left to still reach the goal."
+        },
+        "days": {
+          "label": "About this table",
+          "text": "Only the days you recorded something on. The last column is the month added up to that day."
+        }
+      }
     },
     "year": {
       "metadata": {
-        "title": "Year",
-        "description": "Your service year at a glance."
+        "title": "Service year",
+        "description": "Your service year, a month at a time."
       },
-      "title": "Year"
+      "title": "Service year",
+      "eyebrow": "Service year",
+      "previousYear": "Previous service year",
+      "nextYear": "Next service year",
+      "summary": {
+        "label": "Hours this service year",
+        "ofGoal": "of {hours} h",
+        "toGo": "{amount} to go",
+        "met": "Goal met",
+        "hours": "{hours} h",
+        "minutes": "{minutes} min",
+        "hoursMinutes": "{hours} h {minutes} min",
+        "barLabel": "Hours served this service year",
+        "barValue": "{served} of {goal} h"
+      },
+      "pace": {
+        "label": "Pace",
+        "byToday": "By today · {amount}",
+        "ahead": "(+{amount})",
+        "behind": "(−{amount})",
+        "level": "(+0)",
+        "hours": "{hours} h",
+        "minutes": "{minutes} min",
+        "hoursMinutes": "{hours} h {minutes} min",
+        "rest": "{months, plural, one {{amount} to go, and this is the last month} other {{amount} a month for the # months left}}",
+        "bar": "Hours served against what the goal asks for by today",
+        "barValue": "{served} of {needed}"
+      },
+      "months": {
+        "title": "Months",
+        "columns": {
+          "month": "Month",
+          "hours": "Hours",
+          "total": "Total"
+        },
+        "goal": "· {hours} h",
+        "none": "—",
+        "closed": "Closed",
+        "empty": "No hours recorded in this service year yet."
+      },
+      "summaryFailure": {
+        "title": "The year's total did not load",
+        "text": "The months below may still be there. Try again in a moment."
+      },
+      "monthsFailure": {
+        "title": "The months did not load",
+        "text": "Nothing has been lost. Try again in a moment."
+      },
+      "loadFailure": {
+        "title": "We could not tell which year you are in",
+        "text": "Your calendar did not load, so we cannot open the right service year. Try again in a moment."
+      },
+      "hints": {
+        "summary": {
+          "label": "About these figures",
+          "text": "Everything served from September to August, against the goal for the whole year. The year's goal is your monthly goals added together: twelve months at 50 h make 600 h, and a year begun in October asks for 550 h."
+        },
+        "pace": {
+          "label": "About the pace",
+          "text": "The year's goal measured at today rather than at next August: months that have ended count in full, and the one you are in counts only as far as today. The line below is how much a month it takes over the months left to still reach the goal."
+        },
+        "months": {
+          "label": "About this table",
+          "text": "Every month of the year, with the year's total beside it. A dash means nothing was recorded that month. Red marks a month that ended below its goal — the month you are in is never marked that way."
+        }
+      }
     },
     "profile": {
       "metadata": {
@@ -208,7 +405,31 @@
         "cancel": "Stay signed in"
       },
       "whatsNew": "What's new",
-      "whatsNewUnread": "Unread"
+      "whatsNewUnread": "Unread",
+      "accountLabel": "Your account",
+      "timeZone": {
+        "title": "Time zone",
+        "text": "Your days and months are counted in it. It can’t be changed yet."
+      },
+      "export": {
+        "title": "Your data",
+        "text": "Every day you have recorded, as a file you keep.",
+        "action": "Export",
+        "sheetTitle": "Choose a format",
+        "csv": "CSV",
+        "csvText": "One table of days. Opens anywhere.",
+        "excel": "Excel",
+        "excelText": "Days, plus a sheet of month totals.",
+        "daysSheet": "Days",
+        "monthsSheet": "Months",
+        "date": "Date",
+        "weekday": "Weekday",
+        "hours": "Hours",
+        "minutes": "Minutes",
+        "month": "Month",
+        "serviceYear": "Service year",
+        "daysRecorded": "Days recorded"
+      }
     },
     "whatsNew": {
       "metadata": {
@@ -219,6 +440,98 @@
       "hero": {
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
+      },
+      "v2_9": {
+        "name": "Version 2.9",
+        "date": "8 November 2026",
+        "export": {
+          "title": "Your hours, as a file you keep",
+          "text": "Every day you have recorded, saved out of the app in one tap \u2014 a plain table that opens anywhere, or an Excel book with the month totals on a sheet of their own."
+        },
+        "timeZone": {
+          "title": "Which calendar your days are counted in",
+          "text": "Your profile now says it out loud. It cannot be changed yet, and the padlock beside it says so, instead of leaving you to look for a way in that is not there."
+        },
+        "navigation": {
+          "title": "A screen you just left comes straight back",
+          "text": "Stepping to the profile and back no longer rebuilds the day from nothing. Only something you have actually changed makes a screen read itself again."
+        }
+      },
+      "v2_8": {
+        "name": "Version 2.8",
+        "date": "6 November 2026",
+        "calendar": {
+          "title": "The calendar is a calendar",
+          "text": "A month drawn as a month, with a dot on every day something was recorded on — so the gaps are as plain as the days you were out."
+        },
+        "dayCard": {
+          "title": "Pick a day, see what was in it",
+          "text": "The hours of that day, what the month came to by the end of it, and a way straight into the day. A day with nothing says so instead of showing a zero."
+        },
+        "months": {
+          "title": "Step back through the months",
+          "text": "The month is in the address, as it is for the day and the year, so the arrows and your phone's own back gesture walk through them."
+        }
+      },
+      "v2_7": {
+        "name": "Version 2.7",
+        "date": "6 November 2026",
+        "hints": {
+          "title": "An “i” beside every figure",
+          "text": "Press it and a note explains, in one or two sentences, how that block is worked out — on the day, the month and the service year."
+        },
+        "goals": {
+          "title": "Where the goal comes from",
+          "text": "Your goal is for the whole month, and the year's goal is those monthly goals added together — which is why a year begun in October asks for 550 h, not 600."
+        },
+        "pace": {
+          "title": "And what the pace measures",
+          "text": "The goal as it stands today rather than at the end, so the minus beside it is what is left to catch up — not a mark against the month you are in."
+        }
+      },
+      "v2_6": {
+        "name": "Version 2.6",
+        "date": "6 November 2026",
+        "yearScreen": {
+          "title": "The service year has a screen",
+          "text": "September through August, with what the year came to against its goal and how much of it is still to go."
+        },
+        "allMonths": {
+          "title": "All twelve months, not only the full ones",
+          "text": "Each with the year's running total beside it. A month you recorded nothing in shows a dash rather than a zero, and a closed one carries a lock."
+        },
+        "pace": {
+          "title": "Whether the year is keeping up",
+          "text": "What the goals ask for by today, how far that leaves you ahead or behind, and how much a month it takes from here."
+        },
+        "goalSum": {
+          "title": "The year's goal is the months added up",
+          "text": "Not a flat 600: a year begun in October asks for 550, so starting late does not leave you behind on your first day."
+        }
+      },
+      "v2_5": {
+        "name": "Version 2.5",
+        "date": "5 November 2026",
+        "monthScreen": {
+          "title": "The month has a screen",
+          "text": "Hours, goal and service year at the top, then every day you recorded, each a tap away from the day itself."
+        },
+        "pace": {
+          "title": "Whether you are keeping up",
+          "text": "Under the month's figures: what the goal asks for by today, how far that leaves you ahead or behind, and how much a day it takes from here."
+        },
+        "runningTotal": {
+          "title": "A running total beside every day",
+          "text": "The third column is what the month came to by the end of that day, so you can see where you stood without adding anything up."
+        },
+        "closeMonth": {
+          "title": "Close a month when it is reported",
+          "text": "Once the month is over you can close it, and its hours stop changing — on the month, on the day, and for anything asking the server."
+        },
+        "reopenMonth": {
+          "title": "And open it again",
+          "text": "It asks first, the same as closing does. Closing is there to stop a stray tap, not to lock you out of your own figures."
+        }
       },
       "v2_4": {
         "name": "Version 2.4",

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { formatHours } from "@/entities/ministry-day";
 import { HapticButton } from "@/shared/ui/haptic-button";
 import { CheckCircleIcon, MinusIcon, PlusIcon } from "@/shared/ui/icons";
+import { InfoHint } from "@/shared/ui/info-hint";
 
 import { useDayHoursControls } from "../model/day-hours-context";
 import type { HoursSaveState } from "../model/hours-save";
@@ -38,6 +39,7 @@ import {
 // the same number and two copies of it would disagree on the first tap.
 export const HoursCard = () => {
   const t = useTranslations("screens.day.hours");
+  const hint = useTranslations("screens.day.hints.hours");
   const headingId = useId();
   const { change, isLocked, minutes, saveState } = useDayHoursControls();
 
@@ -69,6 +71,14 @@ export const HoursCard = () => {
       headingId={headingId}
       label={t("label")}
       step={statusSlot[saveState]}
+      hint={(
+        <InfoHint
+          text={hint("text")}
+          label={hint("label")}
+          surface="dark"
+          className="-mr-2"
+        />
+      )}
     >
       <div className="flex items-center justify-between gap-3.5">
         {/* HapticButton, not Button: these are the taps meant to be felt

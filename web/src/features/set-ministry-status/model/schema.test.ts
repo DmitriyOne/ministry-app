@@ -1,4 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// The schema reaches the entity's barrel, which reaches @/shared/config
+// for routes (monthPath). That barrel builds env.ts, which fails outside
+// a configured environment — so the config is stubbed, as in the other
+// tests that cross a barrel (pages/day/model/last-days.test.ts).
+vi.mock("@/shared/config", () => ({ routes: { month: "/month" } }));
 
 import { isValidGoalHours, parseGoalHours } from "./schema";
 
