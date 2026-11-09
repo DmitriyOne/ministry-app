@@ -22,13 +22,23 @@ import { LAST_DAYS_SKELETON_CHIPS } from "../model/last-days";
 // So both share the row's layout and each says for itself what happens
 // at its edges.
 //
-// A chip is a fixed 42px wide rather than a seventh of the row, which
-// is what it was while the strip held exactly seven chips (ADR 0065,
-// update 2026-11-09). At 390px — the width this app is built for — the
-// arithmetic lands in the same place: seven chips and six 4px gaps fill
-// the card's inner 318px exactly, so the strip looks unchanged at rest.
-// On a wider phone the chips keep their size and part of an eighth
-// shows at the edge, which is the strip saying there is more of it.
+// A chip is a SEVENTH of what the card shows, which is what it was
+// before the strip could scroll — and going back to that is what makes
+// the strip stand still at rest (ADR 0065, update 2026-11-09).
+//
+// A fixed 42px was tried first. At 390px it is the same number, because
+// seven chips and six 4px gaps fill the card's inner 318px exactly; at
+// any other width it is not, and then the resting position — today
+// against the right edge — leaves a chip sliced down the middle at the
+// left. Against the skeleton's seven whole plates that reads as the
+// strip jumping as it arrives, which is what the owner saw.
+//
+// Percentages resolve against what the scroller SHOWS, not against
+// everything it holds, so this is seven across at every width, and the
+// left edge lands on a chip boundary wherever the right edge does. The
+// seven and the 1.5rem are the six gaps between them — `gap-1` below —
+// and the three have to be changed together: Tailwind reads classes as
+// text and cannot take them from LAST_DAYS_SKELETON_CHIPS.
 //
 // `pressable` is deliberately not part of the chip's shape: it belongs
 // to the links and to nothing else. On the open day's chip — a div with
@@ -37,7 +47,7 @@ import { LAST_DAYS_SKELETON_CHIPS } from "../model/last-days";
 // is the defect ADR 0012 recorded for disabled buttons and fixed across
 // the app on 2026-10-28.
 export const LAST_DAYS_CHIP
-  = "flex w-10.5 shrink-0 flex-col items-center gap-1 rounded-sm px-0.5 py-2";
+  = "flex w-[calc((100%-1.5rem)/7)] shrink-0 flex-col items-center gap-1 rounded-sm px-0.5 py-2";
 
 export const LAST_DAYS_ROW = "flex gap-1";
 
