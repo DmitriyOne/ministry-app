@@ -98,31 +98,6 @@ export const stripDays = ({ from, to }: DaySpan, rows: { day: string; minutes: n
   return days;
 };
 
-// How many days behind the open one the strip shows BEFORE the browser
-// has had a chance to put it anywhere: six, which with the open day
-// makes the seven it had when it could not scroll at all.
-//
-// The whole window is in the markup's hands already — it came with the
-// screen — but a scroll container cannot be positioned by HTML, so a
-// strip rendered whole paints at its oldest day and jumps once the
-// script runs. Showing the week first and the rest a moment later is
-// the only arrangement where every frame is true: it is the strip as
-// it has always looked, and it is what the skeleton drew.
-//
-// Hiding the strip until it was positioned was tried instead and
-// rejected by the owner (2026-11-09): the card then flashed EMPTY
-// between the skeleton and the days, which reads as something broken.
-const FIRST_PAINT_BEHIND = 6;
-
-// The slice the server renders: the week behind the open day, the open
-// day, and whatever comes after it — the days still to come are already
-// on the right and cost nothing to draw.
-export const firstPaintDays = (days: StripDay[], openDay: DayKey): StripDay[] => {
-  const open = days.findIndex(({ day }) => day === openDay);
-
-  return open < 0 ? days : days.slice(Math.max(0, open - FIRST_PAINT_BEHIND));
-};
-
 // A day nobody has lived yet: it gets a chip, because the strip runs to
 // the end of the month, but it is not a link and not an invitation.
 //

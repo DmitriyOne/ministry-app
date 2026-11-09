@@ -8,13 +8,7 @@ vi.mock("@/shared/config", () => ({ routes: { day: "/day" } }));
 
 import type { DayKey } from "@/entities/ministry-day";
 
-import {
-  firstPaintDays,
-  isFutureDay,
-  lastDaysSpan,
-  stripDays,
-  visibleDays,
-} from "./last-days";
+import { isFutureDay, lastDaysSpan, stripDays, visibleDays } from "./last-days";
 
 const day = (value: string) => value as DayKey;
 
@@ -159,53 +153,5 @@ describe("visibleDays", () => {
       day("2026-06-09"),
       day("2026-06-10"),
     ]);
-  });
-});
-
-describe("firstPaintDays", () => {
-  const days = stripDays({ from: day("2026-06-01"), to: day("2026-06-30") }, []);
-
-  // Seven chips: the week behind the open day and the open day itself —
-  // the strip as it looked when it could not scroll, and what the
-  // skeleton draws.
-  it("keeps six days behind the open one", () => {
-    const shown = firstPaintDays(days, day("2026-06-10"));
-
-    expect(shown[0].day).toEqual(day("2026-06-04"));
-    expect(shown.some(({ day: d }) => d === day("2026-06-10"))).toBe(true);
-  });
-
-  // Everything after the open day is already on the right of it, so it
-  // stays: those chips cost nothing and the strip would otherwise end
-  // in a different place on the first frame than on the second.
-  it("keeps everything after the open day", () => {
-    expect(firstPaintDays(days, day("2026-06-10")).at(-1)?.day).toEqual(day("2026-06-30"));
-  });
-
-  it("starts where the window starts when there is less than a week behind", () => {
-    expect(firstPaintDays(days, day("2026-06-03"))[0].day).toEqual(day("2026-06-01"));
-  });
-
-  // The zone read failed, visibleDays cut the strip at the open day,
-  // and the open day is then the last chip — nothing to find beyond it.
-  it("works when the open day is the last chip", () => {
-    const cut = stripDays({ from: day("2026-06-01"), to: day("2026-06-10") }, []);
-
-    expect(firstPaintDays(cut, day("2026-06-10")).map(({ day: d }) => d)).toEqual([
-      day("2026-06-04"),
-      day("2026-06-05"),
-      day("2026-06-06"),
-      day("2026-06-07"),
-      day("2026-06-08"),
-      day("2026-06-09"),
-      day("2026-06-10"),
-    ]);
-  });
-
-  // A strip that does not contain the open day at all cannot happen —
-  // the window is built around it — and if it ever did, showing the
-  // whole thing is the answer that loses nothing.
-  it("gives everything back when the open day is not in the list", () => {
-    expect(firstPaintDays(days, day("2026-07-01"))).toEqual(days);
   });
 });

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   type DayKey,
@@ -14,8 +14,13 @@ import {
 import { DayHoursValue } from "@/features/hours-entry";
 import { APP_EVENTS } from "@/shared/config";
 
-import { firstPaintDays, isFutureDay, type StripDay, visibleDays } from "../model/last-days";
-import { LAST_DAYS_CHIP, LAST_DAYS_ROW, LastDaysShell } from "./LastDaysShell";
+import { isFutureDay, type StripDay, visibleDays } from "../model/last-days";
+import {
+  LAST_DAYS_CHIP,
+  LAST_DAYS_ROW,
+  LastDaysShell,
+  LastDaysWaitingRow,
+} from "./LastDaysShell";
 
 type DayLastDaysProps = {
   // The day the screen is on. Its chip is the dark one, wherever the
@@ -61,13 +66,6 @@ type DayLastDaysProps = {
 // before: FSD v2.1 keeps code where it is used until there is real
 // reuse, and there is one caller.
 const HEADING_ID = "day-last-days-heading";
-
-// Layout work that must happen before the browser paints, from a
-// component React also renders on the server. useLayoutEffect does
-// nothing there and says so in the console every time, so the server
-// gets the effect that is correct for it: one that never runs, because
-// there is no scrolling to do without a DOM.
-const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 // Only the links press. The chip's outline, and why `pressable` is not
 // part of it, are in LastDaysShell beside the card.
@@ -189,56 +187,40 @@ export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
   // from "already served".
   const shown = visibleDays(days, openDay, today);
 
-  // Whether the whole window is on screen yet. The first render — the
-  // one the server makes and the browser paints before any script has
-  // run — holds the week behind the open day and nothing older, which
-  // is the strip as it has always looked. The rest arrives a moment
-  // later, together with the scroll that places it.
-  const [expanded, setExpanded] = useState(false);
+  // Whether the strip may be shown at all yet. Until the browser has
+  // run a line of ours, a scroll container stands at its own left edge
+  // — the oldest week — because markup cannot say otherwise, and
+  // whatever it shows in that moment it then has to correct in front of
+  // the person. The card holds the skeleton instead and the days appear
+  // already in place (the owner, 2026-11-09, after seeing the strip
+  // settle itself twice over).
+  const [ready, setReady] = useState(false);
 
   const stripRef = useRef<HTMLDivElement | null>(null);
   // Where the tapped chip stood on the screen we came from, taken out of
   // session storage once and held for as long as this strip lives.
   const restored = useRef<number | null | undefined>(undefined);
 
-  // The element, kept for the scrolling below. No positioning here any
-  // more: with only a week in the DOM there is nothing to scroll yet.
+  // Where the strip stands the instant it exists. A ref callback rather
+  // than an effect: this runs with the DOM attached and BEFORE the
+  // browser paints, so the first frame of the strip is already the
+  // placed one. Which is the whole arrangement — the skeleton waits
+  // until there is something true to show, and what replaces it never
+  // moves.
   const attachStrip = useCallback((strip: HTMLDivElement | null) => {
     stripRef.current = strip;
-  }, []);
 
-  // Unfold the rest of the window, once, after the first paint. In a
-  // frame of its own rather than straight out of the effect: the point
-  // is for the browser to have shown the week first, and asking for
-  // another render inside an effect is also what the lint rule about
-  // cascading renders is there to stop.
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => setExpanded(true));
-
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
-  // ...and place it in the same breath, before anything is painted: the
-  // chips arrive on the LEFT of the open day, so an unplaced strip
-  // would show the oldest week for a frame and then jump.
-  //
-  // This is where hiding the strip until it was positioned used to be,
-  // and it was the wrong trade: the card flashed empty between the
-  // skeleton and the days, which reads as broken (the owner,
-  // 2026-11-09). Now every frame is a true one — seven chips, then the
-  // same seven with two months behind them.
-  useBrowserLayoutEffect(() => {
-    const strip = stripRef.current;
     const open = strip?.querySelector<HTMLElement>("[data-open-day]");
 
-    if (!expanded || !strip || !open) return;
+    if (!strip || !open) return;
 
-    // Read from storage ONCE and kept here afterwards. Strict mode runs
-    // effects twice, so a read-and-clear would spend the offset on the
-    // first pass and find nothing on the second — which is exactly what
-    // it did: the strip opened at its right edge in development and
-    // would have landed correctly only in production (found on a real
-    // page, 2026-11-09). `undefined` is "not looked yet", null is
+    // Read from storage ONCE per mount and kept here afterwards.
+    // Strict mode attaches a ref, detaches it and attaches it again, so
+    // a callback that reads-and-clears would spend the offset on the
+    // first attach and find nothing on the second — which is exactly
+    // what it did: the strip opened at its right edge in development
+    // and would have landed correctly only in production (found on a
+    // real page, 2026-11-09). `undefined` is "not looked yet", null is
     // "looked, and there was nothing".
     if (restored.current === undefined) restored.current = takeOffset();
 
@@ -247,12 +229,22 @@ export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
     // Arrived by tapping a chip: that day goes back exactly where the
     // finger left it, so the strip appears not to have moved and only
     // the colour changes. Arrived any other way: the open day on the
-    // right, which is where this strip has always ended — and where the
-    // frame before this one already had it.
+    // right, which is where this strip has always ended.
     strip.scrollLeft = offset === null
       ? homeScroll(strip, open)
       : contentLeft(open) - offset;
-  }, [expanded]);
+  }, []);
+
+  // Swap the skeleton for the strip, once, in a frame of its own. Not
+  // straight out of the effect: asking for another render inside one is
+  // what the lint rule about cascading renders is there to stop, and a
+  // frame is also the honest unit here — the skeleton has to have been
+  // shown, not merely rendered.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setReady(true));
+
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   // "Back to today", said by the bottom bar when the Day item is tapped
   // on the day screen that is already open (APP_EVENTS.navItemRepeated,
@@ -297,107 +289,118 @@ export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
 
   return (
     <LastDaysShell headingId={HEADING_ID} label={t("label")}>
-      <div
-        ref={attachStrip}
-        // `relative` is load-bearing twice over. It makes the strip
-        // the thing a chip's offsetLeft is measured from, which is what
-        // the scroll positions above are in — and it makes the strip
-        // the containing block for the sr-only text inside the chips.
-        // Absolutely positioned content whose containing block is
-        // OUTSIDE a scroll container is not clipped by it: without
-        // this, the screen-reader phrase on the last day of the month
-        // sat 4000px out and the whole PAGE scrolled sideways with it
-        // (found on a real page, 2026-11-09).
-        //
-        // `overscroll-x-contain` is not decoration either: without it a
-        // flick that runs past the oldest chip is handed to Safari,
-        // which reads a horizontal drag from the edge as "go back".
-        //
-        // No scroll snapping, and that is a decision rather than an
-        // omission. It was here and came out: with chips snapped to the
-        // edge, the browser answers every scrollLeft we set by moving
-        // it again to the nearest snap point, so neither the position
-        // held across a chunk arriving nor the one restored after a tap
-        // landed where it was put — measured at 10px and at a whole
-        // chip on a real page (2026-11-09). A 42px chip gains little
-        // from snapping and the strip is read, not paged.
-        className={`${LAST_DAYS_ROW} relative overflow-x-auto overscroll-x-contain hide-scrollbar`}
-      >
-        {(expanded ? shown : firstPaintDays(shown, openDay)).map(({ day, minutes }) => {
-          const { weekday, dayOfMonth } = shortDayLabel(day);
-
-          // The open day. A <div>, not a link to the page it is already
-          // on, and not a button: there is nothing to press. aria-current
-          // is what says which one it is, since colour cannot. Its number
-          // is NOT read from the database — DayHoursValue takes it from
-          // the hours provider, so the chip and the card never disagree
-          // after a tap (ADR 0065).
-          if (day === openDay) {
-            return (
-              <div key={day} data-open-day aria-current="date" className={CHIP_OPEN}>
-                <span className={`${WEEKDAY} text-white/50`}>{weekday}</span>
-                <span className={DATE}>{dayOfMonth}</span>
-                <span className={VALUE}>
-                  <DayHoursValue />
-                </span>
-              </div>
-            );
-          }
-
-          // A day nobody has lived yet. Not a link, so it is not in
-          // the tab order either, and nothing here is announced as an
-          // action — but the text still is, and a dash on its own is
-          // read out as a dash. On a day behind us that dash has a
-          // sentence attached to it ("nothing recorded", on the link's
-          // own label); this chip has no label to carry one, so the
-          // dash is hidden and the words stand in its place. The eye
-          // and the ear then get the same thing, which is the whole
-          // point: these two dashes mean different things (found in
-          // review, 2026-11-09).
-          if (isFutureDay(day, today)) {
-            return (
-              <div key={day} className={CHIP_FUTURE}>
-                <span className={WEEKDAY}>{weekday}</span>
-                <span className={DATE}>{dayOfMonth}</span>
-                <span className={VALUE}>
-                  <span aria-hidden="true">{t("none")}</span>
-                  <span className="sr-only">{t("notYet")}</span>
-                </span>
-              </div>
-            );
-          }
-
-          return (
-            <Link
-              key={day}
-              href={dayPath(day)}
-              // Off, unlike everywhere else in the app, and this is the
-              // one place it has to be: next/link prefetches a link when
-              // it scrolls into view, and a strip pulled back through a
-              // month would ask the server for thirty screens nobody
-              // opened. Tapping still navigates client-side, and the
-              // loading boundary (day/[day]/loading.tsx) covers the
-              // moment the prefetch used to.
-              prefetch={false}
-              onClick={(event) => rememberTapped(event.currentTarget)}
-              aria-label={minutes === null
-                ? t("chipEmpty", { weekday, date: dayOfMonth })
-                : t("chipHours", {
-                    weekday,
-                    date: dayOfMonth,
-                    amount: durationPhrase(tProgress, minutes),
-                  })}
-              className={minutes === null ? CHIP_EMPTY : CHIP_RECORDED}
+      {/* The skeleton until the strip knows where it stands, and the
+          strip from then on. Not a trick to hide a jump: there is
+          nothing true to show before the position is worked out, and a
+          waiting state is what this card already has for that. */}
+      {ready
+        ? (
+            <div
+              ref={attachStrip}
+              // `relative` is load-bearing twice over. It makes the
+              // strip the thing a chip's offsetLeft is measured from,
+              // which is what the scroll positions above are in — and
+              // it makes the strip the containing block for the sr-only
+              // text inside the chips. Absolutely positioned content
+              // whose containing block is OUTSIDE a scroll container is
+              // not clipped by it: without this, the screen-reader
+              // phrase on the last day of the month sat 4000px out and
+              // the whole PAGE scrolled sideways with it (found on a
+              // real page, 2026-11-09).
+              //
+              // `overscroll-x-contain` is not decoration either:
+              // without it a flick that runs past the oldest chip is
+              // handed to Safari, which reads a horizontal drag from
+              // the edge as "go back".
+              //
+              // No scroll snapping, and that is a decision rather than
+              // an omission. It was here and came out: with chips
+              // snapped to the edge, the browser answers every
+              // scrollLeft we set by moving it again to the nearest
+              // snap point, so the position restored after a tap never
+              // landed where it was put — measured at 10px in one place
+              // and a whole chip in another (2026-11-09). A 42px chip
+              // gains little from snapping, and the strip is read, not
+              // paged.
+              className={`${LAST_DAYS_ROW} relative overflow-x-auto overscroll-x-contain hide-scrollbar`}
             >
-              <span className={WEEKDAY_QUIET}>{weekday}</span>
-              <span className={DATE}>{dayOfMonth}</span>
-              <span className={VALUE}>
-                {minutes === null ? t("none") : formatHours(minutes)}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
+              {shown.map(({ day, minutes }) => {
+                const { weekday, dayOfMonth } = shortDayLabel(day);
+
+                // The open day. A <div>, not a link to the page it is already
+                // on, and not a button: there is nothing to press. aria-current
+                // is what says which one it is, since colour cannot. Its number
+                // is NOT read from the database — DayHoursValue takes it from
+                // the hours provider, so the chip and the card never disagree
+                // after a tap (ADR 0065).
+                if (day === openDay) {
+                  return (
+                    <div key={day} data-open-day aria-current="date" className={CHIP_OPEN}>
+                      <span className={`${WEEKDAY} text-white/50`}>{weekday}</span>
+                      <span className={DATE}>{dayOfMonth}</span>
+                      <span className={VALUE}>
+                        <DayHoursValue />
+                      </span>
+                    </div>
+                  );
+                }
+
+                // A day nobody has lived yet. Not a link, so it is not in
+                // the tab order either, and nothing here is announced as an
+                // action — but the text still is, and a dash on its own is
+                // read out as a dash. On a day behind us that dash has a
+                // sentence attached to it ("nothing recorded", on the link's
+                // own label); this chip has no label to carry one, so the
+                // dash is hidden and the words stand in its place. The eye
+                // and the ear then get the same thing, which is the whole
+                // point: these two dashes mean different things (found in
+                // review, 2026-11-09).
+                if (isFutureDay(day, today)) {
+                  return (
+                    <div key={day} className={CHIP_FUTURE}>
+                      <span className={WEEKDAY}>{weekday}</span>
+                      <span className={DATE}>{dayOfMonth}</span>
+                      <span className={VALUE}>
+                        <span aria-hidden="true">{t("none")}</span>
+                        <span className="sr-only">{t("notYet")}</span>
+                      </span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={day}
+                    href={dayPath(day)}
+                    // Off, unlike everywhere else in the app, and this is the
+                    // one place it has to be: next/link prefetches a link when
+                    // it scrolls into view, and a strip pulled back through a
+                    // month would ask the server for thirty screens nobody
+                    // opened. Tapping still navigates client-side, and the
+                    // loading boundary (day/[day]/loading.tsx) covers the
+                    // moment the prefetch used to.
+                    prefetch={false}
+                    onClick={(event) => rememberTapped(event.currentTarget)}
+                    aria-label={minutes === null
+                      ? t("chipEmpty", { weekday, date: dayOfMonth })
+                      : t("chipHours", {
+                          weekday,
+                          date: dayOfMonth,
+                          amount: durationPhrase(tProgress, minutes),
+                        })}
+                    className={minutes === null ? CHIP_EMPTY : CHIP_RECORDED}
+                  >
+                    <span className={WEEKDAY_QUIET}>{weekday}</span>
+                    <span className={DATE}>{dayOfMonth}</span>
+                    <span className={VALUE}>
+                      {minutes === null ? t("none") : formatHours(minutes)}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )
+        : <LastDaysWaitingRow />}
     </LastDaysShell>
   );
 };

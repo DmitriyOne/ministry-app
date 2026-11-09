@@ -1,6 +1,9 @@
 import type { ReactNode } from "react";
 
 import { Eyebrow } from "@/shared/ui/eyebrow";
+import { Skeleton } from "@/shared/ui/skeleton";
+
+import { LAST_DAYS_SKELETON_CHIPS } from "../model/last-days";
 
 // The strip's card and the shape of the chips inside it, in one place
 // because two files have to agree on them: the strip itself and the
@@ -57,4 +60,33 @@ export const LastDaysShell = ({ label, headingId, children }: LastDaysShellProps
 
     {children}
   </section>
+);
+
+// The row of plates the card holds while it is waiting, and the one
+// piece of this screen that two different kinds of waiting share.
+//
+// The loading boundary draws it while the database answers
+// (DayLastDaysSkeleton). The strip itself draws it for one frame more:
+// a scroll container cannot be placed by markup, so until the browser
+// has run a line of ours the strip does not know where it stands, and
+// what it would show in the meantime is its oldest week (the owner,
+// 2026-11-09 — he had seen the strip settle itself on screen and said
+// to wait with the skeleton instead).
+//
+// No "use client" here either: this is markup with no state, so the
+// server component and the client one can each render it.
+//
+// It does NOT scroll and it hides what runs past its edge: there is
+// nothing to reach by a gesture yet, and a waiting state that answers
+// one promises something it cannot do.
+export const LastDaysWaitingRow = () => (
+  <div className={`${LAST_DAYS_ROW} overflow-hidden`}>
+    {Array.from({ length: LAST_DAYS_SKELETON_CHIPS }, (_, index) => (
+      <div key={index} className={`${LAST_DAYS_CHIP} bg-background`}>
+        <Skeleton className="h-2.5 w-6 rounded-xs" />
+        <Skeleton className="h-4 w-5 rounded-xs" />
+        <Skeleton className="h-2.5 w-7 rounded-xs" />
+      </div>
+    ))}
+  </div>
 );
