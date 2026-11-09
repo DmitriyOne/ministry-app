@@ -11,7 +11,7 @@ import {
   serviceYearOf,
   yearPath,
 } from "@/entities/ministry-status";
-import { type AppRoute, routes } from "@/shared/config";
+import { APP_EVENTS, type AppRoute, routes } from "@/shared/config";
 import { cn } from "@/shared/lib/cn";
 import { readStoredTimeZone, subscribeToStoredTimeZone } from "@/shared/lib/time-zone";
 import { LinkButton } from "@/shared/ui/button";
@@ -89,9 +89,25 @@ export const BottomNavItem = ({
   // about that depends on this.
   const target = hasFamily && storedZone ? knownTarget(href, storedZone) : href;
 
+  // Tapping the item for the screen you are already on. Next navigates
+  // to the same address, which changes nothing and tells the screen
+  // nothing — so the bar says it out loud and whoever cares listens
+  // (APP_EVENTS.navItemRepeated). On /day the strip of days takes it as
+  // "back to today", which is what the owner asked the tap to mean.
+  //
+  // The comparison is against the address this item would GO to, not
+  // against `isCurrent`: the Day item is lit on every day screen, and
+  // on somebody else's day the tap really does navigate.
+  const onPress = () => {
+    if (target === window.location.pathname) {
+      window.dispatchEvent(new Event(APP_EVENTS.navItemRepeated));
+    }
+  };
+
   return (
     <LinkButton
       href={target}
+      onPress={onPress}
       variant="plain"
       // aria-current is the HTML attribute, read by assistive tech; the
       // classes below are presentation. Two independent things, as in

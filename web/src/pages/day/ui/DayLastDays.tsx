@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   type DayKey,
@@ -12,6 +12,7 @@ import {
   shortDayLabel,
 } from "@/entities/ministry-day";
 import { DayHoursValue } from "@/features/hours-entry";
+import { APP_EVENTS } from "@/shared/config";
 
 import { isFutureDay, type StripDay, visibleDays } from "../model/last-days";
 import { LAST_DAYS_CHIP, LAST_DAYS_ROW, LastDaysShell } from "./LastDaysShell";
@@ -124,6 +125,12 @@ const VALUE = "text-eyebrow font-540 tabular-nums";
 // left it.
 const contentLeft = (chip: HTMLElement) => chip.offsetLeft;
 
+// Where the strip sits when nothing has asked it to sit anywhere else:
+// the open day against the right edge, which is where this strip ended
+// when it was seven chips and could not move.
+const homeScroll = (strip: HTMLElement, open: HTMLElement) =>
+  contentLeft(open) + open.offsetWidth - strip.clientWidth;
+
 // Where the open day sat on screen when it was tapped, so the next
 // screen can put it back there. Session storage, not local: it is one
 // gesture's worth of state and has no business outliving the tab.
@@ -217,8 +224,38 @@ export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
     // the colour changes. Arrived any other way: the open day on the
     // right, which is where this strip has always ended.
     strip.scrollLeft = offset === null
-      ? contentLeft(open) + open.offsetWidth - strip.clientWidth
+      ? homeScroll(strip, open)
       : contentLeft(open) - offset;
+  }, []);
+
+  // "Back to today", said by the bottom bar when the Day item is tapped
+  // on the day screen that is already open (APP_EVENTS.navItemRepeated,
+  // shared/config/app-events.ts). Nothing navigates then — the address
+  // is the same — so without this the strip would simply stay wherever
+  // it had been pulled to, which is the one thing that tap cannot mean.
+  //
+  // Smoothly, because this one IS a journey: the person can see where
+  // the strip was and where it went, and a jump would look like a
+  // redraw. Everywhere else the scroll is set outright, before anything
+  // is painted, where there is no motion to perceive.
+  useEffect(() => {
+    const goHome = () => {
+      const strip = stripRef.current;
+      const open = strip?.querySelector<HTMLElement>("[data-open-day]");
+
+      if (!strip || !open) return;
+
+      strip.scrollTo({
+        left: homeScroll(strip, open),
+        // The project's own rule, not a nicety: motion is offered, never
+        // imposed (ADR 0019 reads the same preference for the splash).
+        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
+    };
+
+    window.addEventListener(APP_EVENTS.navItemRepeated, goHome);
+
+    return () => window.removeEventListener(APP_EVENTS.navItemRepeated, goHome);
   }, []);
 
   // Remembered on the way out, from the chip that was tapped: its
