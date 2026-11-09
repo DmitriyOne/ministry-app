@@ -140,7 +140,7 @@ export const readDayPage = async (day: DayKey): Promise<DayPageData> => {
       // the way ministry_days_total_minutes repeats its own conditions:
       // it costs nothing and keeps the query right on its own terms.
       //
-      // Seventy-five rows at the very most — a month and a half back
+      // Seventy-six rows at the very most — a month and a half back
       // plus a month forward, and the days ahead hold none — so no
       // order and no limit: the strip is built from the days, not from
       // the order they arrive in, and the span is nowhere near the

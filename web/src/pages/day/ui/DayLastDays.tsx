@@ -92,7 +92,7 @@ const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLa
 // it: a colour set on the parent does not reach a child that names its
 // own.
 const CHIP_LINK
-  = `group/chip ${LAST_DAYS_CHIP} snap-end bg-background pressable active:bg-primary/20 active:text-foreground`;
+  = `group/chip ${LAST_DAYS_CHIP} bg-background pressable active:bg-primary/20 active:text-foreground`;
 
 // A day with hours stands in full ink, a day without recedes: the strip
 // is read for its gaps, and a faint chip is the one being offered.
@@ -102,7 +102,7 @@ const CHIP_LINK
 // out of the component.
 const CHIP_RECORDED = `${CHIP_LINK} text-foreground`;
 const CHIP_EMPTY = `${CHIP_LINK} text-ink-faint`;
-const CHIP_OPEN = `${LAST_DAYS_CHIP} snap-end bg-hero text-hero-foreground`;
+const CHIP_OPEN = `${LAST_DAYS_CHIP} bg-hero text-hero-foreground`;
 
 // A day still to come: no plate at all, which is the owner's pick of
 // the two that were drawn (2026-11-09). The plate is what the other
@@ -121,6 +121,24 @@ const WEEKDAY = "text-eyebrow font-600 tracking-eyebrow uppercase";
 const WEEKDAY_QUIET = `${WEEKDAY} text-ink-faint group-active/chip:text-foreground`;
 const DATE = "text-body font-600 tabular-nums";
 const VALUE = "text-eyebrow font-540 tabular-nums";
+
+// A chip's place inside the strip's own content, which is what
+// scrollLeft is measured in.
+//
+// `offsetLeft` alone is NOT that: it counts from the nearest positioned
+// ancestor, and nothing on this screen is positioned, so it counts from
+// <body> and carries the screen's 20px and the card's 16px with it.
+// Measured on a real page (2026-11-09): mixing the two left the open
+// day 36px short of the right edge, and put a restored strip most of a
+// chip off from where the finger had left it. Taking the strip's own
+// offsetLeft off cancels it exactly, both being measured from the same
+// ancestor.
+const contentLeft = (strip: HTMLElement, chip: HTMLElement) => chip.offsetLeft - strip.offsetLeft;
+
+// How long the strip waits before asking again after a read came back
+// with nothing. Long enough that an outage is not answered forty times
+// a second, short enough that the next real flick tries again.
+const RETRY_PAUSE_MS = 10_000;
 
 // Where the open day sat on screen when it was tapped, so the next
 // screen can put it back there. Session storage, not local: it is one
@@ -169,19 +187,24 @@ export const DayLastDays = ({ openDay, today, days: initialDays }: DayLastDaysPr
   const tProgress = useTranslations("screens.day.progress");
 
   const [days, setDays] = useState(initialDays);
+  // Whether the strip has been put where it belongs. Until it has, it
+  // is held invisible — see attachStrip below for why.
+  const [positioned, setPositioned] = useState(false);
 
   const stripRef = useRef<HTMLDivElement | null>(null);
-  // One request at a time, and no more requests at all once one came
-  // back empty-handed. Refs rather than state: nothing on screen
-  // depends on either, and a re-render per scroll event is exactly what
-  // a scroll handler must not cause.
-  const isLoading = useRef(false);
-  const hasFailed = useRef(false);
-  // The strip's width before chips were pushed in on the left, so the
-  // scroll can be moved by exactly as much as the content grew. Measured
-  // rather than counted in chip widths: the arithmetic would be a second
-  // copy of the CSS.
-  const widthBefore = useRef<number | null>(null);
+  // The oldest day a request has already been sent for, and the moment
+  // after which a failed one may be retried. Refs rather than state:
+  // nothing on screen depends on either, and a re-render per scroll
+  // event is exactly what a scroll handler must not cause.
+  const requestedFrom = useRef<string | null>(null);
+  const retryAfter = useRef(0);
+  // The chip the strip was standing on when older days arrived, and how
+  // far into it the left edge was, so the scroll can be put back on it
+  // once they are in the DOM.
+  const anchor = useRef<{ chip: HTMLElement; offset: number } | null>(null);
+  // Where the tapped chip stood on the screen we came from, taken out of
+  // session storage once and held for as long as this strip lives.
+  const restored = useRef<number | null | undefined>(undefined);
 
   // Where the strip stands when it first appears. A ref callback rather
   // than an effect, because this runs with the DOM attached and before
@@ -196,54 +219,99 @@ export const DayLastDays = ({ openDay, today, days: initialDays }: DayLastDaysPr
 
     if (!open) return;
 
-    const offset = takeOffset();
+    // Only now is there anything true to show. Until this runs, the
+    // strip holds a month and a half of history with its scroll at
+    // zero, which is September on the left of a card that says "last
+    // days" — so it waits, invisible, rather than show the wrong week
+    // for as long as hydration takes. Nothing is lost by it: without
+    // JavaScript this app draws no screen at all (ADR 0019).
+    setPositioned(true);
+
+    // Read from storage ONCE per mount and kept here afterwards.
+    // Strict mode attaches a ref, detaches it and attaches it again, so
+    // a callback that reads-and-clears would spend the offset on the
+    // first attach and find nothing on the second — which is exactly
+    // what it did: the strip opened at its right edge in development
+    // and would have landed correctly only in production (found on a
+    // real page, 2026-11-09). `undefined` is "not looked yet", null is
+    // "looked, and there was nothing".
+    if (restored.current === undefined) restored.current = takeOffset();
+
+    const offset = restored.current;
 
     // Arrived by tapping a chip: that day goes back exactly where the
     // finger left it, so the strip appears not to have moved and only
     // the colour changes. Arrived any other way: the open day on the
     // right, which is where this strip has always ended.
     strip.scrollLeft = offset === null
-      ? open.offsetLeft + open.offsetWidth - strip.clientWidth
-      : open.offsetLeft - offset;
+      ? contentLeft(strip, open) + open.offsetWidth - strip.clientWidth
+      : contentLeft(strip, open) - offset;
   }, []);
 
-  // After older days are pushed in on the left, the chips under the
-  // finger have all moved right by the width of what arrived. Putting
-  // the scroll back by the same amount is what makes the strip feel
-  // continuous instead of snapping backwards.
+  // After older days are pushed in on the left, every chip that was on
+  // screen has moved right. This puts the strip back on the one it was
+  // standing on, so the pull feels continuous instead of jumping.
+  //
+  // It sets an ABSOLUTE position rather than adding the width of what
+  // arrived, and the difference is not academic: with scroll snapping
+  // on, the browser ALSO restores the position by itself, and adding a
+  // shift on top of that moved the strip twice — a flick back through
+  // September landed in the middle of November (found on a real page,
+  // 2026-11-09). Anchored on a chip, the correction is the same answer
+  // whether the browser did the work or not.
   useBrowserLayoutEffect(() => {
     const strip = stripRef.current;
-    const before = widthBefore.current;
+    const held = anchor.current;
 
-    if (!strip || before === null) return;
+    if (!strip || !held) return;
 
-    widthBefore.current = null;
-    strip.scrollLeft += strip.scrollWidth - before;
+    anchor.current = null;
+    strip.scrollLeft = contentLeft(strip, held.chip) + held.offset;
   }, [days]);
 
   const loadOlder = useCallback(async () => {
     const strip = stripRef.current;
     const oldest = days[0]?.day;
 
-    if (!strip || !oldest || isLoading.current || hasFailed.current) return;
+    if (!strip || !oldest) return;
 
-    isLoading.current = true;
-    widthBefore.current = strip.scrollWidth;
+    // Keyed on the day asked for, not on a boolean "a request is out".
+    // A boolean cleared when the promise resolves is cleared BEFORE
+    // React has committed the days, and scroll events keep arriving in
+    // that gap — so a second request went out for the same span and
+    // prepended the same 45 days twice, with 45 duplicate keys and a
+    // jump of a month and a half (found in review, 2026-11-09). The
+    // cursor cannot do that: the day stays "already asked" until the
+    // chips that answered it are on screen, which is what moves the
+    // oldest day along.
+    if (requestedFrom.current === oldest || Date.now() < retryAfter.current) return;
+
+    requestedFrom.current = oldest;
 
     const older = await readOlderDays(oldest);
 
-    isLoading.current = false;
-
-    // Null is a read that failed or a session that has gone; either way
-    // asking again on the next scroll event would be asking forty times
-    // a second. The strip keeps what it has and stops growing — there
-    // is nothing to say to the person, because nothing they can see has
-    // gone wrong.
+    // A read that failed, or a session that has gone. The strip keeps
+    // what it has and waits before asking again — there is nothing to
+    // say to the person, because nothing they can see has gone wrong,
+    // but a pause is not a full stop: one timeout must not take the
+    // rest of the history away for as long as the page is open.
     if (older === null || older.length === 0) {
-      hasFailed.current = true;
-      widthBefore.current = null;
+      requestedFrom.current = null;
+      retryAfter.current = Date.now() + RETRY_PAUSE_MS;
 
       return;
+    }
+
+    // The strip's leftmost chip, taken here rather than before the
+    // request: the person goes on scrolling while it is in flight, and
+    // what has to be held still is wherever the strip stands when the
+    // days actually arrive. The node survives the re-render — React
+    // keys the chips by their day and inserts the new ones before it —
+    // so its place on the other side is the same chip's new place.
+    const chip = strip.firstElementChild;
+
+    if (chip instanceof HTMLElement) {
+      anchor.current = { chip, offset: strip.scrollLeft - contentLeft(strip, chip) };
     }
 
     setDays((current) => [...older, ...current]);
@@ -270,11 +338,24 @@ export const DayLastDays = ({ openDay, today, days: initialDays }: DayLastDaysPr
     <LastDaysShell headingId={HEADING_ID} label={t("label")}>
       <div
         ref={attachStrip}
+        // Hidden until the scroll is where it belongs, and never
+        // hidden again: `positioned` only ever goes true, so this
+        // leaves the markup after the first commit.
+        style={positioned ? undefined : { visibility: "hidden" }}
         onScroll={onScroll}
         // `overscroll-x-contain` is not decoration: without it a flick
         // that runs past the oldest chip is handed to Safari, which
         // reads a horizontal drag from the edge as "go back".
-        className={`${LAST_DAYS_ROW} snap-x snap-proximity overflow-x-auto overscroll-x-contain hide-scrollbar`}
+        //
+        // No scroll snapping, and that is a decision rather than an
+        // omission. It was here and came out: with chips snapped to the
+        // edge, the browser answers every scrollLeft we set by moving
+        // it again to the nearest snap point, so neither the position
+        // held across a chunk arriving nor the one restored after a tap
+        // landed where it was put — measured at 10px and at a whole
+        // chip on a real page (2026-11-09). A 42px chip gains little
+        // from snapping and the strip is read, not paged.
+        className={`${LAST_DAYS_ROW} overflow-x-auto overscroll-x-contain hide-scrollbar`}
       >
         {visibleDays(days, openDay, today).map(({ day, minutes }) => {
           const { weekday, dayOfMonth } = shortDayLabel(day);
@@ -297,16 +378,25 @@ export const DayLastDays = ({ openDay, today, days: initialDays }: DayLastDaysPr
             );
           }
 
-          // A day nobody has lived yet. Not a link, so it is not in the
-          // tab order either, and no accessible name of its own: the
-          // weekday and the date are read out as the text they are, and
-          // there is nothing here to announce as an action.
+          // A day nobody has lived yet. Not a link, so it is not in
+          // the tab order either, and nothing here is announced as an
+          // action — but the text still is, and a dash on its own is
+          // read out as a dash. On a day behind us that dash has a
+          // sentence attached to it ("nothing recorded", on the link's
+          // own label); this chip has no label to carry one, so the
+          // dash is hidden and the words stand in its place. The eye
+          // and the ear then get the same thing, which is the whole
+          // point: these two dashes mean different things (found in
+          // review, 2026-11-09).
           if (isFutureDay(day, today)) {
             return (
               <div key={day} className={CHIP_FUTURE}>
                 <span className={WEEKDAY}>{weekday}</span>
                 <span className={DATE}>{dayOfMonth}</span>
-                <span className={VALUE}>{t("none")}</span>
+                <span className={VALUE}>
+                  <span aria-hidden="true">{t("none")}</span>
+                  <span className="sr-only">{t("notYet")}</span>
+                </span>
               </div>
             );
           }

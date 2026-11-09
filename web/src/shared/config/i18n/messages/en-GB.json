@@ -102,6 +102,7 @@
       "lastDays": {
         "label": "Last days",
         "none": "—",
+        "notYet": "not yet",
         "chipHours": "{weekday} {date}, {amount}",
         "chipEmpty": "{weekday} {date}, nothing recorded"
       },
