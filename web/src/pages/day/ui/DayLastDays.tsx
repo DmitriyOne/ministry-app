@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import {
   type DayKey,
@@ -14,7 +14,7 @@ import {
 import { DayHoursValue } from "@/features/hours-entry";
 import { APP_EVENTS } from "@/shared/config";
 
-import { isFutureDay, type StripDay, visibleDays } from "../model/last-days";
+import { firstPaintDays, isFutureDay, type StripDay, visibleDays } from "../model/last-days";
 import { LAST_DAYS_CHIP, LAST_DAYS_ROW, LastDaysShell } from "./LastDaysShell";
 
 type DayLastDaysProps = {
@@ -61,6 +61,13 @@ type DayLastDaysProps = {
 // before: FSD v2.1 keeps code where it is used until there is real
 // reuse, and there is one caller.
 const HEADING_ID = "day-last-days-heading";
+
+// Layout work that must happen before the browser paints, from a
+// component React also renders on the server. useLayoutEffect does
+// nothing there and says so in the console every time, so the server
+// gets the effect that is correct for it: one that never runs, because
+// there is no scrolling to do without a DOM.
+const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 // Only the links press. The chip's outline, and why `pressable` is not
 // part of it, are in LastDaysShell beside the card.
@@ -177,43 +184,61 @@ export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
   // right to look at in a column 42px wide and wrong to hear.
   const tProgress = useTranslations("screens.day.progress");
 
-  // Whether the strip has been put where it belongs. Until it has, it
-  // is held invisible — see attachStrip below for why.
-  const [positioned, setPositioned] = useState(false);
+  // Everything the strip MAY show: the whole window, or only as far as
+  // the open day when the zone read failed and "to come" cannot be told
+  // from "already served".
+  const shown = visibleDays(days, openDay, today);
+
+  // Whether the whole window is on screen yet. The first render — the
+  // one the server makes and the browser paints before any script has
+  // run — holds the week behind the open day and nothing older, which
+  // is the strip as it has always looked. The rest arrives a moment
+  // later, together with the scroll that places it.
+  const [expanded, setExpanded] = useState(false);
 
   const stripRef = useRef<HTMLDivElement | null>(null);
   // Where the tapped chip stood on the screen we came from, taken out of
   // session storage once and held for as long as this strip lives.
   const restored = useRef<number | null | undefined>(undefined);
 
-  // Where the strip stands when it first appears. A ref callback rather
-  // than an effect, because this runs with the DOM attached and before
-  // the browser paints — an effect would show the strip at its oldest
-  // day for a frame and then jump.
+  // The element, kept for the scrolling below. No positioning here any
+  // more: with only a week in the DOM there is nothing to scroll yet.
   const attachStrip = useCallback((strip: HTMLDivElement | null) => {
     stripRef.current = strip;
+  }, []);
 
-    if (!strip) return;
+  // Unfold the rest of the window, once, after the first paint. In a
+  // frame of its own rather than straight out of the effect: the point
+  // is for the browser to have shown the week first, and asking for
+  // another render inside an effect is also what the lint rule about
+  // cascading renders is there to stop.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setExpanded(true));
 
-    const open = strip.querySelector<HTMLElement>("[data-open-day]");
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
-    if (!open) return;
+  // ...and place it in the same breath, before anything is painted: the
+  // chips arrive on the LEFT of the open day, so an unplaced strip
+  // would show the oldest week for a frame and then jump.
+  //
+  // This is where hiding the strip until it was positioned used to be,
+  // and it was the wrong trade: the card flashed empty between the
+  // skeleton and the days, which reads as broken (the owner,
+  // 2026-11-09). Now every frame is a true one — seven chips, then the
+  // same seven with two months behind them.
+  useBrowserLayoutEffect(() => {
+    const strip = stripRef.current;
+    const open = strip?.querySelector<HTMLElement>("[data-open-day]");
 
-    // Only now is there anything true to show. Until this runs, the
-    // strip holds two months of history with its scroll at zero, which
-    // is the oldest week on the left of a card that says "last days" —
-    // so it waits, invisible, rather than show the wrong days for as
-    // long as hydration takes. Nothing is lost by it: without
-    // JavaScript this app draws no screen at all (ADR 0019).
-    setPositioned(true);
+    if (!expanded || !strip || !open) return;
 
-    // Read from storage ONCE per mount and kept here afterwards.
-    // Strict mode attaches a ref, detaches it and attaches it again, so
-    // a callback that reads-and-clears would spend the offset on the
-    // first attach and find nothing on the second — which is exactly
-    // what it did: the strip opened at its right edge in development
-    // and would have landed correctly only in production (found on a
-    // real page, 2026-11-09). `undefined` is "not looked yet", null is
+    // Read from storage ONCE and kept here afterwards. Strict mode runs
+    // effects twice, so a read-and-clear would spend the offset on the
+    // first pass and find nothing on the second — which is exactly what
+    // it did: the strip opened at its right edge in development and
+    // would have landed correctly only in production (found on a real
+    // page, 2026-11-09). `undefined` is "not looked yet", null is
     // "looked, and there was nothing".
     if (restored.current === undefined) restored.current = takeOffset();
 
@@ -222,11 +247,12 @@ export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
     // Arrived by tapping a chip: that day goes back exactly where the
     // finger left it, so the strip appears not to have moved and only
     // the colour changes. Arrived any other way: the open day on the
-    // right, which is where this strip has always ended.
+    // right, which is where this strip has always ended — and where the
+    // frame before this one already had it.
     strip.scrollLeft = offset === null
       ? homeScroll(strip, open)
       : contentLeft(open) - offset;
-  }, []);
+  }, [expanded]);
 
   // "Back to today", said by the bottom bar when the Day item is tapped
   // on the day screen that is already open (APP_EVENTS.navItemRepeated,
@@ -273,10 +299,6 @@ export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
     <LastDaysShell headingId={HEADING_ID} label={t("label")}>
       <div
         ref={attachStrip}
-        // Hidden until the scroll is where it belongs, and never
-        // hidden again: `positioned` only ever goes true, so this
-        // leaves the markup after the first commit.
-        style={positioned ? undefined : { visibility: "hidden" }}
         // `relative` is load-bearing twice over. It makes the strip
         // the thing a chip's offsetLeft is measured from, which is what
         // the scroll positions above are in — and it makes the strip
@@ -301,7 +323,7 @@ export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
         // from snapping and the strip is read, not paged.
         className={`${LAST_DAYS_ROW} relative overflow-x-auto overscroll-x-contain hide-scrollbar`}
       >
-        {visibleDays(days, openDay, today).map(({ day, minutes }) => {
+        {(expanded ? shown : firstPaintDays(shown, openDay)).map(({ day, minutes }) => {
           const { weekday, dayOfMonth } = shortDayLabel(day);
 
           // The open day. A <div>, not a link to the page it is already
