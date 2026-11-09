@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   type DayKey,
@@ -9,63 +12,75 @@ import {
   shortDayLabel,
 } from "@/entities/ministry-day";
 import { DayHoursValue } from "@/features/hours-entry";
-import type { PreviousDay } from "../model/last-days";
-import { LAST_DAYS_CHIP, LastDaysShell } from "./LastDaysShell";
+import { APP_EVENTS } from "@/shared/config";
+
+import { isFutureDay, type StripDay, visibleDays } from "../model/last-days";
+import {
+  LAST_DAYS_CHIP,
+  LAST_DAYS_ROW,
+  LastDaysShell,
+  LastDaysWaitingRow,
+} from "./LastDaysShell";
 
 type DayLastDaysProps = {
-  // The day the screen is on. Its chip is the seventh and last, on the
-  // right, where the card above it and the forward arrow are.
+  // The day the screen is on. Its chip is the dark one, wherever the
+  // strip happens to be standing.
   openDay: DayKey;
-  days: PreviousDay[];
+  // The person's own today, or null when the zone read failed. It is
+  // what divides a day that can be opened from one that cannot — and
+  // with it unknown, the strip stops at the open day rather than guess
+  // (visibleDays, ../model/last-days).
+  today: DayKey | null;
+  days: StripDay[];
 };
 
-// The week behind the open day: seven chips, each a day — weekday, date,
-// and the hours on it (ADR 0065, the owner's artboard B). Under the
-// progress block, which is where macro A left room for it (ADR 0064).
+// The strip of days under the progress block, which scrolls (ADR 0065,
+// the owner's artboard B; update 2026-11-09 for the scrolling).
 //
 // What it is for: the progress block says how the month is going, and
-// this says which days are still empty. A gap here is the thing a person
-// acts on — it reads as "go back and fill that in" — which is why a day
-// with no row shows a dash and not 0:00: a zero would claim somebody
-// looked and there was nothing (ADR 0062).
+// this says which days are still empty. A gap here is the thing a
+// person acts on — it reads as "go back and fill that in" — which is
+// why a day with no row shows a dash and not 0:00: a zero would claim
+// somebody looked and there was nothing (ADR 0062).
 //
-// Six of the chips are links and server-rendered. The seventh is the
-// open day: not a link, because it is this page, and its number is NOT
-// read from the database — DayHoursValue takes it from the hours
-// provider, so the chip and the card never disagree after a tap (ADR
-// 0065). That one number is the only client-rendered thing in here.
+// It held exactly seven days until this update, and seven is what it
+// still shows at rest: the open day on the right and the week behind
+// it. Now it also pulls — back to the first of the month two months
+// before this one, and forward to the end of the open day's month,
+// where the days nobody has lived yet sit: drawn, so the month can be
+// seen whole, but on no plate and behind no link.
 //
-// In pages/day and not in a slice of its own, by the same reading as the
-// heading beside it: FSD v2.1 keeps code where it is used until there is
-// real reuse, and there is one caller. The calendar (a later step) is
-// the legitimate reason to extract it — once it exists and says which
-// shape it needs.
+// The whole window comes with the screen, in one read. Nothing is
+// fetched on scroll, and that is the floor's doing: a strip with no
+// floor had to load as it went, and with that came a chunk loader, a
+// scroll anchor, and a race between the two (ADR 0065, update
+// 2026-11-09).
 //
-// Plain next/link rather than LinkButton: a chip is a column of three
-// lines with no fixed height, and buttonVariants is a single row with
-// one (`inline-flex items-center`, `h-*`, `px-*`, `rounded-button`,
-// `bg-card`, `shadow-card`) — using it would mean overriding six
-// properties to get back to this. `pressable` gives the press the rest
-// of the app has, and next/link keeps the step client-side, which is
-// what matters: a full load would re-run LaunchGate and its splash
-// (ADR 0024).
+// Still a CLIENT component, for what is left of the job: where the
+// strip stands when it appears, and where it stands after a tap. The
+// open day's number was already client-rendered for its own reason
+// (DayHoursValue, below), so the server markup this replaces was never
+// the whole strip anyway.
+//
+// In pages/day and not in a slice of its own, by the same reading as
+// before: FSD v2.1 keeps code where it is used until there is real
+// reuse, and there is one caller.
 const HEADING_ID = "day-last-days-heading";
 
-// Only the six links press. The chip's outline, and why `pressable` is
-// not part of it, are in LastDaysShell beside the card.
+// Only the links press. The chip's outline, and why `pressable` is not
+// part of it, are in LastDaysShell beside the card.
 //
 // Under the finger a chip also takes COLOUR (the owner, 2026-10-28):
 // `pressable` alone is a 2% squeeze, which answers a thumb but does not
 // read as "this one". The tint is the app's own green, and it is the
 // first half of a sentence the arrival finishes — the day it opens on
-// becomes the dark chip on the right.
+// becomes the dark chip.
 //
 // Pure CSS, so it costs no JavaScript and happens on touch rather than
 // after a round trip: the same `:active` the whole app presses on. No
 // `transition-colors` with it — `.pressable` lives in @layer components
 // and a transition utility sits above that layer, so adding one would
-// replace `transition: transform` and take the squeeze away. An instant
-// tint is also the more honest answer to a finger.
+// replace `transition: transform` and take the squeeze away.
 //
 // The TEXT goes full ink with it, and that is not decoration: measured,
 // --ink-faint on the tinted ground is 4.05:1, which fails AA for an
@@ -86,57 +101,306 @@ const CHIP_LINK
 const CHIP_RECORDED = `${CHIP_LINK} text-foreground`;
 const CHIP_EMPTY = `${CHIP_LINK} text-ink-faint`;
 const CHIP_OPEN = `${LAST_DAYS_CHIP} bg-hero text-hero-foreground`;
+
+// A day still to come: no plate at all, which is the owner's pick of
+// the two that were drawn (2026-11-09). The plate is what the other
+// chips sit on, so its absence says "nothing to press" before the
+// finger arrives, rather than after.
+//
+// --ink-a55 on the card is 3.5:1 — below AA for this size, and
+// deliberately so: WCAG 1.4.3 exempts text that is part of an inactive
+// component, and a future day is as inactive as it gets. It is dimmer
+// than an empty day behind us (--ink-faint, 4.77:1 here) on purpose:
+// those two dashes mean different things, and only one of them is an
+// invitation.
+const CHIP_FUTURE = `${LAST_DAYS_CHIP} text-ink-a55`;
+
 const WEEKDAY = "text-eyebrow font-600 tracking-eyebrow uppercase";
 const WEEKDAY_QUIET = `${WEEKDAY} text-ink-faint group-active/chip:text-foreground`;
 const DATE = "text-body font-600 tabular-nums";
 const VALUE = "text-eyebrow font-540 tabular-nums";
 
-export const DayLastDays = async ({ openDay, days }: DayLastDaysProps) => {
-  const t = await getTranslations("screens.day.lastDays");
+// A chip's place inside the strip's own content, which is what
+// scrollLeft is measured in — and what `offsetLeft` gives, because the
+// strip is `relative` and is therefore the ancestor these are measured
+// from. Without that it counts from <body> instead and carries the
+// screen's 20px and the card's 16px with it: measured on a real page
+// (2026-11-09), that left the open day 36px short of the right edge and
+// put a restored strip most of a chip off from where the finger had
+// left it.
+const contentLeft = (chip: HTMLElement) => chip.offsetLeft;
+
+// Where the strip sits when nothing has asked it to sit anywhere else:
+// the open day against the right edge, which is where this strip ended
+// when it was seven chips and could not move.
+const homeScroll = (strip: HTMLElement, open: HTMLElement) =>
+  contentLeft(open) + open.offsetWidth - strip.clientWidth;
+
+// Where the open day sat on screen when it was tapped, so the next
+// screen can put it back there. Session storage, not local: it is one
+// gesture's worth of state and has no business outliving the tab.
+const OFFSET_KEY = "ministry.last-days-offset";
+
+// Both halves swallow their own failure. Storage throws in a private
+// window and in a browser told to block site data, and the strip has an
+// answer for that which costs nothing: it opens where it always opens,
+// with the open day on the right.
+const rememberOffset = (offset: number) => {
+  try {
+    sessionStorage.setItem(OFFSET_KEY, String(offset));
+  } catch {
+    // Nothing to do and nothing worth reporting: a strip that starts at
+    // its own right edge is the behaviour everybody had until today.
+  }
+};
+
+// Read once and cleared, because it describes one arrival. Left behind,
+// it would reposition the strip on a visit the person made some other
+// way — through the menu, or the arrows in the heading — where "put it
+// back where it was" is not what they asked for.
+const takeOffset = (): number | null => {
+  try {
+    const stored = sessionStorage.getItem(OFFSET_KEY);
+
+    sessionStorage.removeItem(OFFSET_KEY);
+
+    if (stored === null) return null;
+
+    const offset = Number(stored);
+
+    return Number.isFinite(offset) ? offset : null;
+  } catch {
+    return null;
+  }
+};
+
+export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
+  const t = useTranslations("screens.day.lastDays");
   // The hours in words ("2 h 15 min") for the accessible name, from the
-  // same phrases and the same function the progress block's bracket uses
-  // (../model/progress-text). The chip shows "2:15", which is right to
-  // look at in a column 45px wide and wrong to hear.
-  const tProgress = await getTranslations("screens.day.progress");
-  const open = shortDayLabel(openDay);
+  // same phrases and the same function the progress block's bracket
+  // uses (../model/progress-text). The chip shows "2:15", which is
+  // right to look at in a column 42px wide and wrong to hear.
+  const tProgress = useTranslations("screens.day.progress");
+
+  // Everything the strip MAY show: the whole window, or only as far as
+  // the open day when the zone read failed and "to come" cannot be told
+  // from "already served".
+  const shown = visibleDays(days, openDay, today);
+
+  // Whether the strip may be shown at all yet. Until the browser has
+  // run a line of ours, a scroll container stands at its own left edge
+  // — the oldest week — because markup cannot say otherwise, and
+  // whatever it shows in that moment it then has to correct in front of
+  // the person. The card holds the skeleton instead and the days appear
+  // already in place (the owner, 2026-11-09, after seeing the strip
+  // settle itself twice over).
+  const [ready, setReady] = useState(false);
+
+  const stripRef = useRef<HTMLDivElement | null>(null);
+  // Where the tapped chip stood on the screen we came from, taken out of
+  // session storage once and held for as long as this strip lives.
+  const restored = useRef<number | null | undefined>(undefined);
+
+  // Where the strip stands the instant it exists. A ref callback rather
+  // than an effect: this runs with the DOM attached and BEFORE the
+  // browser paints, so the first frame of the strip is already the
+  // placed one. Which is the whole arrangement — the skeleton waits
+  // until there is something true to show, and what replaces it never
+  // moves.
+  const attachStrip = useCallback((strip: HTMLDivElement | null) => {
+    stripRef.current = strip;
+
+    const open = strip?.querySelector<HTMLElement>("[data-open-day]");
+
+    if (!strip || !open) return;
+
+    // Read from storage ONCE per mount and kept here afterwards.
+    // Strict mode attaches a ref, detaches it and attaches it again, so
+    // a callback that reads-and-clears would spend the offset on the
+    // first attach and find nothing on the second — which is exactly
+    // what it did: the strip opened at its right edge in development
+    // and would have landed correctly only in production (found on a
+    // real page, 2026-11-09). `undefined` is "not looked yet", null is
+    // "looked, and there was nothing".
+    if (restored.current === undefined) restored.current = takeOffset();
+
+    const offset = restored.current;
+
+    // Arrived by tapping a chip: that day goes back exactly where the
+    // finger left it, so the strip appears not to have moved and only
+    // the colour changes. Arrived any other way: the open day on the
+    // right, which is where this strip has always ended.
+    strip.scrollLeft = offset === null
+      ? homeScroll(strip, open)
+      : contentLeft(open) - offset;
+  }, []);
+
+  // Swap the skeleton for the strip, once, in a frame of its own. Not
+  // straight out of the effect: asking for another render inside one is
+  // what the lint rule about cascading renders is there to stop, and a
+  // frame is also the honest unit here — the skeleton has to have been
+  // shown, not merely rendered.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setReady(true));
+
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  // "Back to today", said by the bottom bar when the Day item is tapped
+  // on the day screen that is already open (APP_EVENTS.navItemRepeated,
+  // shared/config/app-events.ts). Nothing navigates then — the address
+  // is the same — so without this the strip would simply stay wherever
+  // it had been pulled to, which is the one thing that tap cannot mean.
+  //
+  // Smoothly, because this one IS a journey: the person can see where
+  // the strip was and where it went, and a jump would look like a
+  // redraw. Everywhere else the scroll is set outright, before anything
+  // is painted, where there is no motion to perceive.
+  useEffect(() => {
+    const goHome = () => {
+      const strip = stripRef.current;
+      const open = strip?.querySelector<HTMLElement>("[data-open-day]");
+
+      if (!strip || !open) return;
+
+      strip.scrollTo({
+        left: homeScroll(strip, open),
+        // The project's own rule, not a nicety: motion is offered, never
+        // imposed (ADR 0019 reads the same preference for the splash).
+        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
+    };
+
+    window.addEventListener(APP_EVENTS.navItemRepeated, goHome);
+
+    return () => window.removeEventListener(APP_EVENTS.navItemRepeated, goHome);
+  }, []);
+
+  // Remembered on the way out, from the chip that was tapped: its
+  // distance from the strip's left edge is all the next screen needs to
+  // put it back.
+  const rememberTapped = useCallback((chip: HTMLElement | null) => {
+    const strip = stripRef.current;
+
+    if (strip && chip) {
+      rememberOffset(chip.getBoundingClientRect().left - strip.getBoundingClientRect().left);
+    }
+  }, []);
 
   return (
     <LastDaysShell headingId={HEADING_ID} label={t("label")}>
-      {days.map(({ day, minutes }) => {
-        const { weekday, dayOfMonth } = shortDayLabel(day);
+      {/* The skeleton until the strip knows where it stands, and the
+          strip from then on. Not a trick to hide a jump: there is
+          nothing true to show before the position is worked out, and a
+          waiting state is what this card already has for that. */}
+      {ready
+        ? (
+            <div
+              ref={attachStrip}
+              // `relative` is load-bearing twice over. It makes the
+              // strip the thing a chip's offsetLeft is measured from,
+              // which is what the scroll positions above are in — and
+              // it makes the strip the containing block for the sr-only
+              // text inside the chips. Absolutely positioned content
+              // whose containing block is OUTSIDE a scroll container is
+              // not clipped by it: without this, the screen-reader
+              // phrase on the last day of the month sat 4000px out and
+              // the whole PAGE scrolled sideways with it (found on a
+              // real page, 2026-11-09).
+              //
+              // `overscroll-x-contain` is not decoration either:
+              // without it a flick that runs past the oldest chip is
+              // handed to Safari, which reads a horizontal drag from
+              // the edge as "go back".
+              //
+              // No scroll snapping, and that is a decision rather than
+              // an omission. It was here and came out: with chips
+              // snapped to the edge, the browser answers every
+              // scrollLeft we set by moving it again to the nearest
+              // snap point, so the position restored after a tap never
+              // landed where it was put — measured at 10px in one place
+              // and a whole chip in another (2026-11-09). A 42px chip
+              // gains little from snapping, and the strip is read, not
+              // paged.
+              className={`${LAST_DAYS_ROW} relative overflow-x-auto overscroll-x-contain hide-scrollbar`}
+            >
+              {shown.map(({ day, minutes }) => {
+                const { weekday, dayOfMonth } = shortDayLabel(day);
 
-        return (
-          <Link
-            key={day}
-            href={dayPath(day)}
-            aria-label={minutes === null
-              ? t("chipEmpty", { weekday, date: dayOfMonth })
-              : t("chipHours", {
-                  weekday,
-                  date: dayOfMonth,
-                  amount: durationPhrase(tProgress, minutes),
-                })}
-            className={minutes === null ? CHIP_EMPTY : CHIP_RECORDED}
-          >
-            <span className={WEEKDAY_QUIET}>{weekday}</span>
-            <span className={DATE}>{dayOfMonth}</span>
-            <span className={VALUE}>
-              {minutes === null ? t("none") : formatHours(minutes)}
-            </span>
-          </Link>
-        );
-      })}
+                // The open day. A <div>, not a link to the page it is already
+                // on, and not a button: there is nothing to press. aria-current
+                // is what says which one it is, since colour cannot. Its number
+                // is NOT read from the database — DayHoursValue takes it from
+                // the hours provider, so the chip and the card never disagree
+                // after a tap (ADR 0065).
+                if (day === openDay) {
+                  return (
+                    <div key={day} data-open-day aria-current="date" className={CHIP_OPEN}>
+                      <span className={`${WEEKDAY} text-white/50`}>{weekday}</span>
+                      <span className={DATE}>{dayOfMonth}</span>
+                      <span className={VALUE}>
+                        <DayHoursValue />
+                      </span>
+                    </div>
+                  );
+                }
 
-      {/* The open day. A <div>, not a link to the page it is already on,
-          and not a button: there is nothing to press. aria-current is
-          what says which one it is, since colour cannot. */}
-      <div aria-current="date" className={CHIP_OPEN}>
-        <span className={`${WEEKDAY} text-white/50`}>{open.weekday}</span>
-        <span className={DATE}>{open.dayOfMonth}</span>
-        <span className={VALUE}>
-          <DayHoursValue />
-        </span>
-      </div>
+                // A day nobody has lived yet. Not a link, so it is not in
+                // the tab order either, and nothing here is announced as an
+                // action — but the text still is, and a dash on its own is
+                // read out as a dash. On a day behind us that dash has a
+                // sentence attached to it ("nothing recorded", on the link's
+                // own label); this chip has no label to carry one, so the
+                // dash is hidden and the words stand in its place. The eye
+                // and the ear then get the same thing, which is the whole
+                // point: these two dashes mean different things (found in
+                // review, 2026-11-09).
+                if (isFutureDay(day, today)) {
+                  return (
+                    <div key={day} className={CHIP_FUTURE}>
+                      <span className={WEEKDAY}>{weekday}</span>
+                      <span className={DATE}>{dayOfMonth}</span>
+                      <span className={VALUE}>
+                        <span aria-hidden="true">{t("none")}</span>
+                        <span className="sr-only">{t("notYet")}</span>
+                      </span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={day}
+                    href={dayPath(day)}
+                    // Off, unlike everywhere else in the app, and this is the
+                    // one place it has to be: next/link prefetches a link when
+                    // it scrolls into view, and a strip pulled back through a
+                    // month would ask the server for thirty screens nobody
+                    // opened. Tapping still navigates client-side, and the
+                    // loading boundary (day/[day]/loading.tsx) covers the
+                    // moment the prefetch used to.
+                    prefetch={false}
+                    onClick={(event) => rememberTapped(event.currentTarget)}
+                    aria-label={minutes === null
+                      ? t("chipEmpty", { weekday, date: dayOfMonth })
+                      : t("chipHours", {
+                          weekday,
+                          date: dayOfMonth,
+                          amount: durationPhrase(tProgress, minutes),
+                        })}
+                    className={minutes === null ? CHIP_EMPTY : CHIP_RECORDED}
+                  >
+                    <span className={WEEKDAY_QUIET}>{weekday}</span>
+                    <span className={DATE}>{dayOfMonth}</span>
+                    <span className={VALUE}>
+                      {minutes === null ? t("none") : formatHours(minutes)}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )
+        : <LastDaysWaitingRow />}
     </LastDaysShell>
   );
 };

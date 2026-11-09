@@ -30,8 +30,10 @@ the loading skeleton twice. On it: the hours card (minus and plus by five minute
 **saves itself, with no button** — a tap moves the number at once and one
 write goes out for the whole burst; a progress block with a bar each for
 the month and the service year and how much of the goal is still to go;
-and a strip of the last seven days, where a day with no record shows a
-dash rather than a zero, because a zero would claim somebody had looked.
+and a strip of days that pulls sideways — two months back, and forward
+to the end of the month, where the days nobody has lived yet are drawn
+but cannot be opened. A day with no record shows a dash rather than a
+zero, because a zero would claim somebody had looked.
 
 `/profile` carries the name, role, ministry status (publisher through
 regular pioneer), the monthly and service-year goals, the push toggle,
