@@ -70,16 +70,15 @@ export type DayPageData = ScreenRead<{
   savedMinutes: number;
   timeZone: string | null;
   progress: DayProgress | null;
-  // The strip's window — a month and a half behind the open day and on
-  // to the end of its month — or null when that read failed. The same
+  // The strip's whole window — two months behind the open day and on to
+  // the end of its month — or null when that read failed. The same
   // all-or-nothing rule the progress block follows: a strip with a chip
   // missing would say "nothing recorded" about a day that may hold
   // hours, and that is the one thing it must never say, because it is
   // read as "go back and fill this in".
   //
-  // The strip reaches further back than this as the person scrolls, a
-  // chunk at a time, and those chunks come from the action beside this
-  // file (read-older-days-action.ts).
+  // Whole, with nothing to follow: the strip has a floor and fetches
+  // nothing of its own (ADR 0065, update 2026-11-09).
   lastDays: StripDay[] | null;
   // The month this day belongs to has been reported and shut (ADR
   // 0066): the card shows what it holds and nothing may be dialled.
@@ -140,11 +139,11 @@ export const readDayPage = async (day: DayKey): Promise<DayPageData> => {
       // the way ministry_days_total_minutes repeats its own conditions:
       // it costs nothing and keeps the query right on its own terms.
       //
-      // Seventy-six rows at the very most — a month and a half back
-      // plus a month forward, and the days ahead hold none — so no
-      // order and no limit: the strip is built from the days, not from
-      // the order they arrive in, and the span is nowhere near the
-      // thousand rows PostgREST would silently cut at (ADR 0038/0058).
+      // Ninety-two rows at the very most — three calendar months, of
+      // which the days still ahead hold none — so no order and no
+      // limit: the strip is built from the days, not from the order
+      // they arrive in, and the span is nowhere near the thousand rows
+      // PostgREST would silently cut at (ADR 0038/0058).
       supabase
         .from("ministry_days")
         .select("day, minutes")

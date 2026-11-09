@@ -8,22 +8,25 @@ vi.mock("@/shared/config", () => ({ routes: { day: "/day" } }));
 
 import type { DayKey } from "@/entities/ministry-day";
 
-import {
-  isFutureDay,
-  lastDaysSpan,
-  olderDaysSpan,
-  stripDays,
-  visibleDays,
-} from "./last-days";
+import { isFutureDay, lastDaysSpan, stripDays, visibleDays } from "./last-days";
 
 const day = (value: string) => value as DayKey;
 
 describe("lastDaysSpan", () => {
-  it("reaches forty-five days back and to the end of the open day's month", () => {
+  // Two months back, to the FIRST of that month: a strip that stopped
+  // halfway through a month could not be read for that month, and
+  // reading a month whole is the reason to go back at all.
+  it("starts on the first of the month two months back", () => {
     expect(lastDaysSpan(day("2026-06-10"))).toEqual({
-      from: day("2026-04-26"),
+      from: day("2026-04-01"),
       to: day("2026-06-30"),
     });
+  });
+
+  // The day of the month changes nothing at the near end, which is what
+  // makes the floor a month rather than a date.
+  it("starts in the same place wherever in the month the open day is", () => {
+    expect(lastDaysSpan(day("2026-06-01")).from).toEqual(lastDaysSpan(day("2026-06-30")).from);
   });
 
   // The far end is the month's own last day, whatever length it has:
@@ -37,25 +40,19 @@ describe("lastDaysSpan", () => {
   });
 
   it("crosses the start of a year going back", () => {
-    expect(lastDaysSpan(day("2026-01-10")).from).toEqual(day("2025-11-26"));
-  });
-});
-
-describe("olderDaysSpan", () => {
-  // The two pieces have to meet exactly: a day of overlap would draw a
-  // chip twice, and a day of gap would lose one.
-  it("ends the day before the oldest chip on the strip", () => {
-    expect(olderDaysSpan(day("2026-06-10"))).toEqual({
-      from: day("2026-04-26"),
-      to: day("2026-06-09"),
+    expect(lastDaysSpan(day("2026-01-10"))).toEqual({
+      from: day("2025-11-01"),
+      to: day("2026-01-31"),
     });
   });
 
-  it("crosses the start of a year", () => {
-    expect(olderDaysSpan(day("2026-01-01"))).toEqual({
-      from: day("2025-11-17"),
-      to: day("2025-12-31"),
-    });
+  // The window is what the DOM will hold, so its size is worth pinning:
+  // a floor that quietly became a year would fail no other test here.
+  it("never holds more than three months of chips", () => {
+    const widest = stripDays(lastDaysSpan(day("2026-07-31")), []);
+
+    expect(widest.length).toBeLessThanOrEqual(92);
+    expect(widest[0].day).toEqual(day("2026-05-01"));
   });
 });
 

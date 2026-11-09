@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import {
   type DayKey,
@@ -13,7 +13,6 @@ import {
 } from "@/entities/ministry-day";
 import { DayHoursValue } from "@/features/hours-entry";
 
-import { readOlderDays } from "../api/read-older-days-action";
 import { isFutureDay, type StripDay, visibleDays } from "../model/last-days";
 import { LAST_DAYS_CHIP, LAST_DAYS_ROW, LastDaysShell } from "./LastDaysShell";
 
@@ -40,15 +39,20 @@ type DayLastDaysProps = {
 //
 // It held exactly seven days until this update, and seven is what it
 // still shows at rest: the open day on the right and the week behind
-// it. Now it also pulls, back without a limit and forward to the end of
-// the open day's month, which is where the days nobody has lived yet
-// sit — drawn, so the month can be seen whole, but on no plate and
-// behind no link.
+// it. Now it also pulls — back to the first of the month two months
+// before this one, and forward to the end of the open day's month,
+// where the days nobody has lived yet sit: drawn, so the month can be
+// seen whole, but on no plate and behind no link.
 //
-// A CLIENT component, which it was not before. The reason is the pull
-// itself: scrolling has to be noticed, the next chunk fetched and the
-// position held while the chips are pushed in from the left. The open
-// day's number was already client-rendered for its own reason
+// The whole window comes with the screen, in one read. Nothing is
+// fetched on scroll, and that is the floor's doing: a strip with no
+// floor had to load as it went, and with that came a chunk loader, a
+// scroll anchor, and a race between the two (ADR 0065, update
+// 2026-11-09).
+//
+// Still a CLIENT component, for what is left of the job: where the
+// strip stands when it appears, and where it stands after a tap. The
+// open day's number was already client-rendered for its own reason
 // (DayHoursValue, below), so the server markup this replaces was never
 // the whole strip anyway.
 //
@@ -56,18 +60,6 @@ type DayLastDaysProps = {
 // before: FSD v2.1 keeps code where it is used until there is real
 // reuse, and there is one caller.
 const HEADING_ID = "day-last-days-heading";
-
-// How close to the left edge the strip gets before the next chunk is
-// asked for — about four chips, so the days are usually there by the
-// time the finger reaches them.
-const LOAD_AHEAD_PX = 180;
-
-// Layout work that must happen before the browser paints, from a
-// component React also renders on the server. useLayoutEffect does
-// nothing there and says so in the console every time, so the server
-// gets the effect that is correct for it: one that never runs, because
-// there is no scrolling to do without a DOM.
-const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 // Only the links press. The chip's outline, and why `pressable` is not
 // part of it, are in LastDaysShell beside the card.
@@ -135,11 +127,6 @@ const VALUE = "text-eyebrow font-540 tabular-nums";
 // ancestor.
 const contentLeft = (strip: HTMLElement, chip: HTMLElement) => chip.offsetLeft - strip.offsetLeft;
 
-// How long the strip waits before asking again after a read came back
-// with nothing. Long enough that an outage is not answered forty times
-// a second, short enough that the next real flick tries again.
-const RETRY_PAUSE_MS = 10_000;
-
 // Where the open day sat on screen when it was tapped, so the next
 // screen can put it back there. Session storage, not local: it is one
 // gesture's worth of state and has no business outliving the tab.
@@ -178,7 +165,7 @@ const takeOffset = (): number | null => {
   }
 };
 
-export const DayLastDays = ({ openDay, today, days: initialDays }: DayLastDaysProps) => {
+export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
   const t = useTranslations("screens.day.lastDays");
   // The hours in words ("2 h 15 min") for the accessible name, from the
   // same phrases and the same function the progress block's bracket
@@ -186,22 +173,11 @@ export const DayLastDays = ({ openDay, today, days: initialDays }: DayLastDaysPr
   // right to look at in a column 42px wide and wrong to hear.
   const tProgress = useTranslations("screens.day.progress");
 
-  const [days, setDays] = useState(initialDays);
   // Whether the strip has been put where it belongs. Until it has, it
   // is held invisible — see attachStrip below for why.
   const [positioned, setPositioned] = useState(false);
 
   const stripRef = useRef<HTMLDivElement | null>(null);
-  // The oldest day a request has already been sent for, and the moment
-  // after which a failed one may be retried. Refs rather than state:
-  // nothing on screen depends on either, and a re-render per scroll
-  // event is exactly what a scroll handler must not cause.
-  const requestedFrom = useRef<string | null>(null);
-  const retryAfter = useRef(0);
-  // The chip the strip was standing on when older days arrived, and how
-  // far into it the left edge was, so the scroll can be put back on it
-  // once they are in the DOM.
-  const anchor = useRef<{ chip: HTMLElement; offset: number } | null>(null);
   // Where the tapped chip stood on the screen we came from, taken out of
   // session storage once and held for as long as this strip lives.
   const restored = useRef<number | null | undefined>(undefined);
@@ -220,10 +196,10 @@ export const DayLastDays = ({ openDay, today, days: initialDays }: DayLastDaysPr
     if (!open) return;
 
     // Only now is there anything true to show. Until this runs, the
-    // strip holds a month and a half of history with its scroll at
-    // zero, which is September on the left of a card that says "last
-    // days" — so it waits, invisible, rather than show the wrong week
-    // for as long as hydration takes. Nothing is lost by it: without
+    // strip holds two months of history with its scroll at zero, which
+    // is the oldest week on the left of a card that says "last days" —
+    // so it waits, invisible, rather than show the wrong days for as
+    // long as hydration takes. Nothing is lost by it: without
     // JavaScript this app draws no screen at all (ADR 0019).
     setPositioned(true);
 
@@ -248,81 +224,6 @@ export const DayLastDays = ({ openDay, today, days: initialDays }: DayLastDaysPr
       : contentLeft(strip, open) - offset;
   }, []);
 
-  // After older days are pushed in on the left, every chip that was on
-  // screen has moved right. This puts the strip back on the one it was
-  // standing on, so the pull feels continuous instead of jumping.
-  //
-  // It sets an ABSOLUTE position rather than adding the width of what
-  // arrived, and the difference is not academic: with scroll snapping
-  // on, the browser ALSO restores the position by itself, and adding a
-  // shift on top of that moved the strip twice — a flick back through
-  // September landed in the middle of November (found on a real page,
-  // 2026-11-09). Anchored on a chip, the correction is the same answer
-  // whether the browser did the work or not.
-  useBrowserLayoutEffect(() => {
-    const strip = stripRef.current;
-    const held = anchor.current;
-
-    if (!strip || !held) return;
-
-    anchor.current = null;
-    strip.scrollLeft = contentLeft(strip, held.chip) + held.offset;
-  }, [days]);
-
-  const loadOlder = useCallback(async () => {
-    const strip = stripRef.current;
-    const oldest = days[0]?.day;
-
-    if (!strip || !oldest) return;
-
-    // Keyed on the day asked for, not on a boolean "a request is out".
-    // A boolean cleared when the promise resolves is cleared BEFORE
-    // React has committed the days, and scroll events keep arriving in
-    // that gap — so a second request went out for the same span and
-    // prepended the same 45 days twice, with 45 duplicate keys and a
-    // jump of a month and a half (found in review, 2026-11-09). The
-    // cursor cannot do that: the day stays "already asked" until the
-    // chips that answered it are on screen, which is what moves the
-    // oldest day along.
-    if (requestedFrom.current === oldest || Date.now() < retryAfter.current) return;
-
-    requestedFrom.current = oldest;
-
-    const older = await readOlderDays(oldest);
-
-    // A read that failed, or a session that has gone. The strip keeps
-    // what it has and waits before asking again — there is nothing to
-    // say to the person, because nothing they can see has gone wrong,
-    // but a pause is not a full stop: one timeout must not take the
-    // rest of the history away for as long as the page is open.
-    if (older === null || older.length === 0) {
-      requestedFrom.current = null;
-      retryAfter.current = Date.now() + RETRY_PAUSE_MS;
-
-      return;
-    }
-
-    // The strip's leftmost chip, taken here rather than before the
-    // request: the person goes on scrolling while it is in flight, and
-    // what has to be held still is wherever the strip stands when the
-    // days actually arrive. The node survives the re-render — React
-    // keys the chips by their day and inserts the new ones before it —
-    // so its place on the other side is the same chip's new place.
-    const chip = strip.firstElementChild;
-
-    if (chip instanceof HTMLElement) {
-      anchor.current = { chip, offset: strip.scrollLeft - contentLeft(strip, chip) };
-    }
-
-    setDays((current) => [...older, ...current]);
-  }, [days]);
-
-  const onScroll = useCallback(() => {
-    const strip = stripRef.current;
-
-    if (strip && strip.scrollLeft < LOAD_AHEAD_PX) void loadOlder();
-  }, [loadOlder]);
-
   // Remembered on the way out, from the chip that was tapped: its
   // distance from the strip's left edge is all the next screen needs to
   // put it back.
@@ -342,7 +243,6 @@ export const DayLastDays = ({ openDay, today, days: initialDays }: DayLastDaysPr
         // hidden again: `positioned` only ever goes true, so this
         // leaves the markup after the first commit.
         style={positioned ? undefined : { visibility: "hidden" }}
-        onScroll={onScroll}
         // `overscroll-x-contain` is not decoration: without it a flick
         // that runs past the oldest chip is handed to Safari, which
         // reads a horizontal drag from the edge as "go back".

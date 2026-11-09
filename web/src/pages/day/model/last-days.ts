@@ -1,4 +1,5 @@
 import { addDays, type DayKey } from "@/entities/ministry-day";
+import { addMonths } from "@/entities/ministry-status";
 
 import { monthOfDay, monthSpanOf } from "./progress-span";
 
@@ -6,22 +7,30 @@ import { monthOfDay, monthSpanOf } from "./progress-span";
 // 2026-11-09). Until then it was exactly seven: six read from the
 // database and the open day, and nothing else existed.
 //
-// The strip now reaches back without a limit, a chunk at a time, and
-// forward to the end of the open day's month. These are the two numbers
-// that decide how big each read is.
+// TWO MONTHS back and no further (the owner, 2026-11-09). It was going
+// to be unlimited, a chunk at a time, and that is what the first cut
+// did — until the cost was said out loud: history with no floor is a
+// row that grows for as long as somebody keeps pulling, and every chip
+// of it stays in the page. Two months answers "which days did I miss",
+// which is what this strip is for; older than that is a question about
+// a month, and the month screen answers it properly.
 //
-// FORTY-FIVE back on the first read, which is a month and a half: enough
-// that the first flick has somewhere to go, small enough that the screen
-// is not paying for days nobody will look at. The step is the same
-// number for the same reason — the person who scrolls once usually
-// scrolls again.
-export const LAST_DAYS_BACK = 45;
-export const LAST_DAYS_STEP = 45;
+// The floor is the FIRST DAY of the month two months back, not the same
+// date two months back. A strip that stops in the middle of September
+// cannot be read for September, and reading a month whole is the reason
+// to go back at all. It also needs no arithmetic that has to decide
+// what the 31st of April means.
+//
+// So the window is one read of between 60 and 92 days, and it arrives
+// with everything else the screen asks for. Nothing loads on scroll:
+// that machinery was written, measured, and taken out again when the
+// floor arrived.
+const LAST_DAYS_MONTHS = 2;
 
 // How many chips the skeleton draws while the days are read. Not how
-// many the strip holds any more — that is a span now — but how many fit
-// across the screen the app is built for, which is what the waiting
-// state has to look like.
+// many the strip holds — that is a span — but how many fit across the
+// screen the app is built for, which is what the waiting state has to
+// look like.
 export const LAST_DAYS_SKELETON_CHIPS = 7;
 
 export type StripDay = {
@@ -54,19 +63,15 @@ export type DaySpan = {
 // waterfall ADR 0064 took apart. Days after today simply hold no rows,
 // so asking for them costs an empty answer and nothing else. WHICH of
 // them are still to come is a question for the render, where today is
-// known (visibleDays, isFutureDay below).
-export const lastDaysSpan = (openDay: DayKey): DaySpan => ({
-  from: addDays(openDay, -LAST_DAYS_BACK),
-  to: monthSpanOf(monthOfDay(openDay)).to,
-});
+// known (visibleDays and isFutureDay below).
+export const lastDaysSpan = (openDay: DayKey): DaySpan => {
+  const month = monthOfDay(openDay);
 
-// The next chunk back, asked for when the person reaches the left edge.
-// It ends the day before the oldest chip already on the strip, so the
-// two pieces meet without a gap and without an overlap.
-export const olderDaysSpan = (oldest: DayKey): DaySpan => ({
-  from: addDays(oldest, -LAST_DAYS_STEP),
-  to: addDays(oldest, -1),
-});
+  return {
+    from: monthSpanOf(addMonths(month, -LAST_DAYS_MONTHS)).from,
+    to: monthSpanOf(month).to,
+  };
+};
 
 // Sparse rows in, a dense strip out: the database answers only for days
 // it holds, and the strip has a chip for every day either way.
