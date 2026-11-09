@@ -1,8 +1,9 @@
 // The window events one part of the app raises for another to hear,
 // where the two may not import each other.
 //
-// There is one, and it exists because of a gap ADR 0055 left open on
-// purpose: the connectivity probe does not poll while it believes the
+// There are two.
+//
+// The first exists because of a gap ADR 0055 left open on purpose: the connectivity probe does not poll while it believes the
 // app is online, so an outage that leaves the Wi-Fi connected — the
 // router loses its uplink, DNS stops answering, the backend goes down —
 // is not noticed until something else triggers a probe. The owner found
@@ -23,6 +24,18 @@
 //
 // Prefixed, because the window is shared with the browser, the service
 // worker's client messages and anything an extension injects.
+// The second is the bottom bar answering a tap on the screen the person
+// is ALREADY on. Nothing navigates then — the address is the same one —
+// so the screen never hears about it, and the owner asked for the one
+// thing that tap plainly means: put this screen back where it starts
+// (2026-11-09). The strip of days on /day listens and scrolls itself
+// home; every other screen ignores it, which is why it says "the item
+// was tapped again" rather than "scroll to today".
+//
+// Here rather than in a prop or a context, for the same reason as the
+// first: the bar is a widget, the strip lives in a page, and a page may
+// not hand anything down to the layout that renders the bar.
 export const APP_EVENTS = {
   connectivitySuspect: "ministry:connectivity-suspect",
+  navItemRepeated: "ministry:nav-item-repeated",
 } as const;
