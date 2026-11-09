@@ -12,7 +12,7 @@ import {
 } from "@/shared/api";
 import { reportReadFailure } from "@/shared/lib/action-failure";
 
-import { type PreviousDay, previousDays, previousDaysSpan } from "../model/last-days";
+import { type DaySpan, lastDaysSpan, type StripDay, stripDays } from "../model/last-days";
 import {
   monthOfDay,
   monthSpanOf,
@@ -70,12 +70,17 @@ export type DayPageData = ScreenRead<{
   savedMinutes: number;
   timeZone: string | null;
   progress: DayProgress | null;
-  // The six days behind the open one, or null when that read failed —
-  // the same all-or-nothing rule the progress block follows. A strip
-  // with a chip missing would say "nothing recorded" about a day that
-  // may hold hours, and that is the one thing it must never say: it is
+  // The strip's window — a month and a half behind the open day and on
+  // to the end of its month — or null when that read failed. The same
+  // all-or-nothing rule the progress block follows: a strip with a chip
+  // missing would say "nothing recorded" about a day that may hold
+  // hours, and that is the one thing it must never say, because it is
   // read as "go back and fill this in".
-  previousDays: PreviousDay[] | null;
+  //
+  // The strip reaches further back than this as the person scrolls, a
+  // chunk at a time, and those chunks come from the action beside this
+  // file (read-older-days-action.ts).
+  lastDays: StripDay[] | null;
   // The month this day belongs to has been reported and shut (ADR
   // 0066): the card shows what it holds and nothing may be dialled.
   isMonthClosed: boolean;
@@ -94,7 +99,7 @@ export const readDayPage = async (day: DayKey): Promise<DayPageData> => {
   const yearStart = serviceYearStartOf(month);
   const monthSpan = monthSpanOf(month);
   const yearSpan = serviceYearSpanOf(yearStart);
-  const stripSpan = previousDaysSpan(day);
+  const stripSpan = lastDaysSpan(day);
 
   const [zone, recorded, monthTotal, yearTotal, status, yearGoal, strip, closure]
     = await Promise.all([
@@ -135,8 +140,11 @@ export const readDayPage = async (day: DayKey): Promise<DayPageData> => {
       // the way ministry_days_total_minutes repeats its own conditions:
       // it costs nothing and keeps the query right on its own terms.
       //
-      // At most six rows, so no order and no limit: the strip is built
-      // from the days, not from the order they arrive in.
+      // Seventy-five rows at the very most — a month and a half back
+      // plus a month forward, and the days ahead hold none — so no
+      // order and no limit: the strip is built from the days, not from
+      // the order they arrive in, and the span is nowhere near the
+      // thousand rows PostgREST would silently cut at (ADR 0038/0058).
       supabase
         .from("ministry_days")
         .select("day, minutes")
@@ -189,7 +197,7 @@ export const readDayPage = async (day: DayKey): Promise<DayPageData> => {
     // the card opens where the day starts.
     savedMinutes: recorded.data?.minutes ?? 0,
     progress: readProgress({ month, monthTotal, yearTotal, status, yearGoal }),
-    previousDays: readStrip(day, strip),
+    lastDays: readStrip(stripSpan, strip),
     // A read we could not make answers "open", and that is deliberate:
     // the lock lives in the database, which refuses the write whatever
     // this says, while a lock drawn on a guess would take the card away
@@ -272,14 +280,14 @@ const readProgress = (
 // The strip stands or falls on its one read, for the reason the progress
 // block does: what it draws is a claim about which days are empty.
 const readStrip = (
-  day: DayKey,
+  span: DaySpan,
   strip: { data: { day: string; minutes: number }[] | null; error: unknown },
-): PreviousDay[] | null => {
+): StripDay[] | null => {
   if (strip.error) {
     reportReadFailure({ scope: SCOPE, step: "last-days", error: strip.error });
 
     return null;
   }
 
-  return previousDays(day, strip.data ?? []);
+  return stripDays(span, strip.data ?? []);
 };

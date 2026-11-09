@@ -2,29 +2,41 @@ import type { ReactNode } from "react";
 
 import { Eyebrow } from "@/shared/ui/eyebrow";
 
-// The strip's card and the row inside it, in one place because two files
-// have to agree on them: the strip itself and the skeleton /day draws
-// while the days are being read. Exactly the arrangement HoursCardShell
-// has, and for the reason its own comment gives — the skeleton used to
-// hold a copy of the card's markup down to its paddings, and two copies
-// of a padding are what nobody keeps in step (ADR 0062's review; ADR
-// 0065, decision 10).
+// The strip's card and the shape of the chips inside it, in one place
+// because two files have to agree on them: the strip itself and the
+// skeleton /day draws while the days are being read. Exactly the
+// arrangement HoursCardShell has, and for the reason its own comment
+// gives — the skeleton used to hold a copy of the card's markup down to
+// its paddings, and two copies of a padding are what nobody keeps in
+// step (ADR 0062's review; ADR 0065, decision 10).
 //
 // No "use client" and no dictionary of its own: the label arrives as a
-// prop. Both callers here are server components, but keeping the label
-// out means this file never has to care which of them is.
+// prop. The strip is a client component now and the skeleton is not,
+// which is exactly why this file is neither.
 //
-// The chip's outline is here too, because BOTH files that build chips
-// want it and both already import this one. It lived in DayLastDays at
-// first, which made the skeleton import the strip — and with it, down
-// the graph, a client module it never renders.
+// The ROW is here and the scrolling is not. The strip scrolls and needs
+// a ref on that element to do it; the skeleton has nothing to scroll.
+// So both share the row's layout and each says for itself what happens
+// at its edges.
 //
-// `pressable` is deliberately not part of it: it belongs to the six
-// links and to nothing else. On the open day's chip — a div with
-// nowhere to go — and on a skeleton plate, a press that squeezes says
-// something happened when nothing did, which is the defect ADR 0012
-// recorded for disabled buttons and fixed across the app on 2026-10-28.
-export const LAST_DAYS_CHIP = "flex flex-col items-center gap-1 rounded-sm px-0.5 py-2";
+// A chip is a fixed 42px wide rather than a seventh of the row, which
+// is what it was while the strip held exactly seven chips (ADR 0065,
+// update 2026-11-09). At 390px — the width this app is built for — the
+// arithmetic lands in the same place: seven chips and six 4px gaps fill
+// the card's inner 318px exactly, so the strip looks unchanged at rest.
+// On a wider phone the chips keep their size and part of an eighth
+// shows at the edge, which is the strip saying there is more of it.
+//
+// `pressable` is deliberately not part of the chip's shape: it belongs
+// to the links and to nothing else. On the open day's chip — a div with
+// nowhere to go — on a day still to come, and on a skeleton plate, a
+// press that squeezes says something happened when nothing did, which
+// is the defect ADR 0012 recorded for disabled buttons and fixed across
+// the app on 2026-10-28.
+export const LAST_DAYS_CHIP
+  = "flex w-10.5 shrink-0 flex-col items-center gap-1 rounded-sm px-0.5 py-2";
+
+export const LAST_DAYS_ROW = "flex gap-1";
 
 type LastDaysShellProps = {
   label: ReactNode;
@@ -43,19 +55,6 @@ export const LastDaysShell = ({ label, headingId, children }: LastDaysShellProps
       {label}
     </Eyebrow>
 
-    {/* Seven equal columns rather than a scrolling row: at 390px — the
-        width this app is built for — they fit, and nothing a person
-        needs ends up off the edge, where it cannot be seen without
-        being scrolled to.
-
-        The seven is spelled out because Tailwind reads classes as
-        TEXT and cannot build one from a value, so this cannot be
-        derived from LAST_DAYS_CHIPS (../model/last-days) — which is
-        where the same seven is decided. A compile-time check was tried
-        and does not exist: `PREVIOUS_DAYS + 1` is a number to
-        TypeScript, not a 7. So the pair is kept in step by this note
-        and the one beside that constant, the way the progress bar's
-        track is (ADR 0064, decision 12). */}
-    <div className="grid grid-cols-7 gap-1">{children}</div>
+    {children}
   </section>
 );
