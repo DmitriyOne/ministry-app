@@ -410,6 +410,26 @@
  * never the drag handle or the footer, so the way out stays put while
  * the content moves under it.
  */
+/*
+ * A row that scrolls sideways but shows no bar for it: the strip of
+ * days on /day (ADR 0065, update 2026-11-09). The gesture is the whole
+ * interface there — the chips are 42px apart and a scrollbar under them
+ * would be furniture — and on the phone this app is built for the bar
+ * is not drawn at all. The rule is for every other browser, so what the
+ * owner sees on a desktop while building is what ships.
+ *
+ * Both halves are needed and neither is a fallback for the other:
+ * `scrollbar-width` is the standard property, the pseudo-element is
+ * WebKit's, and Safari only answers to the second.
+ */
+@utility hide-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @utility max-h-sheet {
   max-height: calc(100dvh - env(safe-area-inset-top) - --spacing(6));
 }

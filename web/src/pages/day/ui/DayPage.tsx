@@ -154,9 +154,14 @@ export const DayPage = async ({ params }: DayPageProps) => {
               {/* Same rule, same reason (ADR 0065): a strip missing a
                   chip would say "nothing recorded" about a day that may
                   hold hours, and that is read as an invitation to fill
-                  it in. */}
-              {page.previousDays !== null
-                ? <DayLastDays openDay={day} days={page.previousDays} />
+                  it in.
+                  Today goes in because the strip now runs past the open
+                  day to the end of its month, and only today says which
+                  of those chips are still to come. Null — the zone read
+                  failed — and the strip stops at the open day instead of
+                  greying out days on a guess. */}
+              {page.lastDays !== null
+                ? <DayLastDays openDay={day} today={today} days={page.lastDays} />
                 : null}
             </DayHoursProvider>
           )}
