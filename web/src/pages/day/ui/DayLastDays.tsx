@@ -115,17 +115,14 @@ const DATE = "text-body font-600 tabular-nums";
 const VALUE = "text-eyebrow font-540 tabular-nums";
 
 // A chip's place inside the strip's own content, which is what
-// scrollLeft is measured in.
-//
-// `offsetLeft` alone is NOT that: it counts from the nearest positioned
-// ancestor, and nothing on this screen is positioned, so it counts from
-// <body> and carries the screen's 20px and the card's 16px with it.
-// Measured on a real page (2026-11-09): mixing the two left the open
-// day 36px short of the right edge, and put a restored strip most of a
-// chip off from where the finger had left it. Taking the strip's own
-// offsetLeft off cancels it exactly, both being measured from the same
-// ancestor.
-const contentLeft = (strip: HTMLElement, chip: HTMLElement) => chip.offsetLeft - strip.offsetLeft;
+// scrollLeft is measured in — and what `offsetLeft` gives, because the
+// strip is `relative` and is therefore the ancestor these are measured
+// from. Without that it counts from <body> instead and carries the
+// screen's 20px and the card's 16px with it: measured on a real page
+// (2026-11-09), that left the open day 36px short of the right edge and
+// put a restored strip most of a chip off from where the finger had
+// left it.
+const contentLeft = (chip: HTMLElement) => chip.offsetLeft;
 
 // Where the open day sat on screen when it was tapped, so the next
 // screen can put it back there. Session storage, not local: it is one
@@ -220,8 +217,8 @@ export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
     // the colour changes. Arrived any other way: the open day on the
     // right, which is where this strip has always ended.
     strip.scrollLeft = offset === null
-      ? contentLeft(strip, open) + open.offsetWidth - strip.clientWidth
-      : contentLeft(strip, open) - offset;
+      ? contentLeft(open) + open.offsetWidth - strip.clientWidth
+      : contentLeft(open) - offset;
   }, []);
 
   // Remembered on the way out, from the chip that was tapped: its
@@ -243,9 +240,19 @@ export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
         // hidden again: `positioned` only ever goes true, so this
         // leaves the markup after the first commit.
         style={positioned ? undefined : { visibility: "hidden" }}
-        // `overscroll-x-contain` is not decoration: without it a flick
-        // that runs past the oldest chip is handed to Safari, which
-        // reads a horizontal drag from the edge as "go back".
+        // `relative` is load-bearing twice over. It makes the strip
+        // the thing a chip's offsetLeft is measured from, which is what
+        // the scroll positions above are in — and it makes the strip
+        // the containing block for the sr-only text inside the chips.
+        // Absolutely positioned content whose containing block is
+        // OUTSIDE a scroll container is not clipped by it: without
+        // this, the screen-reader phrase on the last day of the month
+        // sat 4000px out and the whole PAGE scrolled sideways with it
+        // (found on a real page, 2026-11-09).
+        //
+        // `overscroll-x-contain` is not decoration either: without it a
+        // flick that runs past the oldest chip is handed to Safari,
+        // which reads a horizontal drag from the edge as "go back".
         //
         // No scroll snapping, and that is a decision rather than an
         // omission. It was here and came out: with chips snapped to the
@@ -255,7 +262,7 @@ export const DayLastDays = ({ openDay, today, days }: DayLastDaysProps) => {
         // landed where it was put — measured at 10px and at a whole
         // chip on a real page (2026-11-09). A 42px chip gains little
         // from snapping and the strip is read, not paged.
-        className={`${LAST_DAYS_ROW} overflow-x-auto overscroll-x-contain hide-scrollbar`}
+        className={`${LAST_DAYS_ROW} relative overflow-x-auto overscroll-x-contain hide-scrollbar`}
       >
         {visibleDays(days, openDay, today).map(({ day, minutes }) => {
           const { weekday, dayOfMonth } = shortDayLabel(day);
