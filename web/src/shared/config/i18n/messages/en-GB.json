@@ -442,6 +442,22 @@
         "title": "What's new",
         "text": "Everything the app has gained since it opened, newest first."
       },
+      "v2_10": {
+        "name": "Version 2.10",
+        "date": "9 November 2026",
+        "strip": {
+          "title": "The last days pull back two months",
+          "text": "The strip under the day no longer stops at a week. Drag it sideways and it keeps going back to the start of the month before last — far enough to see what a whole month looked like."
+        },
+        "future": {
+          "title": "The rest of the month is in view",
+          "text": "The days still to come are drawn to the end of the month, dimmed and without a plate. Nothing is hidden from you, and nothing offers to be filled in before it has happened."
+        },
+        "today": {
+          "title": "The Day button brings you back",
+          "text": "Pulled the strip back and lost today? Press Day in the bar and it travels back to it. Tap a day instead, and the strip stays exactly where you left it — only the colour moves."
+        }
+      },
       "v2_9": {
         "name": "Version 2.9",
         "date": "8 November 2026",

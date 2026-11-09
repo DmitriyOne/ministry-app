@@ -113,7 +113,32 @@ export const WhatsNewScreen = async () => {
             day screen's own step back, which is the motion the row is
             about. Adding icons is the owner's call, not something to
             slip in with a release note. */}
-        <VersionHeading name={t("v2_9.name")} date={t("v2_9.date")} pill={t("currentPill")} />
+        {/* 2.10 borrows nothing new either: the left chevron is the
+            step back a day, the closed lock is the same "you cannot
+            touch this" the read-only time zone wears above, and the
+            plus is literally the button the third row is about — the
+            raised Day button in the bar. */}
+        <VersionHeading name={t("v2_10.name")} date={t("v2_10.date")} pill={t("currentPill")} />
+        <ListCard>
+          <ListRow
+            icon={<ChevronLeftIcon size={18} />}
+            title={t("v2_10.strip.title")}
+            text={t("v2_10.strip.text")}
+          />
+          <ListRow
+            icon={<LockClosedIcon size={18} />}
+            title={t("v2_10.future.title")}
+            text={t("v2_10.future.text")}
+          />
+          <ListRow
+            divided={false}
+            icon={<PlusIcon size={18} />}
+            title={t("v2_10.today.title")}
+            text={t("v2_10.today.text")}
+          />
+        </ListCard>
+
+        <VersionHeading name={t("v2_9.name")} date={t("v2_9.date")} pill={t("releasedPill")} />
         <ListCard>
           <ListRow
             icon={<ChartBarIcon size={18} />}
