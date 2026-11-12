@@ -6,6 +6,14 @@ project and utility scripts). The product's version lives in the root
 `package.json`; the workspace packages carry their own numbers, which
 mean nothing.
 
+## For reviewers
+
+Where to look first:
+
+- [`docs/decisions`](./docs/decisions): more than 70 ADRs, one for each decision that was not obvious.
+- [`backend/supabase/tests`](./backend/supabase/tests): database tests for the schema, roles and row-level security.
+- [`.github/workflows`](./.github/workflows): CI with a version check on release PRs, database tests, a manual deploy with a confirmation step, and Dependabot.
+
 ## Status
 
 Pre-launch. Two things exist side by side.
