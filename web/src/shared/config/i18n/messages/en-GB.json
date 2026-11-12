@@ -456,6 +456,10 @@
         "today": {
           "title": "The Day button brings you back",
           "text": "Pulled the strip back and lost today? Press Day in the bar and it travels back to it. Tap a day instead, and the strip stays exactly where you left it — only the colour moves."
+        },
+        "safety": {
+          "title": "A safety update under the hood",
+          "text": "Version 2.10.1 brings up to date the parts the app is built from, including fixes for several security problems, and from now on they are checked every week. Nothing on screen changes."
         }
       },
       "v2_9": {

@@ -1,0 +1,47 @@
+# Weekly dependency updates (ADR 0073).
+#
+# Pull requests go to `develop`. By the CI rule (ADR 0052) nothing runs
+# there for a branch that is not `release*`, so a Dependabot pull request
+# arrives UNCHECKED: before merging one, press "Run workflow" on `ci.yml`
+# for its branch. Alerts and security updates are switched on separately,
+# in Settings -> Code security; this file is only the weekly version bumps.
+#
+# Majors are ignored on purpose: a major bump is a decision and an ADR,
+# not a Monday-morning pull request (see @hookform/resolvers 5 -> 7).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /web
+      - /backend
+    target-branch: develop
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: Europe/London
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: Europe/London
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "chore(ci)"

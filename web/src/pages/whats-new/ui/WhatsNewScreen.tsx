@@ -131,10 +131,18 @@ export const WhatsNewScreen = async () => {
             text={t("v2_10.future.text")}
           />
           <ListRow
-            divided={false}
             icon={<PlusIcon size={18} />}
             title={t("v2_10.today.title")}
             text={t("v2_10.today.text")}
+          />
+          {/* 2.10.1 is a patch, so it joins the 2.10 card instead of
+              opening its own heading. Its row borrows the tick for a fix
+              that landed, as the 2.0.1 rows do. */}
+          <ListRow
+            divided={false}
+            icon={<CheckCircleIcon size={18} />}
+            title={t("v2_10.safety.title")}
+            text={t("v2_10.safety.text")}
           />
         </ListCard>
 
