@@ -2764,6 +2764,10 @@ git branch --merged release/v2 | grep -vE '^\*|develop|master|release/'
 него) и `workflow_dispatch` — кнопка «Run workflow», которой
 перепроверяют PR в релизную ветку после новых коммитов.
 
+**PR от Dependabot** (`.github/dependabot.yml`, ADR 0073) идёт в `develop`
+из ветки `dependabot/...`, то есть под таблицу не подходит и **приходит
+непроверенным**. Перед слиянием — «Run workflow» у `ci.yml` на его ветке.
+
 Условие стоит на job, а не в `on:`: `on:` не умеет разные типы событий
 для разных базовых веток, а пропущенный по `if:` job раннер не занимает.
 
