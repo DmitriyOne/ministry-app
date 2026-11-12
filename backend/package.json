@@ -16,10 +16,10 @@
     "push:version": "node scripts/send-version-push.mjs"
   },
   "devDependencies": {
-    "supabase": "2.117.0"
+    "supabase": "2.122.1"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.117.2",
+    "@supabase/supabase-js": "^2.119.0",
     "web-push": "^3.6.7"
   }
 }
