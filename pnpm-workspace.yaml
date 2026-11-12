@@ -32,3 +32,15 @@ allowBuilds:
 # intent (fail the install on any unlisted build script) rather than
 # relying on an implicit default that could change again.
 strictDepBuilds: true
+
+# Security overrides for transitive dependencies that the direct packages have
+# not bumped yet (pnpm audit, 2026-11-12). Same-major patch bumps only: they
+# can be dropped as soon as @hookform/resolvers, @serwist/turbopack and
+# @sentry/nextjs ship releases that pull the fixed versions themselves.
+overrides:
+  fast-uri: ">=3.1.9"
+  joi: ">=18.3.1"
+  source-map-js: ">=1.2.2"
+  vite: ">=8.3.3"
+  "brace-expansion@>=4.0.0 <5.0.12": ">=5.0.12"
+  "zod@>=4.0.0 <4.6.7": "4.6.7"
