@@ -28,7 +28,7 @@
     "start": "dotenv -e envs/web.local.env -- pnpm --filter web run start"
   },
   "devDependencies": {
-    "dotenv-cli": "11.0.0",
-    "wait-on": "9.1.0"
+    "dotenv-cli": "11.1.0",
+    "wait-on": "9.5.1"
   }
 }
