@@ -190,13 +190,13 @@ version), `db-test.yml` (pgTAP plus a check that the committed Supabase
 types still match the schema) and `supabase-deploy.yml` (manual
 deployment). One announces a release to the people using the app: `version-push.yml`
 (manual, dry run by default, see
-[ADR 0058](./docs/decisions/0058-version-announcement-push.md)). Two are
-about keeping the free tier alive: `health-ping.yml`
-queries the database every three days, because a free Supabase project is
-paused after seven days of inactivity, and `supabase-backup.yml` takes a
-daily dump, because the free tier has no backups of its own. Both are on
-a schedule, and GitHub disables scheduled workflows after sixty days
-without repository activity.
+[ADR 0058](./docs/decisions/0058-version-announcement-push.md)). One keeps
+the free tier alive: `health-ping.yml` queries the database every three
+days, because a free Supabase project is paused after seven days of
+inactivity. It runs on a schedule, and GitHub disables scheduled
+workflows after sixty days without repository activity. There is no
+automatic database backup: the free tier has none, and a dump uploaded as
+a workflow artifact would be public in a public repository.
 
 The first two deliberately do **not** run on every commit — only on the
 merges the owner named: into a release branch when the pull request is
